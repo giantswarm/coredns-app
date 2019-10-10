@@ -8,55 +8,48 @@ import (
 	"os"
 	"testing"
 
-	"github.com/giantswarm/apprclient"
 	e2esetup "github.com/giantswarm/e2esetup/chart"
 	"github.com/giantswarm/e2esetup/chart/env"
 	"github.com/giantswarm/e2esetup/k8s"
-	"github.com/giantswarm/e2etests/managedservices"
+	"github.com/giantswarm/e2etests/basicapp"
 	"github.com/giantswarm/helmclient"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/micrologger"
-	"github.com/spf13/afero"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubernetes-coredns/integration/templates"
+	"github.com/giantswarm/coredns-app/integration/templates"
 )
 
 const (
-	testName = "basic"
-
 	coreDNSName = "coredns"
-	chartName   = "kubernetes-coredns"
+	chartName   = "coredns-app"
+)
+
+const (
+	envVarTarballURL = "E2E_TARBALL_URL"
 )
 
 var (
-	a          *apprclient.Client
+	ba         *basicapp.BasicApp
 	helmClient *helmclient.Client
 	k8sSetup   *k8s.Setup
 	l          micrologger.Logger
-	ms         *managedservices.ManagedServices
+	tarballURL string
 )
 
 func init() {
 	var err error
 
 	{
-		c := micrologger.Config{}
-		l, err = micrologger.New(c)
-		if err != nil {
-			panic(err.Error())
+		tarballURL = os.Getenv(envVarTarballURL)
+		if tarballURL == "" {
+			panic(fmt.Sprintf("env var '%s' must not be empty", envVarTarballURL))
 		}
 	}
 
 	{
-		c := apprclient.Config{
-			Fs:     afero.NewOsFs(),
-			Logger: l,
-
-			Address:      "https://quay.io",
-			Organization: "giantswarm",
-		}
-		a, err = apprclient.New(c)
+		c := micrologger.Config{}
+		l, err = micrologger.New(c)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -102,21 +95,19 @@ func init() {
 	}
 
 	{
-		c := managedservices.Config{
-			ApprClient: a,
+		c := basicapp.Config{
 			Clients:    k8sClients,
 			HelmClient: helmClient,
 			Logger:     l,
 
-			ChartConfig: managedservices.ChartConfig{
-				ChannelName:     fmt.Sprintf("%s-%s", env.CircleSHA(), testName),
-				ChartName:       chartName,
-				ChartValues:     templates.CoreDNSValues,
-				Namespace:       metav1.NamespaceSystem,
-				RunReleaseTests: false,
+			App: basicapp.Chart{
+				Name:        chartName,
+				ChartValues: templates.CoreDNSValues,
+				Namespace:   metav1.NamespaceSystem,
+				URL:         tarballURL,
 			},
-			ChartResources: managedservices.ChartResources{
-				Deployments: []managedservices.Deployment{
+			ChartResources: basicapp.ChartResources{
+				Deployments: []basicapp.Deployment{
 					{
 						Name:      coreDNSName,
 						Namespace: metav1.NamespaceSystem,
@@ -133,12 +124,11 @@ func init() {
 							"k8s-app":                    coreDNSName,
 							"kubernetes.io/name":         "CoreDNS",
 						},
-						Replicas: 2,
 					},
 				},
 			},
 		}
-		ms, err = managedservices.New(c)
+		ba, err = basicapp.New(c)
 		if err != nil {
 			panic(err.Error())
 		}
