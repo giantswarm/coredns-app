@@ -1,0 +1,27 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ .Values.name }}
+spec:
+  podSelector:
+    matchLabels:
+      k8s-app: {{ .Values.name }}
+  ingress:
+  - ports:
+    - port: {{ .Values.ports.dns.targetPort }}
+      protocol: UDP
+    - port: {{ .Values.ports.dns.targetPort }}
+      protocol: TCP
+    - port: {{ .Values.ports.dns.port }}
+      protocol: UDP
+    - port: {{ .Values.ports.dns.port }}
+      protocol: TCP
+  - ports:
+    - port: {{ .Values.ports.prometheus }}
+      protocol: TCP
+  egress:
+  - {}
+  policyTypes:
+  - Egress
+  - Ingress

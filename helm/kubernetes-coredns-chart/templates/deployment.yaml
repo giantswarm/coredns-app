@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    giantswarm.io/service-type: "{{ .Values.serviceType }}"
+    k8s-app: {{ .Values.name }}
+    kubernetes.io/name: "CoreDNS"
+spec:
+  replicas: {{ .Values.minReplicas }}
+  strategy:
+{{ toYaml .Values.updateStrategy | indent 4 }}
+  selector:
+    matchLabels:
+      k8s-app: {{ .Values.name }}
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.ports.prometheus }}"
+      labels:
+        giantswarm.io/service-type: "{{ .Values.serviceType }}"
+        k8s-app: {{ .Values.name }}
+        kubernetes.io/name: "CoreDNS"
+    spec:
+      serviceAccountName: {{ .Values.name }}
+      priorityClassName: system-cluster-critical
+      securityContext:
+        runAsUser: {{ .Values.userID }}
+        runAsGroup: {{ .Values.groupID }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: k8s-app
+                    operator: In
+                    values:
+                    - {{ .Values.name }}
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: coredns
+        image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        args: [ "-conf", "/etc/coredns/Corefile", "-dns.port", "1053" ]
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/coredns
+        # We need to create the /tmp folder to avoid CoreDNS crash when api-server is down
+        - mountPath: /tmp/
+          name: temp-volume
+        ports:
+        - containerPort: {{ .Values.ports.dns.targetPort }}
+          name: {{ .Values.ports.dns.name }}
+          protocol: UDP
+        - containerPort: {{ .Values.ports.dns.targetPort }}
+          name: {{ .Values.ports.dns.name }}-tcp
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 250m
+            memory: 192Mi
+          requests:
+            cpu: 250m
+            memory: 192Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+      dnsPolicy: Default
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ .Values.name }}
+            items:
+            - key: Corefile
+              path: Corefile
+        # We need to create the /tmp folder to avoid CoreDNS crash during api-server is down
+        - emptyDir: {}
+          name: temp-volume

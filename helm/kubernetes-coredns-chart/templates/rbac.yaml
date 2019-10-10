@@ -1,0 +1,85 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:{{ .Values.name }}
+  labels:
+    giantswarm.io/service-type: "{{ .Values.serviceType }}"
+    k8s-app: {{ .Values.name }}
+    kubernetes.io/bootstrapping: rbac-defaults
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "CoreDNS"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  - services
+  - pods
+  - namespaces
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - policy
+  - extensions
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+  resourceNames:
+  - {{ .Values.name }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:{{ .Values.name }}
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    giantswarm.io/service-type: "{{ .Values.serviceType }}"
+    k8s-app: {{ .Values.name }}
+    kubernetes.io/bootstrapping: rbac-defaults
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "CoreDNS"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:{{ .Values.name }}
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+# PSP rbac
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.name }}-psp-user
+  labels:
+    app: {{ .Values.name }}
+    giantswarm.io/service-type: "managed"
+rules:
+- apiGroups:
+  - extensions
+  resources:
+  - podsecuritypolicies
+  resourceNames:
+  - {{ .Values.name }}
+  verbs:
+  - use
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ .Values.name }}-psp
+  labels:
+    app: {{ .Values.name }}
+    giantswarm.io/service-type: "managed"
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ .Values.name }}-psp-user
+  apiGroup: rbac.authorization.k8s.io

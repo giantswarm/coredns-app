@@ -1,0 +1,5 @@
+# ignore vim swap files
+*.swp
+
+# don't apply earlier restrictions under vendor
+!vendor/**
