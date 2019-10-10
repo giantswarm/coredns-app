@@ -2,7 +2,7 @@
 
 package templates
 
-// CoreDNSValues values required by kubernetes-coredns-chart.
+// CoreDNSValues values required by coredns-app.
 const CoreDNSValues = `namespace: kube-system
 
 cluster:

@@ -22,7 +22,7 @@ import (
 
 const (
 	coreDNSName = "coredns"
-	chartName   = "kubernetes-coredns"
+	chartName   = "coredns-app"
 )
 
 const (
