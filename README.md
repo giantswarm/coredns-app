@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/giantswarm/coredns-app.svg?style=svg)](https://circleci.com/gh/giantswarm/coredns-app)
+[![CircleCI](https://circleci.com/gh/giantswarm/coredns-app.svg?style=shield)](https://circleci.com/gh/giantswarm/coredns-app)
 
 # coredns-app
 Helm Chart for CoreDNS in Guest Clusters.
