@@ -5,6 +5,12 @@ Helm Chart for CoreDNS in Guest Clusters.
 
 * Installs the the DNS server [CoreDNS](https://github.com/coredns/coredns).
 
+## Deployment 
+
+* Managed by [app-operator].
+* Production releases are stored in the [default-catalog].
+* WIP releases are stored in the [default-test-catalog].
+
 ## Installing the Chart
 
 To install the chart locally:
@@ -21,4 +27,11 @@ Provide a custom `values.yaml`:
 $ helm install coredns-app -f values.yaml
 ```
 
-Deployment to Guest Clusters will be handled by [chart-operator](https://github.com/giantswarm/chart-operator).
+## Release Process
+
+* Ensure CHANGELOG.md is up to date.
+* Create a new GitHub release with the version e.g. `v0.1.0` and link the
+changelog entry.
+* This will push a new git tag and trigger a new tarball to be pushed to the
+[default-catalog].  
+* Update [cluster-operator] with the new version.
