@@ -1,7 +1,7 @@
 [![CircleCI](https://circleci.com/gh/giantswarm/coredns-app.svg?style=shield)](https://circleci.com/gh/giantswarm/coredns-app)
 
 # coredns-app
-Helm Chart for CoreDNS in Guest Clusters.
+Helm Chart for CoreDNS in Tenant Clusters.
 
 * Installs the the DNS server [CoreDNS](https://github.com/coredns/coredns).
 
