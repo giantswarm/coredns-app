@@ -1,6 +1,6 @@
-[![CircleCI](https://circleci.com/gh/giantswarm/kubernetes-coredns/tree/master.svg?style=svg)](https://circleci.com/gh/giantswarm/kubernetes-coredns/tree/master)
+[![CircleCI](https://circleci.com/gh/giantswarm/coredns-app.svg?style=svg)](https://circleci.com/gh/giantswarm/coredns-app)
 
-# kubernetes-coredns
+# coredns-app
 Helm Chart for CoreDNS in Guest Clusters.
 
 * Installs the the DNS server [CoreDNS](https://github.com/coredns/coredns).
@@ -10,15 +10,15 @@ Helm Chart for CoreDNS in Guest Clusters.
 To install the chart locally:
 
 ```bash
-$ git clone https://github.com/giantswarm/kubernetes-coredns.git
-$ cd kubernetes-coredns
-$ helm install helm/kubernetes-coredns-chart
+$ git clone https://github.com/giantswarm/coredns-app.git
+$ cd coredns-app
+$ helm install helm/coredns-app
 ```
 
 Provide a custom `values.yaml`:
 
 ```bash
-$ helm install kubernetes-coredns -f values.yaml
+$ helm install coredns-app -f values.yaml
 ```
 
 Deployment to Guest Clusters will be handled by [chart-operator](https://github.com/giantswarm/chart-operator).
