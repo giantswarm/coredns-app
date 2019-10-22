@@ -101,10 +101,11 @@ func init() {
 			Logger:     l,
 
 			App: basicapp.Chart{
-				Name:        chartName,
-				ChartValues: templates.CoreDNSValues,
-				Namespace:   metav1.NamespaceSystem,
-				URL:         tarballURL,
+				Name:            chartName,
+				ChartValues:     templates.CoreDNSValues,
+				Namespace:       metav1.NamespaceSystem,
+				RunReleaseTests: true,
+				URL:             tarballURL,
 			},
 			ChartResources: basicapp.ChartResources{
 				Deployments: []basicapp.Deployment{
