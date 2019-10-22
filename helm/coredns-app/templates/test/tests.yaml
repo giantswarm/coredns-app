@@ -1,3 +1,4 @@
+{{ if .Values.e2e }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -12,3 +13,4 @@ data:
       host {{ .Values.cluster.kubernetes.DNS.IP }} | grep {{ .Values.name }}
       host $(host kubernetes.default | cut -d$' ' -f4) | grep kubernetes
     }
+{{- end -}}

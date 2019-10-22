@@ -1,3 +1,4 @@
+{{ if .Values.e2e }}
 apiVersion: v1
 kind: Pod
 metadata:
@@ -38,3 +39,4 @@ spec:
   - name: tools
     emptyDir: {}
   restartPolicy: Never
+{{- end -}}
