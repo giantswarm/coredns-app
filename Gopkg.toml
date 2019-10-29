@@ -25,16 +25,6 @@
 #   unused-packages = true
 
 
-required = [
-  "github.com/docker/distribution/reference",
-  "k8s.io/apimachinery/pkg/apis/meta/v1",
-  "k8s.io/apiserver/pkg/endpoints/request"
-]
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/docker/distribution"
-
 [[constraint]]
   branch = "master"
   name = "github.com/giantswarm/e2esetup"
@@ -52,17 +42,45 @@ required = [
   name = "github.com/giantswarm/micrologger"
 
 [[constraint]]
-  name = "k8s.io/apimachinery"
-  version = "kubernetes-1.13.2"
+  branch = "master"
+  name = "github.com/giantswarm/k8sclient"
 
 [[constraint]]
+  name = "k8s.io/apimachinery"
+  version = "kubernetes-1.15.4"
+
+[[override]]
   name = "k8s.io/apiserver"
-  version = "kubernetes-1.13.2"
+  version = "kubernetes-1.15.4"
+
+[[override]]
+  name = "k8s.io/cli-runtime"
+  version = "kubernetes-1.15.4"
+
+[[override]]
+  name = "k8s.io/component-base"
+  version = "kubernetes-1.15.4"
+
+[[override]]
+  name = "k8s.io/kubernetes"
+  version = "=v1.15.4"
+
+[[override]]
+  name = "k8s.io/helm"
+  version = "=2.14.3"
+
+[[override]]
+  name = "github.com/Masterminds/semver"
+  version = "=3.0.1"
+
+[[override]]
+  branch = "master"
+  name = "github.com/ghodss/yaml"
+
+[[override]]
+  name = "github.com/russross/blackfriday"
+  version = "v1.5.2"
 
 [prune]
   go-tests = true
   unused-packages = true
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/giantswarm/k8sclient"
