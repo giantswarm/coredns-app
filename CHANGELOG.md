@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project's packages adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v1.1.2] 2020-01-03
+
+### Changed
+
+- Updated manifests for Kubernetes 1.16.
+
 ## [v1.1.1]
 
 ### Changed
@@ -122,11 +128,15 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
-[1.0.0]: https://github.com/giantswarm/coredns-app/pull/6
-[0.8.0]: https://github.com/giantswarm/kubernetes-coredns/pull/49
-[0.7.0]: https://github.com/giantswarm/kubernetes-coredns/pull/46
-[0.6.2]: https://github.com/giantswarm/kubernetes-coredns/pull/36
-[0.6.1]: https://github.com/giantswarm/kubernetes-coredns/pull/32
-[0.5.1]: https://github.com/giantswarm/kubernetes-coredns/pull/32
-[0.5.0]: https://github.com/giantswarm/kubernetes-coredns/pull/28
-[0.4.0]: https://github.com/giantswarm/kubernetes-coredns/pull/27
+[v1.1.2]: https://github.com/giantswarm/coredns-app/pull/10
+[v1.1.1]: https://github.com/giantswarm/coredns-app/pull/9
+[v1.1.0]: https://github.com/giantswarm/coredns-app/pull/8
+[v1.0.0]: https://github.com/giantswarm/coredns-app/pull/6
+[v1.0.0]: https://github.com/giantswarm/coredns-app/pull/6
+[v0.8.0]: https://github.com/giantswarm/kubernetes-coredns/pull/49
+[v0.7.0]: https://github.com/giantswarm/kubernetes-coredns/pull/46
+[v0.6.2]: https://github.com/giantswarm/kubernetes-coredns/pull/36
+[v0.6.1]: https://github.com/giantswarm/kubernetes-coredns/pull/32
+[v0.5.1]: https://github.com/giantswarm/kubernetes-coredns/pull/32
+[v0.5.0]: https://github.com/giantswarm/kubernetes-coredns/pull/28
+[v0.4.0]: https://github.com/giantswarm/kubernetes-coredns/pull/27
