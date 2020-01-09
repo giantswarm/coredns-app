@@ -5,10 +5,10 @@ metadata:
 data:
   run.sh: |-
     @test "Testing DNS lookup" {
-      host {{ .Values.name }}.{{ .Values.namespace }} | grep {{ .Values.cluster.kubernetes.DNS.IP }}
+      host {{ .Values.name }}.{{ .Values.namespace }} | grep {{ .Values.clusterDNSIP }}
       host kubernetes.default | grep "has address"
     }
     @test "Testing reverse DNS lookup" {
-      host {{ .Values.cluster.kubernetes.DNS.IP }} | grep {{ .Values.name }}
+      host {{ .Values.clusterDNSIP }} | grep {{ .Values.name }}
       host $(host kubernetes.default | cut -d$' ' -f4) | grep kubernetes
     }
