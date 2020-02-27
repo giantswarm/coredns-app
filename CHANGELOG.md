@@ -140,6 +140,7 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
+[v1.1.4]: https://github.com/giantswarm/coredns-app/pull/14
 [v1.1.3]: https://github.com/giantswarm/coredns-app/pull/11
 [v1.1.2]: https://github.com/giantswarm/coredns-app/pull/10
 [v1.1.1]: https://github.com/giantswarm/coredns-app/pull/9
