@@ -19,6 +19,7 @@ configmap:
   log: |
     denial
     error
+  customDefaultConfig: ""
 
 image:
   registry: quay.io

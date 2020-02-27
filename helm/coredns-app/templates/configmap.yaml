@@ -20,6 +20,7 @@ data:
           pods verified
           upstream
         }
+{{ .Values.configmap.customDefaultConfig | indent 8 }}
         log . {
           {{- range (.Values.configmap.log | trimAll "\n " |  split "\n") }}
           class {{ . }}
