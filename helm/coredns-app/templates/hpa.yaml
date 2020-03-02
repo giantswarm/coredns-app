@@ -2,6 +2,10 @@ apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
   name: coredns
+  labels:
+    giantswarm.io/service-type: "{{ .Values.serviceType }}"
+    k8s-app: {{ .Values.name }}
+    kubernetes.io/name: "CoreDNS"
 spec:
   maxReplicas: {{ .Values.maxReplicas }}
   minReplicas: {{ .Values.minReplicas }}
