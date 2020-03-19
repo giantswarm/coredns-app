@@ -7,7 +7,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [v1.1.7] 2020-03-19
 
-### Added
+### Changed
 
 - Set `autopath` variable to disabled by default in values file.
 
