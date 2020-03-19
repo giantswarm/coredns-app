@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project's packages adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v1.1.7] 2020-03-19
+
+### Added
+
+- Set `autopath` variable to disabled by default in values file.
+
 ## [v1.1.6] 2020-02-28
 
 ### Added
@@ -152,6 +158,7 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
+[v1.1.7]: https://github.com/giantswarm/coredns-app/pull/19
 [v1.1.6]: https://github.com/giantswarm/coredns-app/pull/17
 [v1.1.5]: https://github.com/giantswarm/coredns-app/pull/16
 [v1.1.4]: https://github.com/giantswarm/coredns-app/pull/14
