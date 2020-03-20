@@ -50,7 +50,7 @@ cluster:
       clusterIPRange: 172.31.0.0/16
     DNS:
       IP: 172.31.0.10
-    domain: cluster.local
+    clusterDomain: cluster.local
 
 loadbalancePolicy: round_robin
 
