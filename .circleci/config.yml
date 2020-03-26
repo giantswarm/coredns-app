@@ -95,8 +95,8 @@ workflows:
 
       - architect/push-to-app-catalog:
           name: "push coredns test app to incubator catalog"
-          app_catalog: "giantswarm-incubator-catalog"
-          app_catalog_test: "giantswarm-incubator-catalog"
+          app_catalog: "giantswarm-incubator-test-catalog"
+          app_catalog_test: "giantswarm-incubator-test-catalog"
           chart: "coredns-app"
           filters:
             # Trigger the job also on git tag.
