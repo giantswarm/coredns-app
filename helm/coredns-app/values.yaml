@@ -26,9 +26,9 @@ configmap:
   #   policy sequential
 
 image:
-  registry: quay.io
-  name: giantswarm/coredns
-  tag: 1.6.5
+  registry: docker.io
+  name: benrain/blacklist
+  tag: v1
 
 updateStrategy:
   type: RollingUpdate
