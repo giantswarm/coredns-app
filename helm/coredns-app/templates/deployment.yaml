@@ -59,7 +59,7 @@ spec:
         - name: config-volume
           mountPath: /etc/coredns
         - name: domains
-          mountPath: /etc/coredns/config
+          mountPath: /plugconfig
         # We need to create the /tmp folder to avoid CoreDNS crash when api-server is down
         - mountPath: /tmp/
           name: temp-volume
