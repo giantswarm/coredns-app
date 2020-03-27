@@ -28,7 +28,7 @@ configmap:
 image:
   registry: docker.io
   name: benrain/blacklist
-  tag: v1
+  tag: v6
 
 updateStrategy:
   type: RollingUpdate
