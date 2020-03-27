@@ -20,7 +20,7 @@ data:
           pods verified
           upstream
         }
-        malicious domains.txt ips.txt 2m
+        malicious config/domains.txt ips.txt 2m
         log . {
           {{- range (.Values.configmap.log | trimAll "\n " |  split "\n") }}
           class {{ . }}
