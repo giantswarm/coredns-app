@@ -125,7 +125,7 @@ func init() {
 							"kubernetes.io/name":         "CoreDNS",
 						},
 						MatchLabels: map[string]string{
-							"k8s-app": appName,
+							"k8s-app": app,
 						},
 						PodLabels: map[string]string{
 							"giantswarm.io/service-type": "managed",
