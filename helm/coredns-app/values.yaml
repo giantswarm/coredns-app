@@ -21,7 +21,8 @@ configmap:
     denial
     error
 
-  # Uncoment forward and forwardOptions to enable DNS forward https://coredns.io/plugins/forward/
+  # Uncomment and define `forward` to enable and configure forwarding rules for CoreDNS forward plugin (for syntax see https://coredns.io/plugins/forward/)
+  # Default `forwardOptions` are defined separately below; these are applied and required when forward plugin is enabled.
   # forward: . 192.168.1.1 /etc/resolv.conf
   forwardOptions: |
     policy sequential
