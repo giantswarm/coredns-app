@@ -15,25 +15,22 @@ data:
         {{- end }}
         errors
         health
-
-        log . {
-          {{- range (.Values.configmap.log | trimAll "\n " |  split "\n") }}
-          class {{ . }}
-          {{- end }}
-        }
-
         kubernetes {{ .Values.cluster.kubernetes.clusterDomain }} {{ .Values.cluster.kubernetes.API.clusterIPRange }} {{ .Values.cluster.calico.CIDR }} {
           fallthrough in-addr.arpa ip6.arpa
           pods verified
           upstream
         }
-        
+        log . {
+          {{- range (.Values.configmap.log | trimAll "\n " |  split "\n") }}
+          class {{ . }}
+          {{- end }}
+        }
         loadbalance {{ .Values.loadbalancePolicy }}
         prometheus :{{ .Values.ports.prometheus }}
 
-        {{- if and .Values.configmap.forward .Values.configmap.forwardOptions }}
+        {{- if and (.Values.configmap.forward .Values.configmap.forwardOptions) }}
         forward {{ range (.Values.configmap.forward | trimAll "\n " |  splitList "\n") }}{{ . }} {{ end }} {
-{{.Values.configmap.forwardOptions | trimSuffix "\n" | indent 10}}
+{{ .Values.configmap.forwardOptions | trimSuffix "\n" | indent 10 }}
         }
         {{- else if .Values.configmap.forward }}
         forward {{ range (.Values.configmap.forward | trimAll "\n " |  splitList "\n") }}{{ . }} {{ end }}
