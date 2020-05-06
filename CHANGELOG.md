@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Define default forwardOptions if we specify a forward in the chart.
+- Make forward options optional.
 
 ## [v1.1.8] 2020-03-20
 

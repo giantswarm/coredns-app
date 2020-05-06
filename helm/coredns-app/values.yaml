@@ -22,10 +22,9 @@ configmap:
     error
 
   # Uncomment and define `forward` to enable and configure forwarding rules for CoreDNS forward plugin (for syntax see https://coredns.io/plugins/forward/)
-  # Default `forwardOptions` can be defined separately below; these are applied when forward plugin is enabled.
   # forward: . 192.168.1.1 /etc/resolv.conf
   # forwardOptions: |
-  #  policy random
+  #   policy random
 
 image:
   registry: quay.io
