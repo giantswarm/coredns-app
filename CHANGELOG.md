@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project's packages adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v1.1.9] 2020-05-04
+
+### Changed
+
+- Make forward options optional.
+
 ## [v1.1.8] 2020-03-20
 
 ### Changed
@@ -164,6 +170,7 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
+[v1.1.9]: https://github.com/giantswarm/coredns-app/pull/25
 [v1.1.8]: https://github.com/giantswarm/coredns-app/pull/20
 [v1.1.7]: https://github.com/giantswarm/coredns-app/pull/19
 [v1.1.6]: https://github.com/giantswarm/coredns-app/pull/17
