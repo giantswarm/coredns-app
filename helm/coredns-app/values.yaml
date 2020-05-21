@@ -20,10 +20,11 @@ configmap:
   log: |
     denial
     error
-  # Uncoment forward and forwadOptions to enable DNS forward https://coredns.io/plugins/forward/
+
+  # Uncomment and define `forward` to enable and configure forwarding rules for CoreDNS forward plugin (for syntax see https://coredns.io/plugins/forward/)
   # forward: . 192.168.1.1 /etc/resolv.conf
   # forwardOptions: |
-  #   policy sequential
+  #   policy random
 
 image:
   registry: quay.io
