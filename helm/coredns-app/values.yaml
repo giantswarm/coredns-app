@@ -43,6 +43,13 @@ ports:
     port: 53
   prometheus: 9153
 
+resources:
+  limits:
+    memory: 192Mi
+  requests:
+    cpu: 250m
+    memory: 192Mi
+
 cluster:
   calico:
     CIDR: 192.168.0.0/16

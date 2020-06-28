@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
+- Make resource requests/limits configurable.
 - Applying Go modules.
 
 ## [v1.1.9] 2020-05-04
