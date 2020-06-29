@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
+## [v1.1.10] 2020-06-29
+
+### Changed
+
 - Make resource requests/limits configurable.
 - Applying Go modules.
 
@@ -177,9 +181,8 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
-
-[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.1.9...HEAD
-
+[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.1.10...HEAD
+[v1.1.10]: https://github.com/giantswarm/coredns-app/compare/v1.1.9...v1.1.10
 [v1.1.9]: https://github.com/giantswarm/coredns-app/compare/v1.1.8...v1.1.9
 [v1.1.8]: https://github.com/giantswarm/coredns-app/compare/v1.1.7...v1.1.8
 [v1.1.7]: https://github.com/giantswarm/coredns-app/compare/v1.1.6...v1.1.7
@@ -191,7 +194,6 @@ data:
 [v1.1.2]: https://github.com/giantswarm/coredns-app/compare/v1.1.1...v1.1.2
 [v1.1.1]: https://github.com/giantswarm/coredns-app/compare/v1.1.0...v1.1.1
 [v1.1.0]: https://github.com/giantswarm/coredns-app/compare/v1.0.0...v1.1.0
-
 [v1.0.0]: https://github.com/giantswarm/coredns-app/pull/6
 [v0.8.0]: https://github.com/giantswarm/kubernetes-coredns/pull/49
 [v0.7.0]: https://github.com/giantswarm/kubernetes-coredns/pull/46
