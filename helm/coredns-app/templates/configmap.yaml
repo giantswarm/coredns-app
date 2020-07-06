@@ -15,6 +15,7 @@ data:
         {{- end }}
         errors
         health
+        ready
         kubernetes {{ .Values.cluster.kubernetes.clusterDomain }} {{ .Values.cluster.kubernetes.API.clusterIPRange }} {{ .Values.cluster.calico.CIDR }} {
           fallthrough in-addr.arpa ip6.arpa
           pods verified
