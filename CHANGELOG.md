@@ -7,6 +7,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- Apply a readiness probe
+- Increase the liveness probe failure threshold from 5 failures to 7 failures
+
 ### Changed
 
 ## [v1.1.10] 2020-06-29
