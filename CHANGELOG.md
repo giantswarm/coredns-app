@@ -7,10 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-- Apply a readiness probe
-- Increase the liveness probe failure threshold from 5 failures to 7 failures
+## [v1.2.0] 2020-07-13
 
 ### Changed
+
+- Apply a readiness probe
+- Increase the liveness probe failure threshold from 5 failures to 7 failures
 
 ## [v1.1.10] 2020-06-29
 
@@ -184,7 +186,8 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
-[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.1.10...HEAD
+[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.2.0...HEAD
+[v1.2.0]: https://github.com/giantswarm/coredns-app/compare/v1.1.10...v1.2.0
 [v1.1.10]: https://github.com/giantswarm/coredns-app/compare/v1.1.9...v1.1.10
 [v1.1.9]: https://github.com/giantswarm/coredns-app/compare/v1.1.8...v1.1.9
 [v1.1.8]: https://github.com/giantswarm/coredns-app/compare/v1.1.7...v1.1.8
