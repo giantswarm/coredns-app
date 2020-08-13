@@ -4,26 +4,25 @@ metadata:
   name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
   labels:
-    giantswarm.io/service-type: "{{ .Values.serviceType }}"
-    k8s-app: {{ .Values.name }}
-    kubernetes.io/name: "CoreDNS"
+    {{- include "labels.common" . | nindent 4 }}
 spec:
   replicas: {{ .Values.minReplicas }}
   strategy:
 {{ toYaml .Values.updateStrategy | indent 4 }}
   selector:
     matchLabels:
-      k8s-app: {{ .Values.name }}
+      {{- include "labels.selector" . | nindent 6 }}
   template:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
         prometheus.io/scrape: "true"
         prometheus.io/port: "{{ .Values.ports.prometheus }}"
+        giantswarm.io/monitoring-path: /metrics
+        giantswarm.io/monitoring-port: "{{ .Values.ports.prometheus }}"
       labels:
-        giantswarm.io/service-type: "{{ .Values.serviceType }}"
-        k8s-app: {{ .Values.name }}
-        kubernetes.io/name: "CoreDNS"
+        {{- include "labels.common" . | nindent 8 }}
+        giantswarm.io/monitoring: "true"
     spec:
       serviceAccountName: {{ .Values.name }}
       priorityClassName: system-cluster-critical

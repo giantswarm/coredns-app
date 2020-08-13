@@ -3,11 +3,8 @@ kind: ClusterRole
 metadata:
   name: system:{{ .Values.name }}
   labels:
-    giantswarm.io/service-type: "{{ .Values.serviceType }}"
-    k8s-app: {{ .Values.name }}
+    {{- include "labels.common" . | nindent 4 }}
     kubernetes.io/bootstrapping: rbac-defaults
-    kubernetes.io/cluster-service: "true"
-    kubernetes.io/name: "CoreDNS"
 rules:
 - apiGroups:
   - ""
@@ -36,11 +33,8 @@ metadata:
   annotations:
     rbac.authorization.kubernetes.io/autoupdate: "true"
   labels:
-    giantswarm.io/service-type: "{{ .Values.serviceType }}"
-    k8s-app: {{ .Values.name }}
+    {{- include "labels.common" . | nindent 4 }}
     kubernetes.io/bootstrapping: rbac-defaults
-    kubernetes.io/cluster-service: "true"
-    kubernetes.io/name: "CoreDNS"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -56,8 +50,7 @@ kind: ClusterRole
 metadata:
   name: {{ .Values.name }}-psp-user
   labels:
-    app: {{ .Values.name }}
-    giantswarm.io/service-type: "managed"
+    {{- include "labels.common" . | nindent 4 }}
 rules:
 - apiGroups:
   - extensions
@@ -73,8 +66,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{ .Values.name }}-psp
   labels:
-    app: {{ .Values.name }}
-    giantswarm.io/service-type: "managed"
+    {{- include "labels.common" . | nindent 4 }}
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.name }}

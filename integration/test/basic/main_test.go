@@ -33,27 +33,12 @@ var (
 	k8sSetup   *k8sclient.Setup
 	l          micrologger.Logger
 	tarballURL string
+	version    string
 )
 
 func init() {
 	ctx := context.Background()
 	var err error
-
-	var latestRelease string
-	{
-		latestRelease, err = appcatalog.GetLatestVersion(ctx, catalogURL, appName)
-		if err != nil {
-			panic(err.Error())
-		}
-	}
-
-	{
-		version := fmt.Sprintf("%s-%s", latestRelease, env.CircleSHA())
-		tarballURL, err = appcatalog.NewTarballURL(testCatalogURL, appName, version)
-		if err != nil {
-			panic(err.Error())
-		}
-	}
 
 	{
 		c := micrologger.Config{}
@@ -99,6 +84,30 @@ func init() {
 		}
 	}
 
+	var latestRelease string
+	{
+		latestRelease, err = appcatalog.GetLatestVersion(ctx, catalogURL, appName)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	{
+		version = fmt.Sprintf("%s-%s", latestRelease, env.CircleSHA())
+		tarballURL, err = appcatalog.NewTarballURL(testCatalogURL, appName, version)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	var helmChartLabel string
+	{
+		helmChartLabel = fmt.Sprintf("%s-%s", appName, version)
+		if len(helmChartLabel) > 63 {
+			helmChartLabel = helmChartLabel[:63]
+		}
+	}
+
 	{
 		c := basicapp.Config{
 			Clients:    k8sClients,
@@ -117,17 +126,30 @@ func init() {
 						Name:      app,
 						Namespace: metav1.NamespaceSystem,
 						DeploymentLabels: map[string]string{
-							"giantswarm.io/service-type": "managed",
-							"k8s-app":                    app,
-							"kubernetes.io/name":         "CoreDNS",
+							"k8s-app":                       app,
+							"app.kubernetes.io/managed-by":  "Helm",
+							"app.kubernetes.io/name":        app,
+							"app.kubernetes.io/instance":    appName,
+							"app.kubernetes.io/version":     "1.6.5",
+							"giantswarm.io/service-type":    "managed",
+							"helm.sh/chart":                 helmChartLabel,
+							"kubernetes.io/cluster-service": "true",
+							"kubernetes.io/name":            "CoreDNS",
 						},
 						MatchLabels: map[string]string{
 							"k8s-app": app,
 						},
 						PodLabels: map[string]string{
-							"giantswarm.io/service-type": "managed",
-							"k8s-app":                    app,
-							"kubernetes.io/name":         "CoreDNS",
+							"k8s-app":                       app,
+							"app.kubernetes.io/managed-by":  "Helm",
+							"app.kubernetes.io/name":        app,
+							"app.kubernetes.io/instance":    appName,
+							"app.kubernetes.io/version":     "1.6.5",
+							"giantswarm.io/service-type":    "managed",
+							"helm.sh/chart":                 helmChartLabel,
+							"kubernetes.io/cluster-service": "true",
+							"kubernetes.io/name":            "CoreDNS",
+							"giantswarm.io/monitoring":      "true",
 						},
 					},
 				},
