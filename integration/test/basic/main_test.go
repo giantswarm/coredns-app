@@ -13,6 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/coredns-app/integration/env"
+	"github.com/giantswarm/coredns-app/integration/templates"
 )
 
 const (
@@ -64,6 +65,7 @@ func TestMain(m *testing.M) {
 				Name:          appName,
 				Namespace:     metav1.NamespaceSystem,
 				SHA:           env.CircleSHA(),
+				ValuesYAML:    templates.CoreDNSValues,
 				WaitForDeploy: true,
 			},
 		}
