@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Added monitoring annotations and common labels.
 
+### Changed
+
+- Updated coredns to upstream version [1.8.0](https://coredns.io/2020/10/22/coredns-1.8.0-release/).
+
 ## [v1.2.0] 2020-07-13
 
 ### Changed
