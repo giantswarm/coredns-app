@@ -22,6 +22,7 @@ workflows:
           name: "basic-integration-test"
           setup-script: "integration/test/basic/setup.sh"
           test-dir: "integration/test/basic"
+          install-app-platform: true
           filters:
             # Do not trigger the job on merge to master.
             branches:
