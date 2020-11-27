@@ -8,3 +8,5 @@ kubectl delete configmap coredns -n kube-system
 kubectl delete clusterrolebinding system:coredns
 kubectl delete serviceaccount coredns -n kube-system
 kubectl delete clusterrole system:coredns
+
+kubectl get pods --all-namespaces
