@@ -10,3 +10,6 @@ kubectl delete serviceaccount coredns -n kube-system
 kubectl delete clusterrole system:coredns
 
 kubectl get pods --all-namespaces
+kubectl get deploy --all-namespaces
+kubectl get rs --all-namespaces
+kubectl get ds --all-namespaces
