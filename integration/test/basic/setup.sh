@@ -1,5 +1,3 @@
-
-
 #!/bin/bash
 
 # Project specific: Delete built-in kube-dns + CoreDNS in this project,
