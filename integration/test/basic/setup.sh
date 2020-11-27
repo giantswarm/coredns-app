@@ -9,7 +9,6 @@ kubectl delete clusterrolebinding system:coredns
 kubectl delete serviceaccount coredns -n kube-system
 kubectl delete clusterrole system:coredns
 
-kubectl get pods --all-namespaces
-kubectl get deploy --all-namespaces
-kubectl get rs --all-namespaces
-kubectl get ds --all-namespaces
+# For app-operator to find the catalog file we need to enable some form of dns
+kubectl patch deployment -n giantswarm chart-operator --patch "$(cat ./dns-patch.yaml)"
+
