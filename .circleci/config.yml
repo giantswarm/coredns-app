@@ -20,7 +20,6 @@ workflows:
       - architect/integration-test:
           context: architect
           name: "basic-integration-test"
-          setup-script: "integration/test/basic/setup.sh"
           test-dir: "integration/test/basic"
           install-app-platform: true
           filters:

@@ -21,6 +21,7 @@ const (
 	app            = "coredns"
 	appName        = "coredns-app"
 	catalogName    = "default-test"
+	testNamespace      = "Unit-test"
 )
 
 var (
@@ -64,7 +65,7 @@ func TestMain(m *testing.M) {
 			{
 				CatalogName:   catalogName,
 				Name:          appName,
-				Namespace:     metav1.NamespaceSystem,
+				Namespace:     testNamespace,
 				SHA:           env.CircleSHA(),
 				ValuesYAML:    templates.CoreDNSValues,
 				WaitForDeploy: true,
