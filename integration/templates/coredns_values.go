@@ -3,7 +3,7 @@
 package templates
 
 // CoreDNSValues values required by coredns-app.
-const CoreDNSValues = `namespace: kube-system
+const CoreDNSValues = `namespace: default
 
 cluster:
   kubernetes:
