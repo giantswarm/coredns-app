@@ -1,6 +1,0 @@
-  spec:
-    template:
-      spec:
-        dnsConfig:
-          nameservers:
-            - 8.8.8.8
