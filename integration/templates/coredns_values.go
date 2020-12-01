@@ -12,5 +12,5 @@ cluster:
     API:
       clusterIPRange: 10.96.0.0/16
     DNS:
-      IP: 10.96.0.10
+      IP: 10.96.0.11
 `
