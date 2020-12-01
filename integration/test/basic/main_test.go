@@ -10,6 +10,7 @@ import (
 
 	"github.com/giantswarm/apptest"
 	"github.com/giantswarm/micrologger"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/coredns-app/integration/env"
 	"github.com/giantswarm/coredns-app/integration/templates"
