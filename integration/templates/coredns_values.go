@@ -5,6 +5,8 @@ package templates
 // CoreDNSValues values required by coredns-app.
 const CoreDNSValues = `namespace: default
 
+name: coredns-test
+
 cluster:
   kubernetes:
     API:
