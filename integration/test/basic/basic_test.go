@@ -36,11 +36,11 @@ func checkReadyDeployment(ctx context.Context) error {
 			LabelSelector: selector,
 		}
 
-		deploys, err := appTest.K8sClient().AppsV1().Deployments(metav1.NamespaceSystem).List(ctx, lo)
+		deploys, err := appTest.K8sClient().AppsV1().Deployments(testNamespace).List(ctx, lo)
 		if err != nil {
 			return microerror.Mask(err)
 		} else if len(deploys.Items) == 0 {
-			return microerror.Maskf(executionFailedError, "deployment with label%#q in %#q not found", app, metav1.NamespaceSystem)
+			return microerror.Maskf(executionFailedError, "deployment with label%#q in %#q not found", app, testNamespace)
 		}
 
 		deploy := deploys.Items[0]
