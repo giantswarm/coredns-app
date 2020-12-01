@@ -20,7 +20,7 @@ const (
 	app            = "coredns"
 	appName        = "coredns-app"
 	catalogName    = "default-test"
-	testNamespace      = "default"
+	testNamespace      = "Unit-test"
 )
 
 var (
