@@ -17,7 +17,7 @@ import (
 
 
 const (
-	app            = "coredns"
+	app            = "coredns-test"
 	appName        = "coredns-app"
 	catalogName    = "default-test"
 	testNamespace      = "default"
