@@ -15,12 +15,11 @@ import (
 	"github.com/giantswarm/coredns-app/integration/templates"
 )
 
-
 const (
-	app            = "coredns-test"
-	appName        = "coredns-app"
-	catalogName    = "default-test"
-	testNamespace      = "default"
+	app           = "coredns-test"
+	appName       = "coredns-app"
+	catalogName   = "default-test"
+	testNamespace = "default"
 )
 
 var (
