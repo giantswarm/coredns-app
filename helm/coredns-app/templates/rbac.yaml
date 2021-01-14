@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: system:{{ .Values.name }}
+  name: system-{{ .Values.name }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
     kubernetes.io/bootstrapping: rbac-defaults
@@ -29,7 +29,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: system:{{ .Values.name }}
+  name: system-{{ .Values.name }}
   annotations:
     rbac.authorization.kubernetes.io/autoupdate: "true"
   labels:
