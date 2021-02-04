@@ -13,7 +13,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Updated coredns to upstream version [1.7.1](https://coredns.io/2020/09/21/coredns-1.7.1-release/).
+- Updated coredns to upstream version [1.8.1](https://coredns.io/2021/01/20/coredns-1.8.1-release/).
 
 ## [v1.2.0] 2020-07-13
 
