@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-name: coredns
+name: coredns-app
 namespace: kube-system
 serviceType: managed
 
@@ -29,7 +29,7 @@ configmap:
 image:
   registry: quay.io
   name: giantswarm/coredns
-  tag: 1.8.0
+  tag: 1.6.9
 
 updateStrategy:
   type: RollingUpdate
