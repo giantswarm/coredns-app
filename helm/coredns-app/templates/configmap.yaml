@@ -17,6 +17,7 @@ data:
         kubernetes {{ .Values.cluster.kubernetes.clusterDomain }} {{ .Values.cluster.kubernetes.API.clusterIPRange }} {{ .Values.cluster.calico.CIDR }} {
           fallthrough in-addr.arpa ip6.arpa
           pods verified
+          upstream
         }
         log . {
           {{- range (.Values.configmap.log | trimAll "\n " |  split "\n") }}
