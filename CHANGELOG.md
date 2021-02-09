@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.3.0] - 2021-02-09
+
 ### Changed
 
 - Updated `coredns` to upstream version [1.7.1](https://coredns.io/2020/09/21/coredns-1.7.1-release/) (including changes introduced in version [1.7.0](https://coredns.io/2020/06/15/coredns-1.7.0-release/)).
@@ -200,7 +202,8 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
-[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/giantswarm/coredns-app/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/giantswarm/coredns-app/compare/v1.2.0...v1.2.1
 [v1.2.0]: https://github.com/giantswarm/coredns-app/compare/v1.1.10...v1.2.0
 [v1.1.10]: https://github.com/giantswarm/coredns-app/compare/v1.1.9...v1.1.10
