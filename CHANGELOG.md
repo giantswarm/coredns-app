@@ -7,11 +7,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update `coredns` to upstream version [1.8.0](https://coredns.io/2020/10/22/coredns-1.8.0-release/).
+
 ## [1.3.0] - 2021-02-09
 
 ### Changed
 
-- Updated `coredns` to upstream version [1.7.1](https://coredns.io/2020/09/21/coredns-1.7.1-release/) (including changes introduced in version [1.7.0](https://coredns.io/2020/06/15/coredns-1.7.0-release/)).
+- Update `coredns` to upstream version [1.7.1](https://coredns.io/2020/09/21/coredns-1.7.1-release/) (including changes introduced in version [1.7.0](https://coredns.io/2020/06/15/coredns-1.7.0-release/)).
 
 ## [1.2.1] - 2021-02-05
 
@@ -21,7 +25,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Updated `coredns` to upstream version [1.6.9](https://coredns.io/2020/03/24/coredns-1.6.9-release/).
+- Update `coredns` to upstream version [1.6.9](https://coredns.io/2020/03/24/coredns-1.6.9-release/).
 
 ## [v1.2.0] 2020-07-13
 
