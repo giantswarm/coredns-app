@@ -22,6 +22,7 @@ rules:
   - endpointslices
   verbs:
   - watch
+  - list
 - apiGroups:
   - policy
   - extensions
