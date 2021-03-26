@@ -27,7 +27,7 @@ configmap:
   #   policy random
 
 image:
-  registry: quay.io
+  registry: docker.io
   name: giantswarm/coredns
   tag: 1.8.0
 
