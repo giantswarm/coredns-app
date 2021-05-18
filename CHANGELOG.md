@@ -11,6 +11,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Update `coredns` to upstream version [1.8.3](https://coredns.io/2021/02/24/coredns-1.8.3-release/).
 
+## [1.4.1] - 2021-03-26
+
+### Changed
+
+- Set docker.io as the default registry
+
 ## [1.4.0] - 2021-02-10
 
 ### Changed
@@ -212,7 +218,8 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
-[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/giantswarm/coredns-app/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/giantswarm/coredns-app/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/giantswarm/coredns-app/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/giantswarm/coredns-app/compare/v1.2.0...v1.2.1
