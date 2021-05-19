@@ -6,7 +6,7 @@ Helm Chart for CoreDNS in Workload Clusters.
 
 * Installs the the DNS server [CoreDNS](https://github.com/coredns/coredns).
 
-# Deployment 
+# Deployment
 
 Managed by the Giant Swarm [App Platform](https://docs.giantswarm.io/app-platform/).
 
