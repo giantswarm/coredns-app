@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Update `coredns` to upstream version [1.8.3](https://coredns.io/2021/02/24/coredns-1.8.3-release/).
+- Increase maximum replica count to 50 when using horizontal pod autoscaling.
 
 ## [1.4.1] - 2021-03-26
 
