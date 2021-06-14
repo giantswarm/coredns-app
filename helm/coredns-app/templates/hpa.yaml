@@ -11,4 +11,4 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: coredns
-  targetCPUUtilizationPercentage: {{ .Values.targetCPUPercentage }}
+  targetCPUUtilizationPercentage: {{ .Values.targetCPUUtilizationPercentage }}

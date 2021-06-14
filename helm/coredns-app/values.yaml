@@ -11,7 +11,7 @@ groupID: 33
 
 minReplicas: 2
 maxReplicas: 50
-targetCPUPercentage: 70
+targetCPUUtilizationPercentage: 70
 
 configmap:
 # Uncomment "autopath" to enable DNS autopath https://coredns.io/plugins/autopath/
