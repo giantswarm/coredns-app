@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- Make `targetCPUUtilizationPercentage` in HPA configurable.
+
 ## [1.5.0] - 2021-06-10
 
 ### Changed

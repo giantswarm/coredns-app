@@ -1,4 +1,4 @@
-{{- if (gt (.Values.maxReplicas | int) 1) }}
+{{- if (gt (.Values.hpa.maxReplicas | int) 1) }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
