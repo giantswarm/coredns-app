@@ -5,10 +5,10 @@ metadata:
   labels:
     {{- include "labels.common" . | nindent 4 }}
 spec:
-  maxReplicas: {{ .Values.maxReplicas }}
-  minReplicas: {{ .Values.minReplicas }}
+  maxReplicas: {{ .Values.hpa.maxReplicas }}
+  minReplicas: {{ .Values.hpa.minReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: coredns
-  targetCPUUtilizationPercentage: {{ .Values.targetCPUUtilizationPercentage }}
+  targetCPUUtilizationPercentage: {{ .Values.hpa.targetCPUUtilizationPercentage }}

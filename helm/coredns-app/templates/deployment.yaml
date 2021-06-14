@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "labels.common" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.minReplicas }}
+  replicas: {{ .Values.hpa.minReplicas }}
   strategy:
 {{ toYaml .Values.updateStrategy | indent 4 }}
   selector:
