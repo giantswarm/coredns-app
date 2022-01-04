@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update `coredns` to upstream version [1.8.6](https://coredns.io/2021/10/07/coredns-1.8.6-release/).
+
 ## [1.6.0] - 2021-06-14
 
 - Make `targetCPUUtilizationPercentage` in HPA configurable.
