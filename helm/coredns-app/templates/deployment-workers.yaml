@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.name }}
+  name: {{ .Values.name }}-np
   namespace: {{ .Values.namespace }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
@@ -29,10 +29,6 @@ spec:
       securityContext:
         runAsUser: {{ .Values.userID }}
         runAsGroup: {{ .Values.groupID }}
-      tolerations:
-      - effect: NoSchedule
-        operator: "Exists"
-        key: node-role.kubernetes.io/master
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
