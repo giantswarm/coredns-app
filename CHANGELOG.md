@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Add deployment to run one replica of coredns in master nodes (for clusters with no node pools).
+
 ## [1.7.0] - 2022-01-04
 
 ### Changed
