@@ -1,3 +1,4 @@
+{{- if not .Values.isCAPI }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -18,3 +19,4 @@ spec:
     port: {{ .Values.ports.dns.port }}
     targetPort: {{ .Values.ports.dns.targetPort }}
     protocol: TCP
+{{- end }}

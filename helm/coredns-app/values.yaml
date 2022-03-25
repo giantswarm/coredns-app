@@ -6,6 +6,11 @@ name: coredns
 namespace: kube-system
 serviceType: managed
 
+# isCAPI indicates if the cluster being deployed into is
+# a cluster-api cluster which already manages core-dns.
+# If set to true we'll only manage config, PSPs and networkpolicy.
+isCAPI: false
+
 userID: 33
 groupID: 33
 
