@@ -29,6 +29,9 @@ spec:
       securityContext:
         runAsUser: {{ .Values.userID }}
         runAsGroup: {{ .Values.groupID }}
+      tolerations:
+      - operator: "Exists"
+        key: "node.cloudprovider.kubernetes.io/uninitialized"
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
