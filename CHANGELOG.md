@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add toleration for `node.cloudprovider.kubernetes.io/uninitialized`.
 
+### Changed
+
+- Update `coredns` to upstream version [1.8.7](https://coredns.io/2021/12/09/coredns-1.8.7-release/).
+ 
 ## [1.8.0] - 2022-01-20
 
 ### Changed
