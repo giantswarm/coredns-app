@@ -12,7 +12,7 @@ spec:
   selector:
     matchLabels:
       {{- include "labels.selector" . | nindent 6 }}
-      app.kubernetes.io/component: workers
+      target: workers
   template:
     metadata:
       annotations:
@@ -23,7 +23,7 @@ spec:
         giantswarm.io/monitoring-port: "{{ .Values.ports.prometheus }}"
       labels:
         {{- include "labels.common" . | nindent 8 }}
-        app.kubernetes.io/component: workers
+        target: workers
         giantswarm.io/monitoring: "true"
     spec:
       serviceAccountName: {{ .Values.name }}
