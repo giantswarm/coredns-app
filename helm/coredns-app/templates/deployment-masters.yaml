@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.name }}-cp
+  name: {{ .Values.name }}-controlplane
   namespace: {{ .Values.namespace }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
@@ -12,6 +12,7 @@ spec:
   selector:
     matchLabels:
       {{- include "labels.selector" . | nindent 6 }}
+      target: control-plane
   template:
     metadata:
       annotations:
@@ -22,6 +23,7 @@ spec:
         giantswarm.io/monitoring-port: "{{ .Values.ports.prometheus }}"
       labels:
         {{- include "labels.common" . | nindent 8 }}
+        target: control-plane
         giantswarm.io/monitoring: "true"
     spec:
       serviceAccountName: {{ .Values.name }}
