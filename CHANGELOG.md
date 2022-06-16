@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Correct pod selectors on each deployment. Deployments renamed to allow for changing the selectors.
+
 ## [1.9.0] - 2022-04-11
 
 ### Added
@@ -16,7 +20,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Update `coredns` to upstream version [1.8.7](https://coredns.io/2021/12/09/coredns-1.8.7-release/).
- 
+
 ## [1.8.0] - 2022-01-20
 
 ### Changed
