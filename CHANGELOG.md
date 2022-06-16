@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.9.1] - 2022-06-16
+
 ### Fixed
 
 - Correct pod selectors on each deployment. Deployments renamed to allow for changing the selectors.
@@ -251,7 +253,8 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
-[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.9.1...HEAD
+[1.9.1]: https://github.com/giantswarm/coredns-app/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/giantswarm/coredns-app/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/giantswarm/coredns-app/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/giantswarm/coredns-app/compare/v1.6.0...v1.7.0
