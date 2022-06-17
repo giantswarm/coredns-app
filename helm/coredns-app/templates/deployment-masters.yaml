@@ -5,6 +5,7 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
+    app.kubernetes.io/component: control-plane
 spec:
   replicas: 1
   strategy:
