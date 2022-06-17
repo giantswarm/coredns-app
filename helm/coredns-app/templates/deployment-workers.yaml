@@ -5,6 +5,7 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
+    target: workers
 spec:
   replicas: {{ .Values.hpa.minReplicas }}
   strategy:

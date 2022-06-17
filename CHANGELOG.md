@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Added target label to deployments too
+
 ## [1.9.1] - 2022-06-16
 
 ### Fixed
