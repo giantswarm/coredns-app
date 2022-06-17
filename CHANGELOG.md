@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `app.kubernetes.io/component` on deployments so that management-cluster-admission controller does not complain.
+
 ## [1.9.1] - 2022-06-16
 
 ### Fixed
