@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Added component label to deployment labels as well
+
 ## [1.10.0] - 2022-06-17
 
 ### Added
