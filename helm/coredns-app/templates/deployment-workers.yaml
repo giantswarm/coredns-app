@@ -12,7 +12,7 @@ spec:
   selector:
     matchLabels:
       {{- include "labels.selector" . | nindent 6 }}
-      target: workers
+      app.kubernetes.io/component: workers
   template:
     metadata:
       annotations:
@@ -23,8 +23,8 @@ spec:
         giantswarm.io/monitoring-port: "{{ .Values.ports.prometheus }}"
       labels:
         {{- include "labels.common" . | nindent 8 }}
-        target: workers
         giantswarm.io/monitoring: "true"
+        app.kubernetes.io/component: workers
     spec:
       serviceAccountName: {{ .Values.name }}
       priorityClassName: system-cluster-critical
