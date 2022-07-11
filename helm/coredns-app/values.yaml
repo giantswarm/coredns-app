@@ -31,7 +31,7 @@ configmap:
 image:
   registry: docker.io
   name: giantswarm/coredns
-  tag: 1.8.7
+  tag: 1.9.3
 
 updateStrategy:
   type: RollingUpdate
