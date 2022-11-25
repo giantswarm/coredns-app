@@ -14,4 +14,4 @@ spec:
   targetCPUUtilizationPercentage: {{ .Values.hpa.targetCPUUtilizationPercentage }}
   behavior:
     scaleDown:
-      stabilizationWindowSeconds: {{ .Values.hpa.scaleDownStabilizationWindowSeconds }}
+      stabilizationWindowSeconds: {{ .Values.hpa.behavior.scaleDown.stabilizationWindowSeconds }}
