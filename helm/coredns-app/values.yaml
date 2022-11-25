@@ -13,12 +13,12 @@ hpa:
   minReplicas: 2
   maxReplicas: 50
   targetCPUUtilizationPercentage: 70
-  # The stabilization window is used to restrict the flapping of replica count 
+  # The stabilization window is used to restrict the flapping of replica count
   # when the metrics used for scaling keep fluctuating.
   # This is very useful for large scale clusters to prevent the CoreDNS from flapping
   # while kube-proxy is taking long time to add th scaled up pods to the service
   # In such cases set this value to at least 1800
-  scaleDownStabilizationWindowSeconds: 600  
+  scaleDownStabilizationWindowSeconds: 600
 
 configmap:
 # Uncomment "autopath" to enable DNS autopath https://coredns.io/plugins/autopath/
