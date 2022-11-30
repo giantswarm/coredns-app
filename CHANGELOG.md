@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Possibility to set scale down `stabilizationWindowSeconds` behaviour
+
 ## [1.11.0] - 2022-07-12
 
 ### Changed
