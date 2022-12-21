@@ -72,6 +72,10 @@ cluster:
 
 loadbalancePolicy: round_robin
 
+mastersInstance:
+  nodeSelector:
+    "node-role.kubernetes.io/master": '""'
+
 test:
   image:
     name: giantswarm/alpine-testing

@@ -36,6 +36,9 @@ spec:
       - effect: NoSchedule
         operator: "Exists"
         key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        operator: "Exists"
+        key: node-role.kubernetes.io/control-plane
       - operator: "Exists"
         key: "node.cloudprovider.kubernetes.io/uninitialized"
       affinity:
@@ -51,7 +54,9 @@ spec:
                     - {{ .Values.name }}
               topologyKey: kubernetes.io/hostname
       nodeSelector:
-        node-role.kubernetes.io/master: ""
+        {{-  range $key, $value := $.Values.mastersInstance.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end}}
       containers:
       - name: coredns
         image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
