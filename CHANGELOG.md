@@ -7,6 +7,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `values.schema.json` file
+
+### Changed
+
+- Move nodeselector `label:value` to values.yaml to allow customizing it for CAPZ
+- Add toleration for `node-role.kubernetes.io/control-plane` to masters instance
+
 ## [1.12.0] - 2022-11-30
 
 ### Added
