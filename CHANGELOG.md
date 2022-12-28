@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `values.schema.json` file
+
 ### Changed
 
 - Move nodeselector `label:value` to values.yaml to allow customizing it for CAPZ
