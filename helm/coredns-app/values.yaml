@@ -44,7 +44,7 @@ image:
 updateStrategy:
   type: RollingUpdate
   rollingUpdate:
-    maxUnavailable: 1
+    maxUnavailable: 25%
 
 ports:
   dns:
