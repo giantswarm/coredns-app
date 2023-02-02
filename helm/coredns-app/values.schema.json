@@ -191,7 +191,7 @@
                     "type": "object",
                     "properties": {
                         "maxUnavailable": {
-                            "type": "string"
+                            "type": ["string", "integer"]
                         }
                     }
                 },
