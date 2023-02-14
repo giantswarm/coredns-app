@@ -11,7 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Change PodDisruptionBudget to move from `minAvailable: 1` to `minAvailable: 25%` for better scaling
+- Change PodDisruptionBudget to move from `maxUnavailable: 1` to `maxUnavailable: 25%` for better scaling
 
 ## [1.13.0] - 2022-12-28
 
