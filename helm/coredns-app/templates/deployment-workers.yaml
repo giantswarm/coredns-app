@@ -7,7 +7,6 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
     app.kubernetes.io/component: workers
 spec:
-  replicas: {{ .Values.hpa.minReplicas }}
   strategy:
 {{ toYaml .Values.updateStrategy | indent 4 }}
   selector:
