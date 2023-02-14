@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Removed
+
+- Deployment: Drop static `replicas`, managed by HPA. ([#188](https://github.com/giantswarm/coredns-app/pull/188))
+
 ## [1.14.0] - 2023-02-13
 
 ### Changed
