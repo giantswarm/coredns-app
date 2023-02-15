@@ -12,7 +12,9 @@ data:
         cache {{ .Values.configmap.cache }}
         {{- end }}
         errors
-        health
+        health {
+          lameduck 5s
+        }
         ready
         kubernetes {{ .Values.cluster.kubernetes.clusterDomain }} {{ .Values.cluster.kubernetes.API.clusterIPRange }} {{ .Values.cluster.calico.CIDR }} {
           fallthrough in-addr.arpa ip6.arpa

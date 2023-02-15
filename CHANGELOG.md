@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- ConfigMap: Add lameduck of 5 seconds to health check ([#191](https://github.com/giantswarm/coredns-app/pull/191)).
+
 ## [1.14.1] - 2023-02-14
 
 ### Removed
