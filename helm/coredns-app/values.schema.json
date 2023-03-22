@@ -106,7 +106,7 @@
                 "nodeSelector": {
                     "type": "object",
                     "properties": {
-                        "node-role.kubernetes.io/master": {
+                        "node-role.kubernetes.io/control-plane": {
                             "type": "string"
                         }
                     }
@@ -191,7 +191,10 @@
                     "type": "object",
                     "properties": {
                         "maxUnavailable": {
-                            "type": ["string", "integer"]
+                            "type": [
+                                "string",
+                                "integer"
+                            ]
                         }
                     }
                 },

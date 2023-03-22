@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Use `node-role.kubernetes.io/control-plane` as key for node selector for master instances as `node-role.kubernetes.io/master` is deprecated and removed in v1.25
+
 ## [1.14.2] - 2023-02-15
 
 ### Changed
