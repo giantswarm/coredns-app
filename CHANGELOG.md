@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.14.3] - 2023-03-23
+
 ### Changed
 
 - Use `node-role.kubernetes.io/control-plane` as key for node selector for master instances as `node-role.kubernetes.io/master` is deprecated and removed in v1.25
@@ -310,7 +312,8 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
-[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.14.2...HEAD
+[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.14.3...HEAD
+[1.14.3]: https://github.com/giantswarm/coredns-app/compare/v1.14.2...v1.14.3
 [1.14.2]: https://github.com/giantswarm/coredns-app/compare/v1.14.1...v1.14.2
 [1.14.1]: https://github.com/giantswarm/coredns-app/compare/v1.14.0...v1.14.1
 [1.14.0]: https://github.com/giantswarm/coredns-app/compare/v1.13.0...v1.14.0
