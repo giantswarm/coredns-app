@@ -55,8 +55,13 @@ spec:
               topologyKey: kubernetes.io/hostname
       nodeSelector:
         {{-  range $key, $value := $.Values.mastersInstance.nodeSelector }}
-        {{ $key }}: {{ $value }}
-        {{- end}}
+          {{- if and (eq $key "node-role.kubernetes.io/control-plane") (semverCompare "<1.25" $.Capabilities.KubeVersion.Version) }}
+            # node-role.kubernets.io/master is deprecated and removed in v1.25 of kubeadm however, we still need to support clusters with older versions.
+            node-role.kubernetes.io/master: ""
+          {{- else }}
+            {{ $key }}: {{ $value }}
+          {{- end }}
+        {{- end }}
       containers:
       - name: coredns
         image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
