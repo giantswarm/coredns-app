@@ -7,6 +7,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add HPA by Memory usage.
+
+### Changed
+
+- Migrate to autoscaling/v2beta2 API version.
+- Detect HPA API version based on capabilities.
+
 ## [1.14.3] - 2023-03-23
 
 ### Changed
