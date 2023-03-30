@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Detect HPA API version based on capabilities.
+
 ## [1.14.3] - 2023-03-23
 
 ### Changed

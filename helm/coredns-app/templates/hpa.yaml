@@ -1,4 +1,4 @@
-apiVersion: autoscaling/v1
+apiVersion: {{ ternary "autoscaling/v2" "autoscaling/v2beta2" (.Capabilities.APIVersions.Has "autoscaling/v2") }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: coredns
@@ -12,6 +12,7 @@ spec:
     kind: Deployment
     name: coredns-workers
   targetCPUUtilizationPercentage: {{ .Values.hpa.targetCPUUtilizationPercentage }}
+  {{- with .Values.hpa.behavior }}
   behavior:
-    scaleDown:
-      stabilizationWindowSeconds: {{ .Values.hpa.behavior.scaleDown.stabilizationWindowSeconds }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
