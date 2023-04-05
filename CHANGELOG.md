@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Add `http-metrics` port to the list of exposed ports so Prometheus can access container metadata (e.g. `__meta_kubernetes_pod_container_xxx`).
+
 ## [1.15.1] - 2023-04-05
 
 ### Fixed
