@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix controlplane label in Kubernetes 1.24.
+
 ## [1.15.0] - 2023-03-30
 
 ### Added
