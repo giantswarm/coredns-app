@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Disable PSPs for k8s 1.25 and newer.
+- Switch to `apiVersion: policy/v1` for PodDisruptionBudget.
 
 ## [1.15.2] - 2023-04-06
 
