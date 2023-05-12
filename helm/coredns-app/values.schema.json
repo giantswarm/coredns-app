@@ -72,8 +72,14 @@
                         }
                     }
                 },
+                "enabled": {
+                    "type": "boolean"
+                },
                 "maxReplicas": {
                     "type": "integer"
+                },
+                "metrics": {
+                    "type": "array"
                 },
                 "minReplicas": {
                     "type": "integer"
