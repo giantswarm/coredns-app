@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add scaling based on custom metrics ([#209](https://github.com/giantswarm/coredns-app/pull/209)).
+
 ## [1.16.0] - 2023-05-04
 
 ### Changed

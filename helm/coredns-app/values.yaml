@@ -10,10 +10,12 @@ userID: 33
 groupID: 33
 
 hpa:
+  enabled: true
   minReplicas: 2
   maxReplicas: 50
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 80
+  metrics: []
   # The stabilization window is used to restrict the flapping of replica count
   # when the metrics used for scaling keep fluctuating.
   # This is very useful for large scale clusters to prevent the CoreDNS from flapping
