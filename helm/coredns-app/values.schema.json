@@ -86,6 +86,9 @@
                 },
                 "targetCPUUtilizationPercentage": {
                     "type": "integer"
+                },
+                "targetMemoryUtilizationPercentage": {
+                    "type": "integer"
                 }
             }
         },
@@ -124,6 +127,14 @@
         },
         "namespace": {
             "type": "string"
+        },
+        "podDisruptionBudget": {
+            "type": "object",
+            "properties": {
+                "maxUnavailable": {
+                    "type": "string"
+                }
+            }
         },
         "ports": {
             "type": "object",
