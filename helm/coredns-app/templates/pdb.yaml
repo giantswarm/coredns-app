@@ -1,4 +1,4 @@
-{{- if (gt (.Values.hpa.maxReplicas | int) 1) }}
+{{- if and (gt (.Values.hpa.maxReplicas | int) 1) .Values.podDisruptionBudget -}}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -7,8 +7,8 @@ metadata:
   labels:
     {{- include "labels.common" . | nindent 4 }}
 spec:
-  maxUnavailable: {{ .Values.updateStrategy.rollingUpdate.maxUnavailable }}
   selector:
     matchLabels:
       {{- include "labels.selector" . | nindent 6 }}
+{{ toYaml .Values.podDisruptionBudget | indent 2 }}
 {{- end }}

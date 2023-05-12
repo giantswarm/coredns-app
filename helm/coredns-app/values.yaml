@@ -47,7 +47,10 @@ image:
 updateStrategy:
   type: RollingUpdate
   rollingUpdate:
-    maxUnavailable: 25%
+    maxUnavailable: 1
+
+podDisruptionBudget:
+  maxUnavailable: 25%
 
 ports:
   dns:
