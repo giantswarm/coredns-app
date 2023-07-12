@@ -12,6 +12,9 @@ data:
         cache {{ .Values.configmap.cache }}
         {{- end }}
         errors
+        template ANY AAAA {
+          rcode NOERROR
+        }
         health {
           lameduck 5s
         }

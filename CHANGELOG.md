@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Disable IPV6 queries.
+
 ## [1.17.0] - 2023-05-12
 
 ### Added
