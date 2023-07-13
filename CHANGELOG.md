@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.17.1] - 2023-07-13
+
 ### Changed
 
 - Disable IPV6 queries.
@@ -356,7 +358,8 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
-[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.17.0...HEAD
+[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.17.1...HEAD
+[1.17.1]: https://github.com/giantswarm/coredns-app/compare/v1.17.0...v1.17.1
 [1.17.0]: https://github.com/giantswarm/coredns-app/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/giantswarm/coredns-app/compare/v1.15.2...v1.16.0
 [1.15.2]: https://github.com/giantswarm/coredns-app/compare/v1.15.1...v1.15.2
