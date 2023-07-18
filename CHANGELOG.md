@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Update `coredns` to upstream version [1.9.3](https://coredns.io/2022/05/27/coredns-1.9.3-release/).
+- Create a `coredns` zone for each cluster domain.
 
 ## [1.10.1] - 2022-06-17
 

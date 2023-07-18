@@ -12,12 +12,13 @@ data:
         cache {{ .Values.configmap.cache }}
         {{- end }}
         errors
-        health
-        ready
-        kubernetes {{ .Values.cluster.kubernetes.clusterDomain }} {{ .Values.cluster.kubernetes.API.clusterIPRange }} {{ .Values.cluster.calico.CIDR }} {
-          fallthrough in-addr.arpa ip6.arpa
-          pods verified
+        template ANY AAAA {
+          rcode NOERROR
         }
+        health {
+          lameduck 5s
+        }
+        ready
         log . {
           {{- range (.Values.configmap.log | trimAll "\n " |  split "\n") }}
           class {{ . }}
@@ -40,6 +41,38 @@ data:
         autopath {{ .Values.configmap.autopath }}
         {{- end }}
     }
+
+    {{- $domains := split " " .Values.cluster.kubernetes.clusterDomain }}
+    {{- $dnsPort := .Values.ports.dns.targetPort }}
+    {{- $clusterIPRange := .Values.cluster.kubernetes.API.clusterIPRange }}
+    {{- $calicoCIDR:= .Values.cluster.calico.CIDR }}
+    {{- $loadbalancePolicy := .Values.loadbalancePolicy }}
+    {{- $prometheus := .Values.ports.prometheus }}
+    {{- $customLog := .Values.configmap.log }}
+    {{- range $index, $domain := $domains }}
+    {{ $domain }}:{{ $dnsPort }} {
+        errors
+        template ANY AAAA {
+          rcode NOERROR
+        }
+        health {
+          lameduck 5s
+        }
+        ready
+        kubernetes {{ $domain }} {{- if (regexMatch ".local$" $domain ) }} {{ $clusterIPRange }} {{ $calicoCIDR }} {{- end }} {
+          fallthrough in-addr.arpa ip6.arpa
+          pods verified
+        }
+        log . {
+          {{- range ($customLog | trimAll "\n " |  split "\n") }}
+          class {{ . }}
+          {{- end }}
+        }
+        loadbalance {{ $loadbalancePolicy }}
+        prometheus :{{ $prometheus }}
+        reload
+    }
+    {{- end }}
 
     {{- if .Values.configmap.custom }}
     {{- range (.Values.configmap.custom | trimAll "\n " |  splitList "\n") }}
