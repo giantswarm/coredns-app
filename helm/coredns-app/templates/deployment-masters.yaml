@@ -36,6 +36,9 @@ spec:
       - effect: NoSchedule
         operator: "Exists"
         key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        operator: "Exists"
+        key: node-role.kubernetes.io/control-plane
       - operator: "Exists"
         key: "node.cloudprovider.kubernetes.io/uninitialized"
       affinity:
@@ -51,7 +54,14 @@ spec:
                     - {{ .Values.name }}
               topologyKey: kubernetes.io/hostname
       nodeSelector:
-        node-role.kubernetes.io/master: ""
+        {{-  range $key, $value := $.Values.mastersInstance.nodeSelector }}
+          {{- if and (eq $key "node-role.kubernetes.io/control-plane") (semverCompare "<1.24" $.Capabilities.KubeVersion.Version) }}
+            # node-role.kubernets.io/master is deprecated and removed in v1.24 of kubeadm however, we still need to support clusters with older versions.
+            node-role.kubernetes.io/master: ""
+          {{- else }}
+            {{ $key }}: {{ $value }}
+          {{- end }}
+        {{- end }}
       containers:
       - name: coredns
         image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
@@ -77,6 +87,9 @@ spec:
           protocol: UDP
         - containerPort: {{ .Values.ports.dns.targetPort }}
           name: {{ .Values.ports.dns.name }}-tcp
+          protocol: TCP
+        - containerPort: {{ .Values.ports.prometheus }}
+          name: http-metrics
           protocol: TCP
       {{- if .Values.resources }}
         resources: {{ toYaml .Values.resources | nindent 10 }}

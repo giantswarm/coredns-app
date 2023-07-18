@@ -7,6 +7,95 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.17.1] - 2023-07-13
+
+### Changed
+
+- Disable IPV6 queries.
+
+## [1.17.0] - 2023-05-12
+
+### Added
+
+- Add scaling based on custom metrics ([#209](https://github.com/giantswarm/coredns-app/pull/209)).
+
+### Changed
+
+- Decouple PDB configuration from deployment updateStrategy ([#208](https://github.com/giantswarm/coredns-app/pull/208)).
+
+## [1.16.0] - 2023-05-04
+
+### Changed
+
+- Disable PSPs for k8s 1.25 and newer.
+- Switch to `apiVersion: policy/v1` for PodDisruptionBudget.
+
+## [1.15.2] - 2023-04-06
+
+### Changed
+
+- Add `http-metrics` port to the list of exposed ports so Prometheus can access container metadata (e.g. `__meta_kubernetes_pod_container_xxx`).
+
+## [1.15.1] - 2023-04-05
+
+### Fixed
+
+- Fix controlplane label in Kubernetes 1.24.
+
+## [1.15.0] - 2023-03-30
+
+### Added
+
+- Add HPA by Memory usage.
+
+### Changed
+
+- Migrate to autoscaling/v2beta2 API version.
+- Detect HPA API version based on capabilities.
+
+## [1.14.3] - 2023-03-23
+
+### Changed
+
+- Use `node-role.kubernetes.io/control-plane` as key for node selector for master instances as `node-role.kubernetes.io/master` is deprecated and removed in v1.25
+
+## [1.14.2] - 2023-02-15
+
+### Changed
+
+- ConfigMap: Add lameduck of 5 seconds to health check ([#191](https://github.com/giantswarm/coredns-app/pull/191)).
+
+## [1.14.1] - 2023-02-14
+
+### Removed
+
+- Deployment: Drop static `replicas`, managed by HPA. ([#188](https://github.com/giantswarm/coredns-app/pull/188))
+
+## [1.14.0] - 2023-02-13
+
+### Changed
+
+- Change PodDisruptionBudget to move from `maxUnavailable: 1` to `maxUnavailable: 25%` for better scaling
+
+## [1.13.0] - 2022-12-28
+
+### Added
+
+- `values.schema.json` file
+
+### Changed
+
+- Move nodeselector `label:value` to values.yaml to allow customizing it for CAPZ
+- Add toleration for `node-role.kubernetes.io/control-plane` to masters instance
+
+## [1.12.0] - 2022-11-30
+
+### Added
+
+- Possibility to set scale down `stabilizationWindowSeconds` behaviour
+
+## [1.11.0] - 2022-07-12
+
 ### Changed
 
 - Update `coredns` to upstream version [1.9.3](https://coredns.io/2022/05/27/coredns-1.9.3-release/).
@@ -270,7 +359,20 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
-[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.10.1...HEAD
+[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.17.1...HEAD
+[1.17.1]: https://github.com/giantswarm/coredns-app/compare/v1.17.0...v1.17.1
+[1.17.0]: https://github.com/giantswarm/coredns-app/compare/v1.16.0...v1.17.0
+[1.16.0]: https://github.com/giantswarm/coredns-app/compare/v1.15.2...v1.16.0
+[1.15.2]: https://github.com/giantswarm/coredns-app/compare/v1.15.1...v1.15.2
+[1.15.1]: https://github.com/giantswarm/coredns-app/compare/v1.15.0...v1.15.1
+[1.15.0]: https://github.com/giantswarm/coredns-app/compare/v1.14.3...v1.15.0
+[1.14.3]: https://github.com/giantswarm/coredns-app/compare/v1.14.2...v1.14.3
+[1.14.2]: https://github.com/giantswarm/coredns-app/compare/v1.14.1...v1.14.2
+[1.14.1]: https://github.com/giantswarm/coredns-app/compare/v1.14.0...v1.14.1
+[1.14.0]: https://github.com/giantswarm/coredns-app/compare/v1.13.0...v1.14.0
+[1.13.0]: https://github.com/giantswarm/coredns-app/compare/v1.12.0...v1.13.0
+[1.12.0]: https://github.com/giantswarm/coredns-app/compare/v1.11.0...v1.12.0
+[1.11.0]: https://github.com/giantswarm/coredns-app/compare/v1.10.1...v1.11.0
 [1.10.1]: https://github.com/giantswarm/coredns-app/compare/v1.10.0...v1.10.1
 [1.10.0]: https://github.com/giantswarm/coredns-app/compare/v1.9.1...v1.10.0
 [1.9.1]: https://github.com/giantswarm/coredns-app/compare/v1.9.0...v1.9.1

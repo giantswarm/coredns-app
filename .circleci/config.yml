@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  architect: giantswarm/architect@4.24.0
+  architect: giantswarm/architect@4.29.0
 
 workflows:
   version: 2
@@ -23,9 +23,9 @@ workflows:
           test-dir: "integration/test/basic"
           install-app-platform: true
           filters:
-            # Do not trigger the job on merge to master.
+            # Do not trigger the job on merge to main.
             branches:
               ignore:
-                - master
+                - main
           requires:
             - push-to-default-app-catalog

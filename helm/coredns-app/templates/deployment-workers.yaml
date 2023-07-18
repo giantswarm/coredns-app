@@ -7,7 +7,6 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
     app.kubernetes.io/component: workers
 spec:
-  replicas: {{ .Values.hpa.minReplicas }}
   strategy:
 {{ toYaml .Values.updateStrategy | indent 4 }}
   selector:
@@ -72,6 +71,9 @@ spec:
           protocol: UDP
         - containerPort: {{ .Values.ports.dns.targetPort }}
           name: {{ .Values.ports.dns.name }}-tcp
+          protocol: TCP
+        - containerPort: {{ .Values.ports.prometheus }}
+          name: http-metrics
           protocol: TCP
       {{- if .Values.resources }}
         resources: {{ toYaml .Values.resources | nindent 10 }}

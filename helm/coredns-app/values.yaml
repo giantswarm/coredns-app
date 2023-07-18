@@ -10,9 +10,20 @@ userID: 33
 groupID: 33
 
 hpa:
+  enabled: true
   minReplicas: 2
   maxReplicas: 50
   targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  metrics: []
+  # The stabilization window is used to restrict the flapping of replica count
+  # when the metrics used for scaling keep fluctuating.
+  # This is very useful for large scale clusters to prevent the CoreDNS from flapping
+  # while kube-proxy is taking long time to add the scaled up pods to the service
+  # In such cases set this value to at least 1800
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
 
 configmap:
 # Uncomment "autopath" to enable DNS autopath https://coredns.io/plugins/autopath/
@@ -37,6 +48,9 @@ updateStrategy:
   type: RollingUpdate
   rollingUpdate:
     maxUnavailable: 1
+
+podDisruptionBudget:
+  maxUnavailable: 25%
 
 ports:
   dns:
@@ -63,6 +77,10 @@ cluster:
     clusterDomain: cluster.local
 
 loadbalancePolicy: round_robin
+
+mastersInstance:
+  nodeSelector:
+    "node-role.kubernetes.io/control-plane": '""'
 
 test:
   image:
