@@ -52,7 +52,7 @@ data:
     {{- $additionalLocalZones := .Values.additionalLocalZones -}}
     {{- range $index, $domain := $domains }}
     {{- if not (has $domain $additionalLocalZones) }}
-    {{ $domain }}:{{ $dnsPort }} {
+    {{ $domain }}:{{ $dnsPort }} {{- if (regexMatch ".local$" $domain ) }} {{ $clusterIPRange }}:{{ $dnsPort }} {{ $calicoCIDR }}:{{ $dnsPort }} {{- end }} {
         errors
         template ANY AAAA {
           rcode NOERROR
