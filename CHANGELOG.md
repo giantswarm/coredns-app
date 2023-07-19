@@ -7,6 +7,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add a new field `additionalLocalZones` which can be used to introduce more internal local zones, e.g. linkerd.
+
+### Changed
+
+- Create a `coredns` zone for each cluster domain.
+
 ## [1.17.1] - 2023-07-13
 
 ### Changed
@@ -99,7 +107,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Update `coredns` to upstream version [1.9.3](https://coredns.io/2022/05/27/coredns-1.9.3-release/).
-- Create a `coredns` zone for each cluster domain.
 
 ## [1.10.1] - 2022-06-17
 

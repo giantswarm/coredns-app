@@ -49,7 +49,9 @@ data:
     {{- $loadbalancePolicy := .Values.loadbalancePolicy }}
     {{- $prometheus := .Values.ports.prometheus }}
     {{- $customLog := .Values.configmap.log }}
+    {{- $additionalLocalZones := .Values.additionalLocalZones -}}
     {{- range $index, $domain := $domains }}
+    {{- if not (has $domain $additionalLocalZones) }}
     {{ $domain }}:{{ $dnsPort }} {
         errors
         template ANY AAAA {
@@ -72,6 +74,42 @@ data:
         prometheus :{{ $prometheus }}
         reload
     }
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.additionalLocalZones }}
+    {{- $dnsPort := .Values.ports.dns.targetPort }}
+    {{- $clusterIPRange := .Values.cluster.kubernetes.API.clusterIPRange }}
+    {{- $calicoCIDR:= .Values.cluster.calico.CIDR }}
+    {{- $loadbalancePolicy := .Values.loadbalancePolicy }}
+    {{- $prometheus := .Values.ports.prometheus }}
+    {{- $customLog := .Values.configmap.log }}
+    {{- range $index, $domain := .Values.additionalLocalZones }}
+    {{- if not (eq $domain "") }}
+    {{ $domain }}:{{ $dnsPort }} {
+        errors
+        template ANY AAAA {
+          rcode NOERROR
+        }
+        health {
+          lameduck 5s
+        }
+        ready
+        kubernetes {{ $domain }} {
+          fallthrough in-addr.arpa ip6.arpa
+          pods verified
+        }
+        log . {
+          {{- range ($customLog | trimAll "\n " |  split "\n") }}
+          class {{ . }}
+          {{- end }}
+        }
+        loadbalance {{ $loadbalancePolicy }}
+        prometheus :{{ $prometheus }}
+        reload
+    }
+    {{- end }}
+    {{- end }}
     {{- end }}
 
     {{- if .Values.configmap.custom }}

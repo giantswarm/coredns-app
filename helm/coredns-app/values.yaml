@@ -82,6 +82,9 @@ mastersInstance:
   nodeSelector:
     "node-role.kubernetes.io/control-plane": '""'
 
+# Uncomment and define `additionalLocalZones` to add additional local zones to CoreDNS config
+# additionalLocalZones: []
+
 test:
   image:
     name: giantswarm/alpine-testing
