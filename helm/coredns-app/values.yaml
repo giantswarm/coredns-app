@@ -13,8 +13,8 @@ hpa:
   enabled: true
   minReplicas: 2
   maxReplicas: 50
-  targetCPUUtilizationPercentage: 70
-  targetMemoryUtilizationPercentage: 80
+  targetCPUUtilizationPercentage: 60
+  targetMemoryUtilizationPercentage: 60
   metrics: []
   # The stabilization window is used to restrict the flapping of replica count
   # when the metrics used for scaling keep fluctuating.
@@ -23,7 +23,7 @@ hpa:
   # In such cases set this value to at least 1800
   behavior:
     scaleDown:
-      stabilizationWindowSeconds: 300
+      stabilizationWindowSeconds: 1800
 
 configmap:
 # Uncomment "autopath" to enable DNS autopath https://coredns.io/plugins/autopath/
@@ -61,10 +61,10 @@ ports:
 
 resources:
   limits:
-    memory: 192Mi
+    memory: 1Gi
   requests:
     cpu: 250m
-    memory: 192Mi
+    memory: 512Mi
 
 cluster:
   calico:
