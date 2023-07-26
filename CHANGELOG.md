@@ -17,6 +17,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Adjust the settings for upscaling HPA when hitting 60% CPU / Memory.
 - Adjust the settings for downscaling HPA to 30 minutes.
 - Adjust the min and max memory settings per Pod.
+- Only send cloud-related domains to cloud provider DNS to avoid throttling.
 
 ## [1.17.1] - 2023-07-13
 
