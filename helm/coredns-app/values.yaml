@@ -6,6 +6,13 @@ name: coredns
 namespace: kube-system
 serviceType: managed
 
+# provider is dynamic environment value, which comes from application catalog configuration
+# applies only to Giant Swarm clusters
+Installation:
+  V1:
+    Provider:
+      Kind: ""
+
 userID: 33
 groupID: 33
 
@@ -84,6 +91,35 @@ mastersInstance:
 
 # Uncomment and define `additionalLocalZones` to add additional local zones to CoreDNS config
 # additionalLocalZones: []
+
+cloudSpecificSettings:
+  additionalZones: []
+  azure:
+    defaultZones:
+    - windows.net
+    - onmicrosoft.com
+    - azure-api.net
+    - cloudapp.net
+    - azurecr.io
+    - azurecontainer.io
+    - vo.msecnd.net
+    - azure.com
+    - azurefd.net
+    - vault.azure.net
+    - azmk8s.io
+    - azure-mobile.net
+    - azureedge.net
+    - trafficmanager.net
+    - azurewebsites.net
+    - visualstudio.com
+    forwardIPs:
+    - 168.63.129.16
+  aws:
+    defaultZones:
+    - compute.internal
+    - amazonaws.com
+    forwardIPs:
+    - 169.254.169.253
 
 test:
   image:

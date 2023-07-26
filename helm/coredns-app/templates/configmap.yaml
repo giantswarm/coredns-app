@@ -27,6 +27,8 @@ data:
         loadbalance {{ .Values.loadbalancePolicy }}
         prometheus :{{ .Values.ports.prometheus }}
 
+        {{- include "cloudprovider.forward" . |nindent 4 }}
+
         {{- if and .Values.configmap.forward .Values.configmap.forwardOptions }}
         forward {{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }} {{- end }} {
           {{ .Values.configmap.forwardOptions | trimSuffix "\n" }}
@@ -105,6 +107,8 @@ data:
     {{- end }}
     {{- end }}
     {{- end }}
+
+    {{- include "cloudprovider.zone" . |nindent 4 }}
 
     {{- if .Values.configmap.custom }}
     {{- range (.Values.configmap.custom | trimAll "\n " |  splitList "\n") }}
