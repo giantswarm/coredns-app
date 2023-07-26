@@ -108,8 +108,6 @@ data:
     {{- end }}
     {{- end }}
 
-    {{- include "cloudprovider.zone" . |nindent 4 }}
-
     {{- if .Values.configmap.custom }}
     {{- range (.Values.configmap.custom | trimAll "\n " |  splitList "\n") }}
     {{ . }}
