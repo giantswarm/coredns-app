@@ -57,6 +57,9 @@ data:
         template ANY AAAA {
           rcode NOERROR
         }
+        cache {
+          prefetch 10 1m 20%
+        }
         health {
           lameduck 5s
         }
@@ -84,6 +87,9 @@ data:
         errors
         template ANY AAAA {
           rcode NOERROR
+        }
+        cache {
+          prefetch 10 1m 20%
         }
         health {
           lameduck 5s
