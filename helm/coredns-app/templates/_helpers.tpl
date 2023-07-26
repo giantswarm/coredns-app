@@ -28,8 +28,8 @@ k8s-app: {{ .Values.name | quote }}
 {{- end -}}
 
 {{- define "cloudprovider.forward" -}}
-{{- if hasKey .Values.cloudSpecificSettings .Values.Installation.V1.Provider.Kind -}}
-{{- $cloudProviderConfig := get .Values.cloudSpecificSettings .Values.Installation.V1.Provider.Kind}}
+{{- if hasKey .Values.cloudSpecificSettings .Values.provider -}}
+{{- $cloudProviderConfig := get .Values.cloudSpecificSettings .Values.provider}}
   {{- $zones := get $cloudProviderConfig "defaultZones" }}
   {{- $zones = concat $zones .Values.cloudSpecificSettings.additionalZones}}
   {{- $global := . }}

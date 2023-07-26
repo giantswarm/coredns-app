@@ -8,10 +8,7 @@ serviceType: managed
 
 # provider is dynamic environment value, which comes from application catalog configuration
 # applies only to Giant Swarm clusters
-Installation:
-  V1:
-    Provider:
-      Kind: ""
+provider:
 
 userID: 33
 groupID: 33
