@@ -27,14 +27,35 @@ Selector labels
 k8s-app: {{ .Values.name | quote }}
 {{- end -}}
 
-{{- define "cloudprovider.forward" -}}
+{{- define "cloudprovider.zones" -}}
 {{- if hasKey .Values.cloudSpecificSettings .Values.provider -}}
-{{- $cloudProviderConfig := get .Values.cloudSpecificSettings .Values.provider}}
+  {{- $cloudProviderConfig := get .Values.cloudSpecificSettings .Values.provider}}
   {{- $zones := get $cloudProviderConfig "defaultZones" }}
   {{- $zones = concat $zones .Values.cloudSpecificSettings.additionalZones}}
   {{- $global := . }}
+(forwardtocloudprovider) {
+    cache
+    errors
+    template ANY AAAA {
+      rcode NOERROR
+    }
+    health {
+      lameduck 5s
+    }
+    ready
+    log . {
+      {{- range ($global.Values.configmap.log | trimAll "\n " |  split "\n") }}
+      class {{ . }}
+      {{- end }}
+    }
+    loadbalance {{ $global.Values.loadbalancePolicy }}
+
+    forward . {{ join " " $cloudProviderConfig.forwardIPs }}
+}
   {{- range $zone := $zones }}
-    forward {{ $zone }} {{ join " " $cloudProviderConfig.forwardIPs }}
-  {{- end -}}
+{{ $zone }}:{{ $global.Values.ports.dns.targetPort }} {
+    import forwardtocloudprovider
+}
+{{- end -}}
 {{- end -}}
 {{- end -}}
