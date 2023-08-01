@@ -8,9 +8,7 @@ metadata:
 data:
   Corefile: |
     .:{{ .Values.ports.dns.targetPort }} {
-        cache {
-          prefetch 10 1m 20%
-        }
+        cache
         errors
         template ANY AAAA {
           rcode NOERROR
@@ -57,9 +55,7 @@ data:
         template ANY AAAA {
           rcode NOERROR
         }
-        cache {
-          prefetch 10 1m 20%
-        }
+        cache
         health {
           lameduck 5s
         }
@@ -88,9 +84,7 @@ data:
         template ANY AAAA {
           rcode NOERROR
         }
-        cache {
-          prefetch 10 1m 20%
-        }
+        cache
         health {
           lameduck 5s
         }
