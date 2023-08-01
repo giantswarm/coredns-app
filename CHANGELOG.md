@@ -14,9 +14,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Create a `coredns` zone for each cluster domain.
-- Adjust the settings for upscaling HPA when hitting 60% CPU / Memory.
+- Adjust the settings for upscaling HPA when hitting 60% CPU.
 - Adjust the settings for downscaling HPA to 30 minutes.
 - Adjust the min and max memory settings per Pod.
+- Enable cache inconditionaly for `.` and local zones.
 
 ## [1.17.1] - 2023-07-13
 
