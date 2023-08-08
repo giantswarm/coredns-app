@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/giantswarm/coredns-app.svg?style=shield)](https://circleci.com/gh/giantswarm/coredns-app)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/giantswarm/coredns-app/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/giantswarm/coredns-app/tree/main)
 
 # coredns-app
 
