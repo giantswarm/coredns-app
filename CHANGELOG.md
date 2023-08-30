@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Remove `fallthrough` for reverse zones from kubernetes plugin.
+
 ## [1.18.0] - 2023-08-01
 
 ### Added
