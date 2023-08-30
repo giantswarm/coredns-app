@@ -61,7 +61,6 @@ data:
         }
         ready
         kubernetes {{ $domain }} {{- if (regexMatch ".local$" $domain ) }} {{ $clusterIPRange }} {{ $calicoCIDR }} {{- end }} {
-          fallthrough in-addr.arpa ip6.arpa
           pods verified
         }
         log . {
@@ -90,7 +89,6 @@ data:
         }
         ready
         kubernetes {{ $domain }} {
-          fallthrough in-addr.arpa ip6.arpa
           pods verified
         }
         log . {
