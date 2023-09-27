@@ -7,6 +7,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Make App compliant with PSS policies ([#234](https://github.com/giantswarm/coredns-app/pull/234)):
+  - Set seccompProfile to `RuntimeDefault`.
+  - Fix capabilities typo.
+  - Remove `NET_BIND_SERVICE` capabilities.
+  - Set `runAsNonRoot` as true.
+
 ## [1.18.1] - 2023-08-30
 
 ### Fixed
