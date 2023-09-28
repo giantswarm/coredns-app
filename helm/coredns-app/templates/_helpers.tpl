@@ -18,6 +18,7 @@ giantswarm.io/service-type: "{{ .Values.serviceType }}"
 helm.sh/chart: {{ include "chart" . | quote }}
 kubernetes.io/cluster-service: "true"
 kubernetes.io/name: "CoreDNS"
+application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantswarm.io/team" | quote }}
 {{- end -}}
 
 {{/*
