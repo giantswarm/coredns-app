@@ -1,7 +1,7 @@
-apiVersion: v1
+apiVersion: v2
 appVersion: 1.9.3
 description: A Helm chart for CoreDNS
 icon: https://s.giantswarm.io/app-icons/coredns/1/dark.svg
 home: https://github.com/giantswarm/coredns-app
 name: coredns-app
-version: [[ .Version ]]
+version: 1.19.0
