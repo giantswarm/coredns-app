@@ -5,3 +5,5 @@ icon: https://s.giantswarm.io/app-icons/coredns/1/dark.svg
 home: https://github.com/giantswarm/coredns-app
 name: coredns-app
 version: 1.19.0
+annotations:
+  application.giantswarm.io/team: cabbage
