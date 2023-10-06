@@ -92,9 +92,10 @@ spec:
         - containerPort: {{ .Values.ports.prometheus }}
           name: http-metrics
           protocol: TCP
-      {{- if .Values.resources }}
-        resources: {{ toYaml .Values.resources | nindent 10 }}
-      {{- end }}
+        {{- with .Values.resources }}
+        resources: 
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         livenessProbe:
           httpGet:
             path: /health

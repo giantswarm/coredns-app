@@ -1,5 +1,10 @@
-# ignore vim swap files
+coredns-*.tgz
+coredns-*.tgz-meta/
+*.kube.config
+test_results_*.xml
+.pytest_cache
+__pycache__
+**/.idea/
+vendor
+build
 *.swp
-
-# don't apply earlier restrictions under vendor
-!vendor/**
