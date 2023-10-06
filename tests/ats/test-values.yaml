@@ -1,0 +1,8 @@
+
+name: coredns-test
+namespace: default
+
+cluster:
+  kubernetes:
+    DNS:
+      IP: 10.96.0.11
