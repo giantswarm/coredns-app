@@ -46,7 +46,7 @@ def coredns_app_cr(
         chart_version,
         f"chartmuseum-test-time",
         app_namespace,
-        "http://chartmuseum-chartmuseum:8080/charts/",
+        "http://chartmuseum.giantswarm.svc.cluster.local.:8080/",
         timeout_sec=timeout,
         namespace=app_namespace,
         config_values=load_yaml_from_path("test-values.yaml"),
