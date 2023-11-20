@@ -2,7 +2,8 @@
 apiVersion: {{ ternary "autoscaling/v2" "autoscaling/v2beta2" (.Capabilities.APIVersions.Has "autoscaling/v2") }}
 kind: HorizontalPodAutoscaler
 metadata:
-  name: coredns
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
 spec:
