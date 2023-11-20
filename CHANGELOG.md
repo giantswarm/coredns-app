@@ -11,6 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Build App with ABS.
 - Add basic tests with ATS.
+- ATS: Rework tests. ([#248](https://github.com/giantswarm/coredns-app/pull/248))
 
 ## [1.19.0] - 2023-09-28
 

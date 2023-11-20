@@ -1,7 +1,4 @@
-
 name: coredns-test
-namespace: default
-
 cluster:
   kubernetes:
     DNS:
