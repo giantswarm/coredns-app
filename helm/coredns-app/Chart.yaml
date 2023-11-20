@@ -1,9 +1,9 @@
+annotations:
+  application.giantswarm.io/team: cabbage
 apiVersion: v2
 appVersion: 1.9.3
 description: A Helm chart for CoreDNS
-icon: https://s.giantswarm.io/app-icons/coredns/1/dark.svg
 home: https://github.com/giantswarm/coredns-app
+icon: https://s.giantswarm.io/app-icons/coredns/1/dark.svg
 name: coredns-app
 version: 1.19.0
-annotations:
-  application.giantswarm.io/team: cabbage
