@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Upgrade CoreDNS to [v1.11.1](https://github.com/coredns/coredns/releases/tag/v1.11.1).
+
 ## [1.19.1] - 2023-11-20
 
 ### Changed
