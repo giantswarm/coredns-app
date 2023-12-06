@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add NET_BIND_SERVICE capability back to containers.
+
 ### Changed
 
 - Upgrade CoreDNS to [v1.11.1](https://github.com/coredns/coredns/releases/tag/v1.11.1).
