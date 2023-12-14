@@ -40,9 +40,9 @@ configmap:
   #   policy random
 
 image:
-  registry: gsoci.azuredcr.io
+  registry: gsoci.azurecr.io
   name: giantswarm/coredns
-  tag: v1.11.1
+  tag: 1.11.1
 
 updateStrategy:
   type: RollingUpdate
