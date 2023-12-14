@@ -40,7 +40,7 @@ configmap:
   #   policy random
 
 image:
-  registry: docker.io
+  registry: gsoci.azuredcr.io
   name: giantswarm/coredns
   tag: 1.11.1
 
@@ -89,8 +89,3 @@ global:
 
 # Uncomment and define `additionalLocalZones` to add additional local zones to CoreDNS config
 # additionalLocalZones: []
-
-test:
-  image:
-    name: giantswarm/alpine-testing
-    tag: 0.1.1
