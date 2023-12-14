@@ -42,7 +42,7 @@ configmap:
 image:
   registry: gsoci.azuredcr.io
   name: giantswarm/coredns
-  tag: 1.11.1
+  tag: v1.11.1
 
 updateStrategy:
   type: RollingUpdate
