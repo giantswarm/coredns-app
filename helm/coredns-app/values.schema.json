@@ -198,22 +198,6 @@
         "serviceType": {
             "type": "string"
         },
-        "test": {
-            "type": "object",
-            "properties": {
-                "image": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "tag": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "updateStrategy": {
             "type": "object",
             "properties": {
