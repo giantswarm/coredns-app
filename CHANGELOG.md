@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Update `architect-orb` to 5.1.0.
 
+### Removed
+
+- Removed legacy Giant Swarm monitoring labels as coredns is monitored through a prometheus-operator generated servicemonitor.
+
 ## [1.21.0] - 2024-01-09
 
 ### Changed

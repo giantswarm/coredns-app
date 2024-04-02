@@ -20,11 +20,8 @@ spec:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
         prometheus.io/scrape: "true"
         prometheus.io/port: "{{ .Values.ports.prometheus }}"
-        giantswarm.io/monitoring-path: /metrics
-        giantswarm.io/monitoring-port: "{{ .Values.ports.prometheus }}"
       labels:
         {{- include "labels.common" . | nindent 8 }}
-        giantswarm.io/monitoring: "true"
         app.kubernetes.io/component: control-plane
     spec:
       serviceAccountName: {{ .Values.name }}
