@@ -42,7 +42,7 @@ configmap:
 image:
   registry: gsoci.azurecr.io
   name: giantswarm/coredns
-  tag: 1.11.1
+  tag: 1.11.3
 
 updateStrategy:
   type: RollingUpdate
