@@ -11,7 +11,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Update `architect-orb` to 5.1.0.
 - Update `coredns` image to [1.11.3](https://github.com/coredns/coredns/releases/tag/v1.11.3).
 
 ### Removed
