@@ -1,0 +1,5 @@
+appName: coredns
+repoName: coredns-app
+appCatalog: default
+providers:
+- capa
