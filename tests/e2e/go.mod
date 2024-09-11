@@ -6,7 +6,7 @@ toolchain go1.23.1
 
 replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 
-replace github.com/alessio/shellescape => al.essio.dev/pkg/shellescape v1.4.2
+replace github.com/alessio/shellescape => al.essio.dev/pkg/shellescape v1.5.0
 
 require (
 	github.com/fluxcd/helm-controller/api v1.0.1
