@@ -13,10 +13,10 @@ data:
         template ANY AAAA {
           rcode NOERROR
         }
-        health {
+        health :8080 {
           lameduck 5s
         }
-        ready
+        ready :8181
         log . {
           {{- range (.Values.configmap.log | trimAll "\n " |  split "\n") }}
           class {{ . }}
@@ -56,10 +56,10 @@ data:
           rcode NOERROR
         }
         cache
-        health {
+        health :8080 {
           lameduck 5s
         }
-        ready
+        ready :8181
         kubernetes {{ $domain }} {{- if (regexMatch ".local$" $domain ) }} {{ $clusterIPRange }} {{ $calicoCIDR }} {{- end }} {
           pods verified
         }
@@ -84,10 +84,10 @@ data:
           rcode NOERROR
         }
         cache
-        health {
+        health :8080 {
           lameduck 5s
         }
-        ready
+        ready :8181
         kubernetes {{ $domain }} {
           pods verified
         }

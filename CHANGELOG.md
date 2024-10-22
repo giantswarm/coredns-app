@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Explicitly expose liveness and readiness probe ports in deployments.
+
 ## [1.22.0] - 2024-09-10
 
 ### Changed
