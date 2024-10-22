@@ -75,14 +75,20 @@ spec:
         - containerPort: {{ .Values.ports.prometheus }}
           name: http-metrics
           protocol: TCP
+        - containerPort: 8080
+          name: health
+          protocol: TCP
+        - containerPort: 8181
+          name: ready
+          protocol: TCP
         {{- with .Values.resources }}
-        resources: 
+        resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
         livenessProbe:
           httpGet:
             path: /health
-            port: 8080
+            port: health
             scheme: HTTP
           initialDelaySeconds: 60
           timeoutSeconds: 5
@@ -91,7 +97,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /ready
-            port: 8181
+            port: ready
             scheme: HTTP
           initialDelaySeconds: 10
           timeoutSeconds: 5
