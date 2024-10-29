@@ -6,34 +6,42 @@ orbs:
 workflows:
   build:
     jobs:
-      - architect/push-to-app-catalog:
-          name: push-to-giantswarm-catalog
-          context: architect
-          executor: app-build-suite
-          chart: coredns-app
-          app_catalog: giantswarm-catalog
-          app_catalog_test: giantswarm-test-catalog
-          persist_chart_archive: true
-          filters:
-            tags:
-              only: /^v.*/
+    - architect/push-to-app-catalog:
+        name: push-to-giantswarm-catalog
+        context: architect
+        executor: app-build-suite
+        chart: coredns-app
+        app_catalog: giantswarm-catalog
+        app_catalog_test: giantswarm-test-catalog
+        persist_chart_archive: true
+        filters:
+          tags:
+            only: /^v.*/
 
-      - architect/push-to-app-catalog:
-          name: push-to-default-catalog
-          context: architect
-          executor: app-build-suite
-          chart: coredns-app
-          app_catalog: default-catalog
-          app_catalog_test: default-test-catalog
-          filters:
-            tags:
-              only: /^v.*/
+          branches:
+            ignore:
+            - main
+            - master
+    - architect/push-to-app-catalog:
+        name: push-to-default-catalog
+        context: architect
+        executor: app-build-suite
+        chart: coredns-app
+        app_catalog: default-catalog
+        app_catalog_test: default-test-catalog
+        filters:
+          tags:
+            only: /^v.*/
 
-      - architect/run-tests-with-ats:
-          name: run-tests-with-ats
-          filters:
-            branches:
-              ignore:
-                - main
-          requires:
-            - push-to-giantswarm-catalog
+          branches:
+            ignore:
+            - main
+            - master
+    - architect/run-tests-with-ats:
+        name: run-tests-with-ats
+        filters:
+          branches:
+            ignore:
+            - main
+        requires:
+        - push-to-giantswarm-catalog
