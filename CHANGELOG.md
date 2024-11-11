@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Explicitly expose liveness and readiness probe ports in deployments.
 
+### Removed
+
+- Remove PodSecurityPolicy and associated Resources and values.
+
 ## [1.22.0] - 2024-09-10
 
 ### Changed
