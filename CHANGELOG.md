@@ -12,6 +12,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Update `coredns` image to [1.11.4](https://github.com/coredns/coredns/releases/tag/v1.11.4).
 - Explicitly expose liveness and readiness probe ports in deployments.
 
+### Removed
+
+- Remove PodSecurityPolicy and associated Resources and values.
+
 ## [1.22.0] - 2024-09-10
 
 ### Changed

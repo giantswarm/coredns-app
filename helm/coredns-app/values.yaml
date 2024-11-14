@@ -82,10 +82,5 @@ mastersInstance:
   nodeSelector:
     "node-role.kubernetes.io/control-plane": '""'
 
-
-global:
-  podSecurityStandards:
-    enforced: false
-
 # Uncomment and define `additionalLocalZones` to add additional local zones to CoreDNS config
 # additionalLocalZones: []
