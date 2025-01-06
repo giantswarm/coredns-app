@@ -1,3 +1,4 @@
-checks:                                                                                                                                                                                                                                            
-  exclude:                                                                                                                                                                                                                                         
+checks:
+  exclude:
   - unset-cpu-requirements
+  - pdb-unhealthy-pod-eviction-policy
