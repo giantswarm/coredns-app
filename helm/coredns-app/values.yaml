@@ -13,8 +13,8 @@ hpa:
   enabled: true
   minReplicas: 2
   maxReplicas: 50
-  targetCPUUtilizationPercentage: 60
-  targetMemoryUtilizationPercentage: 80
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 0
   metrics: []
   # The stabilization window is used to restrict the flapping of replica count
   # when the metrics used for scaling keep fluctuating.
