@@ -12,6 +12,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Update `coredns` image to [1.12.0](https://github.com/coredns/coredns/releases/tag/v1.12.0).
+- Disable HPA Memory target.
+- Increase threshold for HPA CPU target to 80%.
 
 ## [1.23.0] - 2024-11-14
 
