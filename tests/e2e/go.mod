@@ -8,8 +8,8 @@ replace github.com/alessio/shellescape => al.essio.dev/pkg/shellescape v1.6.0
 
 require (
 	github.com/fluxcd/helm-controller/api v1.3.0
-	github.com/giantswarm/apptest-framework v1.15.0
-	github.com/giantswarm/clustertest v1.38.2
+	github.com/giantswarm/apptest-framework v1.15.3
+	github.com/giantswarm/clustertest v1.40.0
 	github.com/onsi/ginkgo/v2 v2.25.2
 	github.com/onsi/gomega v1.38.2
 	k8s.io/apimachinery v0.33.4
