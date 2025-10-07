@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.28.1] - 2025-10-07
+
 ### Changed
 
 - Add value to toggle creation of controlplane deployment.
@@ -472,7 +474,8 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
-[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.28.0...HEAD
+[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.28.1...HEAD
+[1.28.1]: https://github.com/giantswarm/coredns-app/compare/v1.28.0...v1.28.1
 [1.28.0]: https://github.com/giantswarm/coredns-app/compare/v1.27.0...v1.28.0
 [1.27.0]: https://github.com/giantswarm/coredns-app/compare/v1.26.0...v1.27.0
 [1.26.0]: https://github.com/giantswarm/coredns-app/compare/v1.25.0...v1.26.0
