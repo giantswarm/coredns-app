@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Add value to toggle creation of controlplane deployment.
+
 ## [1.28.0] - 2025-10-06
 
 ### Changed

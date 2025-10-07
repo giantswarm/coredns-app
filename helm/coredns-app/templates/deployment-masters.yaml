@@ -1,3 +1,4 @@
+{{- if .Values.mastersInstance.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -130,3 +131,4 @@ spec:
         # We need to create the /tmp folder to avoid CoreDNS crash during api-server is down
         - emptyDir: {}
           name: temp-volume
+{{- end }}

@@ -79,6 +79,7 @@ cluster:
 loadbalancePolicy: round_robin
 
 mastersInstance:
+  enabled: true
   nodeSelector:
     "node-role.kubernetes.io/control-plane": '""'
 
