@@ -1,7 +1,6 @@
 annotations:
   io.giantswarm.application.team: cabbage
   io.giantswarm.application.audience: "all"
-  io.giantswarm.application.managed: "true"
 apiVersion: v2
 appVersion: 1.13.2
 description: A Helm chart for CoreDNS
