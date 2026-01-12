@@ -2,7 +2,7 @@ annotations:
   io.giantswarm.application.team: cabbage
   io.giantswarm.application.audience: "all"
 apiVersion: v2
-appVersion: 1.13.2
+appVersion: 1.14.0
 description: A Helm chart for CoreDNS
 home: https://github.com/giantswarm/coredns-app
 icon: https://s.giantswarm.io/app-icons/coredns/1/dark.svg
