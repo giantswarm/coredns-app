@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update `coredns` image to [1.14.0](https://github.com/coredns/coredns/releases/tag/v1.14.0).
+
 ## [1.28.3] - 2025-12-11
 
 ### Changed
