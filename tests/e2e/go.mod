@@ -4,9 +4,9 @@ go 1.25.5
 
 require (
 	github.com/fluxcd/helm-controller/api v1.4.5
-	github.com/giantswarm/apptest-framework/v3 v3.0.0
+	github.com/giantswarm/apptest-framework/v3 v3.0.1
 	github.com/giantswarm/clustertest/v3 v3.1.0
-	github.com/onsi/ginkgo/v2 v2.27.4
+	github.com/onsi/ginkgo/v2 v2.27.5
 	github.com/onsi/gomega v1.39.0
 	k8s.io/apimachinery v0.35.0
 )
@@ -142,7 +142,7 @@ require (
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/term v0.38.0 // indirect
-	golang.org/x/text v0.32.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 	golang.org/x/tools v0.40.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
