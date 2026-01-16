@@ -5,7 +5,7 @@ go 1.25.5
 require (
 	github.com/fluxcd/helm-controller/api v1.4.5
 	github.com/giantswarm/apptest-framework/v3 v3.0.1
-	github.com/giantswarm/clustertest/v3 v3.1.0
+	github.com/giantswarm/clustertest/v3 v3.1.1
 	github.com/onsi/ginkgo/v2 v2.27.5
 	github.com/onsi/gomega v1.39.0
 	k8s.io/apimachinery v0.35.0
