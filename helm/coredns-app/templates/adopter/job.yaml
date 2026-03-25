@@ -1,0 +1,118 @@
+{{- if .Values.adopter.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: coredns-adopter
+  namespace: kube-system
+  labels:
+    {{- include "labels.common" . | nindent 8 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+    kubernetes.io/description: |
+      Runs at cluster creation to label and annotate default, kubeadm installed CoreDNS
+      resources so they can be managed by Helm and replaced with our managed app.
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      name: coredns-adopter
+      labels:
+        {{- include "labels.common" . | nindent 12 }}
+      annotations:
+        kubernetes.io/description: |
+          Runs at cluster creation to label and annotate default, kubeadm installed CoreDNS
+          resources so they can be managed by Helm and replaced with our managed app.
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      activeDeadlineSeconds: 1800 # 30 minutes
+      restartPolicy: Never
+      serviceAccountName: coredns-adopter
+      tolerations:
+      - operator: Exists
+      hostNetwork: true # No need to wait for CNI to be ready
+      initContainers:
+      - name: wait-for-apiserver
+        image: "{{ include "cluster-shared.kubectl-image" . }}"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+        command:
+        - bash
+        - -c
+        - |
+          set -e
+          while [[ "$(kubectl -n default get service kubernetes -o name 2>/dev/null)" != "service/kubernetes" ]]; do
+            echo "Waiting for API server to be ready..."
+            sleep 10
+          done
+      containers:
+      - name: kubectl
+        image: "{{ include "cluster-shared.kubectl-image" . }}"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+        command:
+        - bash
+        - -c
+        - |
+          set -e
+
+          function patchResource() {
+            if kubectl get $@ &>/dev/null; then
+              echo "Patching resource ${1}"
+              kubectl annotate --overwrite $@ meta.helm.sh/release-name=coredns
+              kubectl annotate --overwrite $@ meta.helm.sh/release-namespace=kube-system
+              kubectl label --overwrite $@ app.kubernetes.io/managed-by=Helm
+              kubectl label --overwrite $@ k8s-app=coredns
+            else
+              echo "resource ${1} doesn't exist!"
+            fi
+          }
+
+          echo "Patching existing coredns resources..."
+          patchResource netpol/coredns -n kube-system
+          patchResource configmap/coredns -n kube-system
+          patchResource pdb/coredns -n kube-system
+          patchResource serviceaccount/coredns -n kube-system
+          patchResource service/kube-dns -n kube-system
+          patchResource deployment/coredns -n kube-system
+          patchResource clusterrole/system:coredns
+          patchResource clusterrolebinding/system:coredns
+          echo "Finished patching"
+
+          # Change port specified in Corefile config
+          kubectl -n kube-system get configmap coredns -o yaml | sed 's/\.:53/\.:1053/' | kubectl apply -f -
+
+          echo "Updating coredns service..."
+          kubectl -n kube-system get service kube-dns -o json \
+            | jq '.metadata.name="coredns"' \
+            | jq '(. | .spec.ports[] | select(.targetPort==53)).targetPort |= 1053' \
+            | jq '.spec.selector."k8s-app"="coredns"' \
+            | jq 'del(.status, .metadata.uid, .metadata.resourceVersion, .metadata.generation, .metadata.creationTimestamp)' \
+            | tee /tmp/svc.yaml
+          kubectl -n kube-system delete service kube-dns
+          kubectl apply -f /tmp/svc.yaml
+          echo "Finished updating coredns service"
+
+          echo "Updating coredns deployment..."
+          kubectl -n kube-system get deployment coredns -o json \
+            | jq '.metadata.name="coredns-workers"' \
+            | jq '(. | .spec.template.spec.containers[0].ports[] | select(.containerPort==53)).containerPort |= 1053' \
+            | jq '.metadata.labels."app.kubernetes.io/component"="workers"' \
+            | jq '.spec.template.metadata.labels."app.kubernetes.io/component"="workers" | .spec.template.metadata.labels."k8s-app"="coredns"' \
+            | jq '.spec.selector.matchLabels."app.kubernetes.io/component"="workers" | .spec.selector.matchLabels."k8s-app"="coredns"' \
+            | jq '.spec.template.spec.containers[0].args += ["-dns.port", "1053"]' \
+            | jq 'del(.status, .metadata.uid, .metadata.resourceVersion, .metadata.generation, .metadata.creationTimestamp)' \
+            | tee /tmp/dep.yaml
+          kubectl -n kube-system delete deployment coredns
+          kubectl apply -f /tmp/dep.yaml
+          echo "Finished updating coredns deployment"
+
+          echo "CoreDNS adoption complete!"
+{{- end }}
