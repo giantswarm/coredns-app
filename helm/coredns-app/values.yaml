@@ -85,3 +85,6 @@ mastersInstance:
 
 # Uncomment and define `additionalLocalZones` to add additional local zones to CoreDNS config
 # additionalLocalZones: []
+
+adopter:
+  enabled: false
