@@ -1,10 +1,11 @@
 {{- if .Values.adopter.enabled }}
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: coredns-adopter
   labels:
-    {{- include "labels.common" . | nindent 8 }}
+    {{- include "labels.common" . | nindent 4 }}
   annotations:
     "helm.sh/hook": pre-install
     "helm.sh/hook-weight": "-10"
@@ -32,7 +33,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: coredns-adopter
   labels:
-    {{- include "labels.common" . | nindent 8 }}
+    {{- include "labels.common" . | nindent 4 }}
   annotations:
     "helm.sh/hook": pre-install
     "helm.sh/hook-weight": "-10"
@@ -50,7 +51,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: coredns-adopter-rbac
   labels:
-    {{- include "labels.common" . | nindent 8 }}
+    {{- include "labels.common" . | nindent 4 }}
   annotations:
     "helm.sh/hook": pre-install
     "helm.sh/hook-weight": "-10"

@@ -1,4 +1,5 @@
 {{- if .Values.adopter.enabled }}
+---
 apiVersion: kyverno.io/v1
 kind: PolicyException
 metadata:

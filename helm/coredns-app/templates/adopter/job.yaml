@@ -1,11 +1,12 @@
 {{- if .Values.adopter.enabled }}
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: coredns-adopter
   namespace: kube-system
   labels:
-    {{- include "labels.common" . | nindent 8 }}
+    {{- include "labels.common" . | nindent 4 }}
   annotations:
     "helm.sh/hook": pre-install
     "helm.sh/hook-weight": "-5"
@@ -18,7 +19,7 @@ spec:
     metadata:
       name: coredns-adopter
       labels:
-        {{- include "labels.common" . | nindent 12 }}
+        {{- include "labels.common" . | nindent 8 }}
       annotations:
         kubernetes.io/description: |
           Runs at cluster creation to label and annotate default, kubeadm installed CoreDNS
@@ -36,7 +37,7 @@ spec:
       hostNetwork: true # No need to wait for CNI to be ready
       initContainers:
       - name: wait-for-apiserver
-        image: "{{ include "cluster-shared.kubectl-image" . }}"
+        image: "{{ .Values.adopter.image }}"
         securityContext:
           runAsNonRoot: true
           runAsUser: 1000
@@ -52,7 +53,7 @@ spec:
           done
       containers:
       - name: kubectl
-        image: "{{ include "cluster-shared.kubectl-image" . }}"
+        image: "{{ .Values.adopter.image }}"
         securityContext:
           runAsNonRoot: true
           runAsUser: 1000
