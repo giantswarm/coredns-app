@@ -34,5 +34,4 @@ spec:
   policyTypes:
   - Egress
   - Ingress
-         echo "CoreDNS adoption complete!"
 {{- end }}
