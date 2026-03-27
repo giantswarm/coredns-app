@@ -88,4 +88,4 @@ mastersInstance:
 
 adopter:
   enabled: false
-  image: gsoci.azurecr.io/giantswarm/kubectl:1.34.6
+  image: gsoci.azurecr.io/giantswarm/kubectl:v1.34.6
