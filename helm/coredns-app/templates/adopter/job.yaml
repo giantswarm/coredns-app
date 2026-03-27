@@ -43,11 +43,11 @@ spec:
           runAsUser: 1000
           allowPrivilegeEscalation: false
         command:
-        - bash
+        - sh
         - -c
         - |
           set -e
-          while [[ "$(kubectl -n default get service kubernetes -o name 2>/dev/null)" != "service/kubernetes" ]]; do
+          while [ "$(kubectl -n default get service kubernetes -o name 2>/dev/null)" != "service/kubernetes" ]; do
             echo "Waiting for API server to be ready..."
             sleep 10
           done
@@ -59,13 +59,13 @@ spec:
           runAsUser: 1000
           allowPrivilegeEscalation: false
         command:
-        - bash
+        - sh
         - -c
         - |
           set -e
 
-          function patchResource() {
-            if kubectl get $@ &>/dev/null; then
+          patchResource() {
+            if kubectl get $@ >/dev/null 2>&1; then
               echo "Patching resource ${1}"
               kubectl annotate --overwrite $@ meta.helm.sh/release-name=coredns
               kubectl annotate --overwrite $@ meta.helm.sh/release-namespace=kube-system
