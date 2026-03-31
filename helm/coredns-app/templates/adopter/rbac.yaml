@@ -45,22 +45,4 @@ roleRef:
   kind: ClusterRole
   name: coredns-adopter
   apiGroup: rbac.authorization.k8s.io
----
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: coredns-adopter-rbac
-  labels:
-    {{- include "labels.common" . | nindent 4 }}
-  annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-weight": "-10"
-subjects:
-- kind: ServiceAccount
-  name: coredns-adopter
-  namespace: kube-system
-roleRef:
-  kind: ClusterRole
-  name: system:coredns
-  apiGroup: rbac.authorization.k8s.io
 {{- end }}
