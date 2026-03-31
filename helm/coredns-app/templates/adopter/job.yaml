@@ -51,9 +51,15 @@ spec:
             echo "Waiting for API server to be ready..."
             sleep 10
           done
+          elapsed=0
           while ! kubectl -n kube-system get configmap coredns >/dev/null 2>&1; do
+            if [ $elapsed -ge 120 ]; then
+              echo "Timed out waiting for coredns configmap, continuing..."
+              break
+            fi
             echo "Waiting for coredns configmap to exist..."
             sleep 10
+            elapsed=$((elapsed + 10))
           done
       containers:
       - name: kubectl
