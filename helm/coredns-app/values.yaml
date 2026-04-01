@@ -85,3 +85,7 @@ mastersInstance:
 
 # Uncomment and define `additionalLocalZones` to add additional local zones to CoreDNS config
 # additionalLocalZones: []
+
+adopter:
+  enabled: false
+  image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.34.4
