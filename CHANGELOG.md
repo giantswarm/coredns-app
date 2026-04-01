@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `coredns-adopter` job to adopt default CoreDNS resources on EKS clusters (disabled by default).
+
 ## [1.29.2] - 2026-03-18
 
 ### Changed

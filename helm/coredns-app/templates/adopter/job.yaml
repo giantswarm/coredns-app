@@ -1,0 +1,124 @@
+{{- if .Values.adopter.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: coredns-adopter
+  namespace: kube-system
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+    kubernetes.io/description: |
+      Runs at cluster creation to label and annotate default, kubeadm installed CoreDNS
+      resources so they can be managed by Helm and replaced with our managed app.
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      name: coredns-adopter
+      labels:
+        {{- include "labels.common" . | nindent 8 }}
+      annotations:
+        kubernetes.io/description: |
+          Runs at cluster creation to label and annotate default, kubeadm installed CoreDNS
+          resources so they can be managed by Helm and replaced with our managed app.
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      activeDeadlineSeconds: 1800 # 30 minutes
+      restartPolicy: Never
+      serviceAccountName: coredns-adopter
+      tolerations:
+      - operator: Exists
+      hostNetwork: true # No need to wait for CNI to be ready
+      initContainers:
+      - name: wait-for-apiserver
+        image: "{{ .Values.adopter.image }}"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+          while [ "$(kubectl -n default get service kubernetes -o name 2>/dev/null)" != "service/kubernetes" ]; do
+            echo "Waiting for API server to be ready..."
+            sleep 10
+          done
+          elapsed=0
+          while ! kubectl -n kube-system get configmap coredns >/dev/null 2>&1; do
+            if [ $elapsed -ge 120 ]; then
+              echo "Timed out waiting for coredns configmap, continuing..."
+              break
+            fi
+            echo "Waiting for coredns configmap to exist..."
+            sleep 10
+            elapsed=$((elapsed + 10))
+          done
+      containers:
+      - name: kubectl
+        image: "{{ .Values.adopter.image }}"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+
+          patchResource() {
+            if kubectl get $@ >/dev/null 2>&1; then
+              echo "Patching resource ${1}"
+              kubectl annotate --overwrite $@ meta.helm.sh/release-name=coredns
+              kubectl annotate --overwrite $@ meta.helm.sh/release-namespace=kube-system
+              kubectl label --overwrite $@ app.kubernetes.io/managed-by=Helm
+              kubectl label --overwrite $@ k8s-app=coredns
+            else
+              echo "resource ${1} doesn't exist!"
+            fi
+          }
+
+          echo "Patching existing coredns resources..."
+          patchResource netpol/coredns -n kube-system
+          patchResource configmap/coredns -n kube-system
+          patchResource pdb/coredns -n kube-system
+          patchResource serviceaccount/coredns -n kube-system
+          patchResource service/kube-dns -n kube-system
+          patchResource deployment/coredns -n kube-system
+          patchResource clusterrole/system:coredns
+          patchResource clusterrolebinding/system:coredns
+          echo "Finished patching"
+
+          # Change port specified in Corefile config
+          if kubectl -n kube-system get configmap coredns  >/dev/null 2>&1; then
+            kubectl -n kube-system get configmap coredns -o yaml | sed 's/\.:53/\.:1053/' | kubectl apply -f -
+          else
+            echo "resource configmap/coredns doesn't exist!"
+          fi
+
+          echo "Deleting kube-dns service..."
+          if kubectl -n kube-system get service kube-dns >/dev/null 2>&1; then
+            kubectl -n kube-system delete service kube-dns
+            echo "Deleted service/kube-dns"
+          else
+            echo "resource service/kube-dns doesn't exist!"
+          fi
+
+          echo "Deleting coredns deployment..."
+          if kubectl -n kube-system get deployment coredns >/dev/null 2>&1; then
+            kubectl -n kube-system delete deployment coredns
+            echo "Deleted deployment/coredns"
+          else
+            echo "resource deployment/coredns doesn't exist!"
+          fi
+
+          echo "CoreDNS adoption complete!"
+{{- end }}
