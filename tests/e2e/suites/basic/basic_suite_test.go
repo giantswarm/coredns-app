@@ -10,9 +10,9 @@ import (
 	. "github.com/onsi/gomega"
 
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
-	"github.com/giantswarm/apptest-framework/v4/pkg/state"
-	"github.com/giantswarm/apptest-framework/v4/pkg/suite"
-	"github.com/giantswarm/clustertest/v4/pkg/logger"
+	"github.com/giantswarm/apptest-framework/v5/pkg/state"
+	"github.com/giantswarm/apptest-framework/v5/pkg/suite"
+	"github.com/giantswarm/clustertest/v5/pkg/logger"
 
 	"k8s.io/apimachinery/pkg/types"
 )
