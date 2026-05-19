@@ -6,43 +6,37 @@ name: coredns
 namespace: kube-system
 serviceType: managed
 
-userID: 33
-groupID: 33
+# ── Pod security context ──────────────────────────────────────────────────────
+securityContext:
+  runAsUser: 33
+  runAsGroup: 33
 
-hpa:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 50
-  targetCPUUtilizationPercentage: 80
-  targetMemoryUtilizationPercentage: 0
-  metrics: []
-  # The stabilization window is used to restrict the flapping of replica count
-  # when the metrics used for scaling keep fluctuating.
-  # This is very useful for large scale clusters to prevent the CoreDNS from flapping
-  # while kube-proxy is taking long time to add the scaled up pods to the service
-  # In such cases set this value to at least 1800
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 1800
+# ── Service ──────────────────────────────────────────────────────────────────
+service:
+  clusterIP: 172.31.0.10
 
-configmap:
-# Uncomment "autopath" to enable DNS autopath https://coredns.io/plugins/autopath/
-# autopath: "@kubernetes"
-  cache: 30
-  custom: ""
-  log: |
-    denial
-    error
-
-  # Uncomment and define `forward` to enable and configure forwarding rules for CoreDNS forward plugin (for syntax see https://coredns.io/plugins/forward/)
-  # forward: . 192.168.1.1 /etc/resolv.conf
-  # forwardOptions: |
-  #   policy random
-
+# ── Image ────────────────────────────────────────────────────────────────────
 image:
   registry: gsoci.azurecr.io
   name: giantswarm/coredns
   tag: 1.14.4
+
+# ── Ports ────────────────────────────────────────────────────────────────────
+ports:
+  dns:
+    name: dns
+    targetPort: 1053
+    port: 53
+  metrics:
+    port: 9153
+
+# ── Workload ──────────────────────────────────────────────────────────────────
+resources:
+  limits:
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 512Mi
 
 updateStrategy:
   type: RollingUpdate
@@ -52,20 +46,85 @@ updateStrategy:
 podDisruptionBudget:
   maxUnavailable: 25%
 
-ports:
-  dns:
-    name: dns
-    targetPort: 1053
-    port: 53
-  prometheus: 9153
+# ── Scaling ───────────────────────────────────────────────────────────────────
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 50
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 0
+  metrics: []
+  # The stabilization window is used to restrict the flapping of replica count
+  # when the metrics used for scaling keep fluctuating.
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 1800
 
-resources:
-  limits:
-    memory: 1Gi
-  requests:
-    cpu: 250m
-    memory: 512Mi
+# ── Control-plane instance ────────────────────────────────────────────────────
+controlPlane:
+  enabled: true
+  nodeSelector:
+    "node-role.kubernetes.io/control-plane": '""'
 
+# ── CoreDNS Corefile configuration ───────────────────────────────────────────
+coredns:
+  cache:
+    successTTL: 30      # max TTL for positive responses (seconds)
+    denialTTL: 5        # max TTL for NXDOMAIN/NODATA responses (seconds)
+    prefetch: 0         # prefetch popular items before TTL expires (0 = disabled)
+    serveStale: false   # serve stale answers while refreshing in background
+
+  log:
+    - denial
+    - error
+
+  loadbalance: round_robin  # round_robin | random
+
+  # "." zone — external/public DNS (forward zone)
+  public:
+    upstreams: []       # upstream DNS servers; empty means use /etc/resolv.conf
+    options: ""         # raw forward plugin options (max_fails, health_check, policy, etc.)
+    autopath: ""        # autopath plugin args, e.g. "@kubernetes" (optional)
+
+  # cluster.local zone — in-cluster DNS (kubernetes plugin)
+  cluster:
+    domains:
+      - cluster.local
+    serviceCIDR: 172.31.0.0/16    # k8s service IP range (--service-cluster-ip-range)
+    podCIDR: 192.168.0.0/16       # pod network CIDR (--pod-network-cidr)
+
+  additionalLocalZones: []  # extra zones served by the kubernetes plugin (no CIDR ranges)
+
+  custom: ""  # raw Corefile snippet appended verbatim at end
+
+# ── Adopter job ───────────────────────────────────────────────────────────────
+adopter:
+  enabled: false
+  image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.1
+
+# ── DEPRECATED ───────────────────────────────────────────────────────────────
+# The following values are superseded by the structure above.
+# They remain for backward compatibility and will be removed in a future major release.
+# NOTE: if you have custom overrides for these values, migrate them to the new paths.
+
+# DEPRECATED: use securityContext.runAsUser / securityContext.runAsGroup
+userID: 33
+groupID: 33
+
+# DEPRECATED: use controlPlane
+# NOTE: mastersInstance.enabled overrides require migration to controlPlane.enabled
+mastersInstance:
+  enabled: true
+  nodeSelector:
+    "node-role.kubernetes.io/control-plane": '""'
+
+# DEPRECATED: use coredns.loadbalance
+loadbalancePolicy: round_robin
+
+# DEPRECATED: use coredns.additionalLocalZones
+# additionalLocalZones: []
+
+# DEPRECATED: use coredns.cluster.* for Corefile config and service.clusterIP for the DNS service IP
 cluster:
   calico:
     CIDR: 192.168.0.0/16
@@ -76,16 +135,21 @@ cluster:
       IP: 172.31.0.10
     clusterDomain: cluster.local
 
-loadbalancePolicy: round_robin
+# DEPRECATED: use coredns.* instead
+# coredns.cache.successTTL replaces configmap.cache
+# coredns.log replaces configmap.log
+# coredns.public.upstreams replaces configmap.forward
+# coredns.public.options replaces configmap.forwardOptions
+# coredns.public.autopath replaces configmap.autopath
+# coredns.custom replaces configmap.custom
+configmap:
+  cache: 30
+  custom: ""
+  log: |
+    denial
+    error
 
-mastersInstance:
-  enabled: true
-  nodeSelector:
-    "node-role.kubernetes.io/control-plane": '""'
-
-# Uncomment and define `additionalLocalZones` to add additional local zones to CoreDNS config
-# additionalLocalZones: []
-
-adopter:
-  enabled: false
-  image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.1
+  # Uncomment and define `forward` to enable and configure forwarding rules for CoreDNS forward plugin (for syntax see https://coredns.io/plugins/forward/)
+  # forward: . 192.168.1.1 /etc/resolv.conf
+  # forwardOptions: |
+  #   policy random
