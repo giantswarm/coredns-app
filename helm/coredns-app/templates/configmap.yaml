@@ -1,3 +1,30 @@
+{{- $dnsPort := .Values.ports.dns.targetPort }}
+{{- $metricsPort := coalesce .Values.ports.metrics.port .Values.ports.prometheus | default 9153 }}
+{{- $loadbalance := coalesce .Values.coredns.loadbalance .Values.loadbalancePolicy | default "round_robin" }}
+{{- $successTTL := coalesce .Values.coredns.cache.successTTL .Values.configmap.cache | default 30 }}
+{{- $denialTTL := .Values.coredns.cache.denialTTL | default 5 }}
+{{- $prefetch := .Values.coredns.cache.prefetch | default 0 }}
+{{- $serveStale := .Values.coredns.cache.serveStale | default false }}
+{{- $autopath := coalesce .Values.coredns.public.autopath .Values.configmap.autopath }}
+{{- $serviceCIDR := coalesce .Values.coredns.cluster.serviceCIDR .Values.cluster.kubernetes.API.clusterIPRange }}
+{{- $podCIDR := coalesce .Values.coredns.cluster.podCIDR .Values.cluster.calico.CIDR }}
+{{- $custom := coalesce .Values.coredns.custom .Values.configmap.custom }}
+
+{{- $logClasses := .Values.coredns.log }}
+{{- if not $logClasses }}
+  {{- $logClasses = splitList "\n" (.Values.configmap.log | trimAll "\n ") }}
+{{- end }}
+
+{{- $domains := .Values.coredns.cluster.domains }}
+{{- if not $domains }}
+  {{- $domains = splitList " " .Values.cluster.kubernetes.clusterDomain }}
+{{- end }}
+
+{{- $additionalLocalZones := .Values.coredns.additionalLocalZones }}
+{{- if not $additionalLocalZones }}
+  {{- $additionalLocalZones = .Values.additionalLocalZones }}
+{{- end }}
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,8 +34,17 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 data:
   Corefile: |
-    .:{{ .Values.ports.dns.targetPort }} {
-        cache
+    .:{{ $dnsPort }} {
+        cache {
+          success 9984 {{ $successTTL }}
+          denial 9984 {{ $denialTTL }}
+          {{- if gt ($prefetch | int) 0 }}
+          prefetch {{ $prefetch }}
+          {{- end }}
+          {{- if $serveStale }}
+          serve_stale
+          {{- end }}
+        }
         errors
         template ANY AAAA {
           rcode NOERROR
@@ -18,72 +54,90 @@ data:
         }
         ready :8181
         log . {
-          {{- range (.Values.configmap.log | trimAll "\n " |  split "\n") }}
+          {{- range $logClasses }}
           class {{ . }}
           {{- end }}
         }
-        loadbalance {{ .Values.loadbalancePolicy }}
-        prometheus :{{ .Values.ports.prometheus }}
-
-        {{- if and .Values.configmap.forward .Values.configmap.forwardOptions }}
-        forward {{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }} {{- end }} {
+        loadbalance {{ $loadbalance }}
+        prometheus :{{ $metricsPort }}
+        {{- if .Values.coredns.public.upstreams }}
+          {{- $options := coalesce .Values.coredns.public.options .Values.configmap.forwardOptions }}
+          {{- if $options }}
+        forward . {{ join " " .Values.coredns.public.upstreams }} {
+          {{ $options | trimSuffix "\n" }}
+        }
+          {{- else }}
+        forward . {{ join " " .Values.coredns.public.upstreams }}
+          {{- end }}
+        {{- else if .Values.configmap.forward }}
+          {{- if .Values.configmap.forwardOptions }}
+        forward{{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }}{{- end }} {
           {{ .Values.configmap.forwardOptions | trimSuffix "\n" }}
         }
-        {{- else if .Values.configmap.forward }}
-        forward {{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }} {{- end }}
+          {{- else }}
+        forward{{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }}{{- end }}
+          {{- end }}
         {{- else }}
         forward . /etc/resolv.conf
         {{- end }}
         reload
-        {{- if .Values.configmap.autopath }}
-        autopath {{ .Values.configmap.autopath }}
+        {{- if $autopath }}
+        autopath {{ $autopath }}
         {{- end }}
     }
-
-    {{- $domains := split " " .Values.cluster.kubernetes.clusterDomain }}
-    {{- $dnsPort := .Values.ports.dns.targetPort }}
-    {{- $clusterIPRange := .Values.cluster.kubernetes.API.clusterIPRange }}
-    {{- $calicoCIDR:= .Values.cluster.calico.CIDR }}
-    {{- $loadbalancePolicy := .Values.loadbalancePolicy }}
-    {{- $prometheus := .Values.ports.prometheus }}
-    {{- $customLog := .Values.configmap.log }}
-    {{- $additionalLocalZones := .Values.additionalLocalZones -}}
     {{- range $index, $domain := $domains }}
     {{- if not (has $domain $additionalLocalZones) }}
-    {{ $domain }}:{{ $dnsPort }} {{- if (regexMatch ".local$" $domain ) }} {{ $clusterIPRange }}:{{ $dnsPort }} {{ $calicoCIDR }}:{{ $dnsPort }} {{- end }} {
+    {{ $domain }}:{{ $dnsPort }} {{- if (regexMatch ".local$" $domain ) }} {{ $serviceCIDR }}:{{ $dnsPort }} {{ $podCIDR }}:{{ $dnsPort }} {{- end }} {
         errors
         template ANY AAAA {
           rcode NOERROR
         }
-        cache
+        cache {
+          success 9984 {{ $successTTL }}
+          denial 9984 {{ $denialTTL }}
+          {{- if gt ($prefetch | int) 0 }}
+          prefetch {{ $prefetch }}
+          {{- end }}
+          {{- if $serveStale }}
+          serve_stale
+          {{- end }}
+        }
         health :8080 {
           lameduck 5s
         }
         ready :8181
-        kubernetes {{ $domain }} {{- if (regexMatch ".local$" $domain ) }} {{ $clusterIPRange }} {{ $calicoCIDR }} {{- end }} {
+        kubernetes {{ $domain }} {{- if (regexMatch ".local$" $domain ) }} {{ $serviceCIDR }} {{ $podCIDR }} {{- end }} {
           pods verified
         }
         log . {
-          {{- range ($customLog | trimAll "\n " |  split "\n") }}
+          {{- range $logClasses }}
           class {{ . }}
           {{- end }}
         }
-        loadbalance {{ $loadbalancePolicy }}
-        prometheus :{{ $prometheus }}
+        loadbalance {{ $loadbalance }}
+        prometheus :{{ $metricsPort }}
         reload
     }
     {{- end }}
     {{- end }}
-
-    {{- if .Values.additionalLocalZones }}
-    {{- range $index, $domain := .Values.additionalLocalZones }}
+    {{- if $additionalLocalZones }}
+    {{- range $index, $domain := $additionalLocalZones }}
     {{- if not (eq $domain "") }}
     {{ $domain }}:{{ $dnsPort }} {
         errors
         template ANY AAAA {
           rcode NOERROR
         }
-        cache
+        cache {
+          success 9984 {{ $successTTL }}
+          denial 9984 {{ $denialTTL }}
+          {{- if gt ($prefetch | int) 0 }}
+          prefetch {{ $prefetch }}
+          {{- end }}
+          {{- if $serveStale }}
+          serve_stale
+          {{- end }}
+        }
         health :8080 {
           lameduck 5s
         }
@@ -92,20 +146,19 @@ data:
           pods verified
         }
         log . {
-          {{- range ($customLog | trimAll "\n " |  split "\n") }}
+          {{- range $logClasses }}
           class {{ . }}
           {{- end }}
         }
-        loadbalance {{ $loadbalancePolicy }}
-        prometheus :{{ $prometheus }}
+        loadbalance {{ $loadbalance }}
+        prometheus :{{ $metricsPort }}
         reload
     }
     {{- end }}
     {{- end }}
     {{- end }}
-
-    {{- if .Values.configmap.custom }}
-    {{- range (.Values.configmap.custom | trimAll "\n " |  splitList "\n") }}
+    {{- if $custom }}
+    {{- range ($custom | trimAll "\n " | splitList "\n") }}
     {{ . }}
     {{- end }}
     {{- end }}
