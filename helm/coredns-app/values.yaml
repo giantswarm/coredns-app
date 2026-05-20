@@ -69,10 +69,10 @@ controlPlane:
 # ── CoreDNS Corefile configuration ───────────────────────────────────────────
 coredns:
   cache:
-    # successTTL: 30  # defaults to configmap.cache; max TTL for positive responses (seconds)
-    denialTTL: 5      # max TTL for NXDOMAIN/NODATA responses (seconds)
-    prefetch: 0       # prefetch popular items before TTL expires (0 = disabled)
-    serveStale: false # serve stale answers while refreshing in background
+    # successTTL: 30   # defaults to configmap.cache; max TTL for positive responses (seconds)
+    denialTTL: 5       # max TTL for NXDOMAIN/NODATA responses (seconds)
+    prefetch: 0        # prefetch popular items before TTL expires (0 = disabled)
+    serveStale: false  # serve stale answers while refreshing in background
 
   # log:              # defaults to configmap.log
   #   - denial
