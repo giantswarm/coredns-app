@@ -191,9 +191,8 @@
             "type": "object",
             "properties": {
                 "enabled": {
-                    "description": "Deploy a dedicated CoreDNS instance on control-plane nodes.",
-                    "type": "boolean",
-                    "default": true
+                    "description": "Deploy a dedicated CoreDNS instance on control-plane nodes. When unset, inherits mastersInstance.enabled for backward compatibility.",
+                    "type": "boolean"
                 },
                 "nodeSelector": {
                     "description": "Node selector labels used to schedule the control-plane CoreDNS pods.",

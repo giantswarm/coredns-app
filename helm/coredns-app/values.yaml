@@ -62,7 +62,7 @@ hpa:
 
 # ── Control-plane instance ────────────────────────────────────────────────────
 controlPlane:
-  enabled: true
+  # enabled: true  # defaults to mastersInstance.enabled for backward compat; set explicitly to override
   nodeSelector:
     "node-role.kubernetes.io/control-plane": '""'
 
@@ -112,7 +112,7 @@ userID: 33
 groupID: 33
 
 # DEPRECATED: use controlPlane
-# NOTE: mastersInstance.enabled overrides require migration to controlPlane.enabled
+# mastersInstance.enabled is backward compatible — controlPlane.enabled takes precedence only when explicitly set
 mastersInstance:
   enabled: true
   nodeSelector:
