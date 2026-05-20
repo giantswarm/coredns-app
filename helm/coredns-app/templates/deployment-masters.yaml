@@ -1,4 +1,8 @@
-{{- if .Values.controlPlane.enabled }}
+{{- $controlPlaneEnabled := .Values.controlPlane.enabled }}
+{{- if kindIs "invalid" $controlPlaneEnabled }}
+  {{- $controlPlaneEnabled = .Values.mastersInstance.enabled }}
+{{- end }}
+{{- if $controlPlaneEnabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
