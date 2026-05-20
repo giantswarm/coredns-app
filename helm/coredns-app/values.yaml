@@ -7,13 +7,13 @@ namespace: kube-system
 serviceType: managed
 
 # ── Pod security context ──────────────────────────────────────────────────────
-securityContext:
-  runAsUser: 33
-  runAsGroup: 33
+securityContext: {}
+# runAsUser: 33  # defaults to userID; set securityContext.runAsUser to override
+# runAsGroup: 33 # defaults to groupID; set securityContext.runAsGroup to override
 
 # ── Service ──────────────────────────────────────────────────────────────────
-service:
-  clusterIP: 172.31.0.10
+service: {}
+# clusterIP: 172.31.0.10  # defaults to cluster.kubernetes.DNS.IP; set service.clusterIP to override
 
 # ── Image ────────────────────────────────────────────────────────────────────
 image:
@@ -27,8 +27,8 @@ ports:
     name: dns
     targetPort: 1053
     port: 53
-  metrics:
-    port: 9153
+  metrics: {}
+  # port: 9153  # defaults to ports.prometheus; set ports.metrics.port to override
 
 # ── Workload ──────────────────────────────────────────────────────────────────
 resources:
@@ -69,16 +69,16 @@ controlPlane:
 # ── CoreDNS Corefile configuration ───────────────────────────────────────────
 coredns:
   cache:
-    successTTL: 30      # max TTL for positive responses (seconds)
-    denialTTL: 5        # max TTL for NXDOMAIN/NODATA responses (seconds)
-    prefetch: 0         # prefetch popular items before TTL expires (0 = disabled)
-    serveStale: false   # serve stale answers while refreshing in background
+    # successTTL: 30  # defaults to configmap.cache; max TTL for positive responses (seconds)
+    denialTTL: 5      # max TTL for NXDOMAIN/NODATA responses (seconds)
+    prefetch: 0       # prefetch popular items before TTL expires (0 = disabled)
+    serveStale: false # serve stale answers while refreshing in background
 
-  log:
-    - denial
-    - error
+  # log:              # defaults to configmap.log
+  #   - denial
+  #   - error
 
-  loadbalance: round_robin  # round_robin | random
+  # loadbalance: round_robin  # defaults to loadbalancePolicy; round_robin | random
 
   # "." zone — external/public DNS (forward zone)
   public:
@@ -87,11 +87,10 @@ coredns:
     autopath: ""        # autopath plugin args, e.g. "@kubernetes" (optional)
 
   # cluster.local zone — in-cluster DNS (kubernetes plugin)
-  cluster:
-    domains:
-      - cluster.local
-    serviceCIDR: 172.31.0.0/16    # k8s service IP range (--service-cluster-ip-range)
-    podCIDR: 192.168.0.0/16       # pod network CIDR (--pod-network-cidr)
+  cluster: {}
+  # domains: [cluster.local]  # defaults to cluster.kubernetes.clusterDomain; set coredns.cluster.domains to override
+  # serviceCIDR: 172.31.0.0/16  # defaults to cluster.kubernetes.API.clusterIPRange; set coredns.cluster.serviceCIDR to override
+  # podCIDR: 192.168.0.0/16     # defaults to cluster.calico.CIDR; set coredns.cluster.podCIDR to override
 
   additionalLocalZones: []  # extra zones served by the kubernetes plugin (no CIDR ranges)
 
