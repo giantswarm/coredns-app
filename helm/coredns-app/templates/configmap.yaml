@@ -1,10 +1,6 @@
 {{- $dnsPort := .Values.ports.dns.targetPort }}
 {{- $metricsPort := coalesce .Values.ports.metrics.port .Values.ports.prometheus | default 9153 }}
 {{- $loadbalance := coalesce .Values.coredns.loadbalance .Values.loadbalancePolicy | default "round_robin" }}
-{{- $successTTL := coalesce .Values.coredns.cache.successTTL .Values.configmap.cache | default 30 }}
-{{- $denialTTL := .Values.coredns.cache.denialTTL | default 5 }}
-{{- $prefetch := .Values.coredns.cache.prefetch | default 0 }}
-{{- $serveStale := .Values.coredns.cache.serveStale | default false }}
 {{- $autopath := coalesce .Values.coredns.public.autopath .Values.configmap.autopath }}
 {{- $serviceCIDR := coalesce .Values.coredns.cluster.serviceCIDR .Values.cluster.kubernetes.API.clusterIPRange }}
 {{- $podCIDR := coalesce .Values.coredns.cluster.podCIDR .Values.cluster.calico.CIDR }}
@@ -35,16 +31,7 @@ metadata:
 data:
   Corefile: |
     .:{{ $dnsPort }} {
-        cache {
-          success 9984 {{ $successTTL }}
-          denial 9984 {{ $denialTTL }}
-          {{- if gt ($prefetch | int) 0 }}
-          prefetch {{ $prefetch }}
-          {{- end }}
-          {{- if $serveStale }}
-          serve_stale
-          {{- end }}
-        }
+        {{- include "coredns.cacheBlock" . | nindent 8 }}
         errors
         template ANY AAAA {
           rcode NOERROR
@@ -92,16 +79,7 @@ data:
         template ANY AAAA {
           rcode NOERROR
         }
-        cache {
-          success 9984 {{ $successTTL }}
-          denial 9984 {{ $denialTTL }}
-          {{- if gt ($prefetch | int) 0 }}
-          prefetch {{ $prefetch }}
-          {{- end }}
-          {{- if $serveStale }}
-          serve_stale
-          {{- end }}
-        }
+        {{- include "coredns.cacheBlock" $ | nindent 8 }}
         health :8080 {
           lameduck 5s
         }
@@ -128,16 +106,7 @@ data:
         template ANY AAAA {
           rcode NOERROR
         }
-        cache {
-          success 9984 {{ $successTTL }}
-          denial 9984 {{ $denialTTL }}
-          {{- if gt ($prefetch | int) 0 }}
-          prefetch {{ $prefetch }}
-          {{- end }}
-          {{- if $serveStale }}
-          serve_stale
-          {{- end }}
-        }
+        {{- include "coredns.cacheBlock" $ | nindent 8 }}
         health :8080 {
           lameduck 5s
         }
