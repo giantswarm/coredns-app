@@ -27,3 +27,36 @@ Selector labels
 {{- define "labels.selector" -}}
 k8s-app: {{ .Values.name | quote }}
 {{- end -}}
+
+{{/*
+Render the CoreDNS cache directive. Call with nindent to control indentation.
+*/}}
+{{- define "coredns.cacheBlock" -}}
+{{- $c := .Values.coredns.cache }}
+{{- $successCapacity := $c.success.capacity | default 9984 }}
+{{- $successTTL := coalesce $c.success.ttl .Values.configmap.cache | default 30 }}
+{{- $denialCapacity := $c.denial.capacity | default 9984 }}
+{{- $denialTTL := $c.denial.ttl | default 5 -}}
+cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }} {
+  success {{ $successCapacity }} {{ $successTTL }}{{- with $c.success.minTTL }} {{ . }}{{- end }}
+  denial {{ $denialCapacity }} {{ $denialTTL }}{{- with $c.denial.minTTL }} {{ . }}{{- end }}
+  {{- with $c.prefetch }}{{- if .amount }}
+  prefetch {{ .amount }}{{- with .duration }} {{ . }}{{- end }}{{- with .percentage }} {{ . }}%{{- end }}
+  {{- end }}{{- end }}
+  {{- if and $c.serveStale $c.serveStale.enabled }}
+  serve_stale{{- with $c.serveStale.duration }} {{ . }}{{- end }}{{- with $c.serveStale.refreshMode }} {{ . }}{{- end }}
+  {{- end }}
+  {{- with $c.servfail }}{{- with .duration }}
+  servfail {{ . }}
+  {{- end }}{{- end }}
+  {{- if and $c.disable $c.disable.success }}
+  disable success
+  {{- end }}
+  {{- if and $c.disable $c.disable.denial }}
+  disable denial
+  {{- end }}
+  {{- if $c.keepttl }}
+  keepttl
+  {{- end }}
+}
+{{- end -}}

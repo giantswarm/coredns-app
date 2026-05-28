@@ -208,20 +208,109 @@
                     "description": "CoreDNS cache plugin configuration.",
                     "type": "object",
                     "properties": {
-                        "successTTL": {
-                            "description": "Max TTL (seconds) for successful (positive) DNS responses.",
+                        "ttl": {
+                            "description": "Top-level TTL cap applied to all cached entries (seconds).",
                             "type": "integer"
                         },
-                        "denialTTL": {
-                            "description": "Max TTL (seconds) for NXDOMAIN and NODATA responses.",
-                            "type": "integer"
+                        "success": {
+                            "description": "Configuration for caching positive (success) responses.",
+                            "type": "object",
+                            "properties": {
+                                "capacity": {
+                                    "description": "Maximum number of positive responses to cache.",
+                                    "type": "integer"
+                                },
+                                "ttl": {
+                                    "description": "Max TTL for positive responses (seconds). Defaults to configmap.cache for backward compatibility.",
+                                    "type": "integer"
+                                },
+                                "minTTL": {
+                                    "description": "Min TTL for positive responses (seconds).",
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "denial": {
+                            "description": "Configuration for caching negative (NXDOMAIN/NODATA) responses.",
+                            "type": "object",
+                            "properties": {
+                                "capacity": {
+                                    "description": "Maximum number of negative responses to cache.",
+                                    "type": "integer"
+                                },
+                                "ttl": {
+                                    "description": "Max TTL for NXDOMAIN/NODATA responses (seconds).",
+                                    "type": "integer"
+                                },
+                                "minTTL": {
+                                    "description": "Min TTL for denial responses (seconds).",
+                                    "type": "integer"
+                                }
+                            }
                         },
                         "prefetch": {
-                            "description": "Prefetch popular cache entries before they expire. Set to N to prefetch entries accessed at least N times. 0 disables prefetch.",
-                            "type": "integer"
+                            "description": "Prefetch popular cache entries before they expire.",
+                            "type": "object",
+                            "properties": {
+                                "amount": {
+                                    "description": "Prefetch entries accessed at least this many times. Required to enable prefetch.",
+                                    "type": "integer"
+                                },
+                                "duration": {
+                                    "description": "Only prefetch if the entry was requested within this duration (e.g. 1m).",
+                                    "type": "string"
+                                },
+                                "percentage": {
+                                    "description": "Only prefetch if this percentage of TTL remains. Requires duration.",
+                                    "type": "integer"
+                                }
+                            }
                         },
                         "serveStale": {
-                            "description": "Serve stale (expired) cache entries while fetching a fresh answer in the background.",
+                            "description": "Serve stale (expired) cache entries while fetching a fresh answer.",
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "description": "Enable serving stale cache entries while refreshing.",
+                                    "type": "boolean"
+                                },
+                                "duration": {
+                                    "description": "How long stale answers may be served (e.g. 1h).",
+                                    "type": "string"
+                                },
+                                "refreshMode": {
+                                    "description": "Refresh mode for stale entries.",
+                                    "type": "string",
+                                    "enum": ["immediate", "background"]
+                                }
+                            }
+                        },
+                        "servfail": {
+                            "description": "Configuration for caching SERVFAIL responses.",
+                            "type": "object",
+                            "properties": {
+                                "duration": {
+                                    "description": "How long to cache SERVFAIL responses (e.g. 5s). Set to 0 to disable.",
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "disable": {
+                            "description": "Disable caching for specific response types.",
+                            "type": "object",
+                            "properties": {
+                                "success": {
+                                    "description": "Disable caching of positive responses.",
+                                    "type": "boolean"
+                                },
+                                "denial": {
+                                    "description": "Disable caching of NXDOMAIN/NODATA responses.",
+                                    "type": "boolean"
+                                }
+                            }
+                        },
+                        "keepttl": {
+                            "description": "Preserve original TTLs in cached responses instead of counting down.",
                             "type": "boolean"
                         }
                     }
@@ -376,7 +465,7 @@
             "type": "object",
             "properties": {
                 "cache": {
-                    "description": "DEPRECATED: use coredns.cache.successTTL",
+                    "description": "DEPRECATED: use coredns.cache.success.ttl",
                     "type": "integer"
                 },
                 "log": {

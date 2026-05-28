@@ -29,10 +29,29 @@ Introduce a new top-level key **`.Values.coredns`** that holds all CoreDNS Coref
 ```yaml
 coredns:
   cache:
-    successTTL: 30       # max TTL for positive responses (seconds) — defaults to configmap.cache
-    denialTTL: 5         # max TTL for NXDOMAIN/NODATA responses (seconds)
-    prefetch: 0          # prefetch popular items before TTL expires (0 = disabled)
-    serveStale: false    # serve stale answers while refreshing in background
+    # ttl: 30              # top-level TTL cap applied before success/denial checks
+    success:
+      capacity: 9984       # max cached positive responses
+      ttl: 30              # max TTL (seconds) — defaults to configmap.cache for backward compat
+      # minTTL: 0
+    denial:
+      capacity: 9984       # max cached NXDOMAIN/NODATA responses
+      ttl: 5               # max TTL (seconds)
+      # minTTL: 0
+    # prefetch:
+    #   amount: 10         # enable prefetch when this many requests received
+    #   duration: 1m       # only prefetch if requested within this duration
+    #   percentage: 20     # only prefetch if this % of TTL remains (requires duration)
+    serveStale:
+      enabled: false       # serve stale answers while refreshing
+      # duration: 1h
+      # refreshMode: ""    # immediate | background
+    # servfail:
+    #   duration: 5s       # how long to cache SERVFAIL responses
+    # disable:
+    #   success: false
+    #   denial: false
+    # keepttl: false       # preserve original TTLs instead of counting down
 
   log:                   # list of log classes — defaults to configmap.log
     - denial
@@ -88,10 +107,23 @@ controlPlane:
 
 | Old path | Old type | New path | New type |
 |---|---|---|---|
-| `configmap.cache` (was unused in template) | int | `coredns.cache.successTTL` | int |
-| _(no equivalent)_ | — | `coredns.cache.denialTTL` | int |
-| _(no equivalent)_ | — | `coredns.cache.prefetch` | int |
-| _(no equivalent)_ | — | `coredns.cache.serveStale` | bool |
+| `configmap.cache` (was unused in template) | int | `coredns.cache.success.ttl` | int |
+| _(no equivalent)_ | — | `coredns.cache.success.capacity` | int |
+| _(no equivalent)_ | — | `coredns.cache.success.minTTL` | int |
+| _(no equivalent)_ | — | `coredns.cache.denial.ttl` | int |
+| _(no equivalent)_ | — | `coredns.cache.denial.capacity` | int |
+| _(no equivalent)_ | — | `coredns.cache.denial.minTTL` | int |
+| _(no equivalent)_ | — | `coredns.cache.prefetch.amount` | int |
+| _(no equivalent)_ | — | `coredns.cache.prefetch.duration` | string |
+| _(no equivalent)_ | — | `coredns.cache.prefetch.percentage` | int |
+| _(no equivalent)_ | — | `coredns.cache.serveStale.enabled` | bool |
+| _(no equivalent)_ | — | `coredns.cache.serveStale.duration` | string |
+| _(no equivalent)_ | — | `coredns.cache.serveStale.refreshMode` | string |
+| _(no equivalent)_ | — | `coredns.cache.servfail.duration` | string |
+| _(no equivalent)_ | — | `coredns.cache.disable.success` | bool |
+| _(no equivalent)_ | — | `coredns.cache.disable.denial` | bool |
+| _(no equivalent)_ | — | `coredns.cache.keepttl` | bool |
+| _(no equivalent)_ | — | `coredns.cache.ttl` | int |
 | `configmap.log` | multiline string | `coredns.log` | list of strings |
 | `loadbalancePolicy` | string | `coredns.loadbalance` | string |
 | `configmap.forward` | multiline string | `coredns.public.upstreams` | list of strings |
@@ -125,7 +157,7 @@ Full coalesce map used in templates:
 
 | Value | Template expression |
 |---|---|
-| `cache.successTTL` | `coalesce .Values.coredns.cache.successTTL .Values.configmap.cache \| default 30` |
+| `cache.success.ttl` | `coalesce .Values.coredns.cache.success.ttl .Values.configmap.cache \| default 30` |
 | `log` (list) | `if not .Values.coredns.log` → fall back to `splitList "\n" .Values.configmap.log` |
 | `loadbalance` | `coalesce .Values.coredns.loadbalance .Values.loadbalancePolicy \| default "round_robin"` |
 | `public.upstreams` | `if .Values.coredns.public.upstreams` → else fall back to `configmap.forward` string |
