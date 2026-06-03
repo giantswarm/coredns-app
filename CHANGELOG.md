@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- update CoreDNS icon to light version
+
 ## [1.30.1] - 2026-05-07
 
 ### Changed
