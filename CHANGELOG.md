@@ -7,6 +7,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Refactored
+
+- Restructure Helm chart values interface with a zone-aware `coredns.*` layout; all old paths remain backward compatible.
+- Add `coredns.public.*` for the forward zone (upstreams, options, autopath).
+- Add `coredns.cluster.*` for the in-cluster zone (domains, serviceCIDR, podCIDR).
+- Add `coredns.log`, `coredns.loadbalance`, `coredns.custom`, and `coredns.additionalLocalZones`.
+- Add `controlPlane.*`, `securityContext.*`, `service.clusterIP`, and `ports.metrics.port`.
+- Expand `coredns.cache` to expose the full CoreDNS cache directive: `success` and `denial` now have `capacity`, `ttl`, and `minTTL`; `prefetch` has `amount`, `duration`, and `percentage`; `serveStale` has `enabled`, `duration`, and `refreshMode`; new `servfail`, `disable`, `keepttl`, and `ttl` fields.
+
 ## [1.30.1] - 2026-05-07
 
 ### Changed

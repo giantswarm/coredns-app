@@ -6,43 +6,37 @@ name: coredns
 namespace: kube-system
 serviceType: managed
 
-userID: 33
-groupID: 33
+# ── Pod security context ──────────────────────────────────────────────────────
+securityContext: {}
+# runAsUser: 33  # defaults to userID; set securityContext.runAsUser to override
+# runAsGroup: 33 # defaults to groupID; set securityContext.runAsGroup to override
 
-hpa:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 50
-  targetCPUUtilizationPercentage: 80
-  targetMemoryUtilizationPercentage: 0
-  metrics: []
-  # The stabilization window is used to restrict the flapping of replica count
-  # when the metrics used for scaling keep fluctuating.
-  # This is very useful for large scale clusters to prevent the CoreDNS from flapping
-  # while kube-proxy is taking long time to add the scaled up pods to the service
-  # In such cases set this value to at least 1800
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 1800
+# ── Service ──────────────────────────────────────────────────────────────────
+service: {}
+# clusterIP: 172.31.0.10  # defaults to cluster.kubernetes.DNS.IP; set service.clusterIP to override
 
-configmap:
-# Uncomment "autopath" to enable DNS autopath https://coredns.io/plugins/autopath/
-# autopath: "@kubernetes"
-  cache: 30
-  custom: ""
-  log: |
-    denial
-    error
-
-  # Uncomment and define `forward` to enable and configure forwarding rules for CoreDNS forward plugin (for syntax see https://coredns.io/plugins/forward/)
-  # forward: . 192.168.1.1 /etc/resolv.conf
-  # forwardOptions: |
-  #   policy random
-
+# ── Image ────────────────────────────────────────────────────────────────────
 image:
   registry: gsoci.azurecr.io
   name: giantswarm/coredns
   tag: 1.14.3
+
+# ── Ports ────────────────────────────────────────────────────────────────────
+ports:
+  dns:
+    name: dns
+    targetPort: 1053
+    port: 53
+  metrics: {}
+  # port: 9153  # defaults to ports.prometheus; set ports.metrics.port to override
+
+# ── Workload ──────────────────────────────────────────────────────────────────
+resources:
+  limits:
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 512Mi
 
 updateStrategy:
   type: RollingUpdate
@@ -52,20 +46,103 @@ updateStrategy:
 podDisruptionBudget:
   maxUnavailable: 25%
 
-ports:
-  dns:
-    name: dns
-    targetPort: 1053
-    port: 53
-  prometheus: 9153
+# ── Scaling ───────────────────────────────────────────────────────────────────
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 50
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 0
+  metrics: []
+  # The stabilization window is used to restrict the flapping of replica count
+  # when the metrics used for scaling keep fluctuating.
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 1800
 
-resources:
-  limits:
-    memory: 1Gi
-  requests:
-    cpu: 250m
-    memory: 512Mi
+# ── Control-plane instance ────────────────────────────────────────────────────
+controlPlane:
+  # enabled: true  # defaults to mastersInstance.enabled for backward compat; set explicitly to override
+  nodeSelector:
+    "node-role.kubernetes.io/control-plane": '""'
 
+# ── CoreDNS Corefile configuration ───────────────────────────────────────────
+coredns:
+  cache:
+    # ttl: 30              # top-level TTL cap applied before success/denial checks
+    success:
+      capacity: 9984       # max number of cached positive responses
+      ttl: 30              # max TTL; defaults to configmap.cache for backward compat
+      # minTTL: 0          # min TTL for positive responses
+    denial:
+      capacity: 9984       # max number of cached NXDOMAIN/NODATA responses
+      ttl: 5               # max TTL
+      # minTTL: 0          # min TTL for denial responses
+    # prefetch:
+    #   amount: 10         # enable prefetch when this many requests received (required)
+    #   duration: 1m       # only prefetch if item was requested within this duration
+    #   percentage: 20     # only prefetch if this % of TTL remains (requires duration)
+    serveStale:
+      enabled: false       # serve stale answers while refreshing in background
+      # duration: 1h       # how long stale answers may be served
+      # refreshMode: ""    # immediate | background
+    # servfail:
+    #   duration: 5s       # how long to cache SERVFAIL responses
+    # disable:
+    #   success: false     # disable caching of positive responses
+    #   denial: false      # disable caching of NXDOMAIN/NODATA responses
+    # keepttl: false       # preserve original TTLs instead of counting down
+
+  # log:              # defaults to configmap.log
+  #   - denial
+  #   - error
+
+  # loadbalance: round_robin  # defaults to loadbalancePolicy; round_robin | random
+
+  # "." zone — external/public DNS (forward zone)
+  public:
+    upstreams: []       # upstream DNS servers; empty means use /etc/resolv.conf
+    options: ""         # raw forward plugin options (max_fails, health_check, policy, etc.)
+    autopath: ""        # autopath plugin args, e.g. "@kubernetes" (optional)
+
+  # cluster.local zone — in-cluster DNS (kubernetes plugin)
+  cluster: {}
+  # domains: [cluster.local]  # defaults to cluster.kubernetes.clusterDomain; set coredns.cluster.domains to override
+  # serviceCIDR: 172.31.0.0/16  # defaults to cluster.kubernetes.API.clusterIPRange; set coredns.cluster.serviceCIDR to override
+  # podCIDR: 192.168.0.0/16     # defaults to cluster.calico.CIDR; set coredns.cluster.podCIDR to override
+
+  additionalLocalZones: []  # extra zones served by the kubernetes plugin (no CIDR ranges)
+
+  custom: ""  # raw Corefile snippet appended verbatim at end
+
+# ── Adopter job ───────────────────────────────────────────────────────────────
+adopter:
+  enabled: false
+  image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.0
+
+# ── DEPRECATED ───────────────────────────────────────────────────────────────
+# The following values are superseded by the structure above.
+# They remain for backward compatibility and will be removed in a future major release.
+# NOTE: if you have custom overrides for these values, migrate them to the new paths.
+
+# DEPRECATED: use securityContext.runAsUser / securityContext.runAsGroup
+userID: 33
+groupID: 33
+
+# DEPRECATED: use controlPlane
+# mastersInstance.enabled is backward compatible — controlPlane.enabled takes precedence only when explicitly set
+mastersInstance:
+  enabled: true
+  nodeSelector:
+    "node-role.kubernetes.io/control-plane": '""'
+
+# DEPRECATED: use coredns.loadbalance
+loadbalancePolicy: round_robin
+
+# DEPRECATED: use coredns.additionalLocalZones
+# additionalLocalZones: []
+
+# DEPRECATED: use coredns.cluster.* for Corefile config and service.clusterIP for the DNS service IP
 cluster:
   calico:
     CIDR: 192.168.0.0/16
@@ -76,16 +153,21 @@ cluster:
       IP: 172.31.0.10
     clusterDomain: cluster.local
 
-loadbalancePolicy: round_robin
+# DEPRECATED: use coredns.* instead
+# coredns.cache.successTTL replaces configmap.cache
+# coredns.log replaces configmap.log
+# coredns.public.upstreams replaces configmap.forward
+# coredns.public.options replaces configmap.forwardOptions
+# coredns.public.autopath replaces configmap.autopath
+# coredns.custom replaces configmap.custom
+configmap:
+  cache: 30
+  custom: ""
+  log: |
+    denial
+    error
 
-mastersInstance:
-  enabled: true
-  nodeSelector:
-    "node-role.kubernetes.io/control-plane": '""'
-
-# Uncomment and define `additionalLocalZones` to add additional local zones to CoreDNS config
-# additionalLocalZones: []
-
-adopter:
-  enabled: false
-  image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.0
+  # Uncomment and define `forward` to enable and configure forwarding rules for CoreDNS forward plugin (for syntax see https://coredns.io/plugins/forward/)
+  # forward: . 192.168.1.1 /etc/resolv.conf
+  # forwardOptions: |
+  #   policy random
