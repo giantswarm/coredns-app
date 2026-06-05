@@ -332,16 +332,54 @@
                     "description": "Configuration for the '.' (catch-all) forward zone that handles external DNS lookups.",
                     "type": "object",
                     "properties": {
-                        "upstreams": {
-                            "description": "List of upstream DNS server addresses. Empty list falls back to /etc/resolv.conf.",
-                            "type": "array",
-                            "items": {
-                                "type": "string"
+                        "forward": {
+                            "description": "Structured forward directive for the '.' zone, mirroring the CoreDNS forward block. The FROM is always '.'; 'to' holds the upstream targets and the remaining keys are forward plugin parameters. Only a representative subset is exposed; extend by adding keys here and in the coredns.forwardBlock helper, or use 'raw' for parameters not yet structured.",
+                            "type": "object",
+                            "properties": {
+                                "to": {
+                                    "description": "List of upstream DNS server addresses (the forward 'TO...' targets). Empty list falls back to /etc/resolv.conf.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "policy": {
+                                    "description": "Upstream selection policy (forward 'policy').",
+                                    "type": "string",
+                                    "enum": ["random", "round_robin", "sequential"]
+                                },
+                                "forceTCP": {
+                                    "description": "Always use TCP to the upstream (forward 'force_tcp').",
+                                    "type": "boolean"
+                                },
+                                "preferUDP": {
+                                    "description": "Try UDP first even for queries received over TCP (forward 'prefer_udp').",
+                                    "type": "boolean"
+                                },
+                                "maxFails": {
+                                    "description": "Consecutive failed health checks before an upstream is considered down (forward 'max_fails').",
+                                    "type": "integer"
+                                },
+                                "healthCheck": {
+                                    "description": "Upstream health-check configuration (forward 'health_check'), e.g. '0.2s' or '0.2s no_rec'.",
+                                    "type": "string"
+                                },
+                                "expire": {
+                                    "description": "Close idle upstream connections after this duration (forward 'expire'), e.g. '10s'.",
+                                    "type": "string"
+                                },
+                                "except": {
+                                    "description": "Domain names to pass through unforwarded (forward 'except').",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "raw": {
+                                    "description": "Escape hatch: extra forward option lines inserted verbatim (one directive per line). Use for parameters not yet exposed as structured keys.",
+                                    "type": "string"
+                                }
                             }
-                        },
-                        "options": {
-                            "description": "Raw forward plugin options block content (e.g. 'policy random', 'max_fails 3'). Inserted inside the forward {} block.",
-                            "type": "string"
                         },
                         "autopath": {
                             "description": "Autopath plugin arguments (e.g. '@kubernetes'). Leave empty to disable.",

@@ -47,26 +47,7 @@ data:
         }
         loadbalance {{ $loadbalance }}
         prometheus :{{ $metricsPort }}
-        {{- if .Values.coredns.public.upstreams }}
-          {{- $options := coalesce .Values.coredns.public.options .Values.configmap.forwardOptions }}
-          {{- if $options }}
-        forward . {{ join " " .Values.coredns.public.upstreams }} {
-          {{ $options | trimSuffix "\n" }}
-        }
-          {{- else }}
-        forward . {{ join " " .Values.coredns.public.upstreams }}
-          {{- end }}
-        {{- else if .Values.configmap.forward }}
-          {{- if .Values.configmap.forwardOptions }}
-        forward{{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }}{{- end }} {
-          {{ .Values.configmap.forwardOptions | trimSuffix "\n" }}
-        }
-          {{- else }}
-        forward{{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }}{{- end }}
-          {{- end }}
-        {{- else }}
-        forward . /etc/resolv.conf
-        {{- end }}
+        {{- include "coredns.forwardBlock" . | nindent 8 }}
         reload
         {{- if $autopath }}
         autopath {{ $autopath }}

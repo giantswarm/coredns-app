@@ -60,3 +60,52 @@ cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }} {
   {{- end }}
 }
 {{- end -}}
+
+{{/*
+Render the CoreDNS forward directive for the "." (public) zone. Call with nindent.
+
+Forward-plugin parameters are taken from coredns.public.forward, a structured map
+that mirrors the CoreDNS forward block parameters
+(https://coredns.io/plugins/forward/). Only a representative subset of parameters is
+wired up today; the design is deliberately extensible:
+  - add a new structured key by appending one line to the option list below, plus a
+    documented key in values.yaml and values.schema.json, or
+  - set forward.raw for any parameter not yet exposed as a structured key.
+
+Backward compatibility: when no structured parameters are set, the deprecated raw
+configmap.forwardOptions string is used as a fallback.
+*/}}
+{{- define "coredns.forwardBlock" -}}
+{{- $f := .Values.coredns.public.forward | default dict }}
+{{- $upstreams := $f.to }}
+{{- if $upstreams }}
+{{- $lines := list }}
+{{- with $f.policy }}{{ $lines = append $lines (printf "policy %v" .) }}{{ end }}
+{{- if $f.forceTCP }}{{ $lines = append $lines "force_tcp" }}{{ end }}
+{{- if $f.preferUDP }}{{ $lines = append $lines "prefer_udp" }}{{ end }}
+{{- with $f.maxFails }}{{ $lines = append $lines (printf "max_fails %v" .) }}{{ end }}
+{{- with $f.healthCheck }}{{ $lines = append $lines (printf "health_check %v" .) }}{{ end }}
+{{- with $f.expire }}{{ $lines = append $lines (printf "expire %v" .) }}{{ end }}
+{{- with $f.except }}{{ $lines = append $lines (printf "except %s" (join " " .)) }}{{ end }}
+{{- with $f.raw }}{{ range (. | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}{{ end }}
+{{- if and (not $lines) .Values.configmap.forwardOptions }}
+{{- range (.Values.configmap.forwardOptions | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}
+{{- end }}
+forward . {{ join " " $upstreams }}{{ if $lines }} {
+{{- range $lines }}
+  {{ . }}
+{{- end }}
+}{{ end }}
+{{- else if .Values.configmap.forward }}
+{{- $lines := list }}
+{{- with .Values.configmap.forwardOptions }}{{ range (. | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}{{ end }}
+forward
+{{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }}{{- end }}{{ if $lines }} {
+{{- range $lines }}
+  {{ . }}
+{{- end }}
+}{{ end }}
+{{- else }}
+forward . /etc/resolv.conf
+{{- end }}
+{{- end -}}
