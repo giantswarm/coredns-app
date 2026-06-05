@@ -65,9 +65,9 @@ data:
           lameduck 5s
         }
         ready :8181
-        kubernetes {{ $domain }} {{- if (regexMatch ".local$" $domain ) }} {{ $serviceCIDR }} {{ $podCIDR }} {{- end }} {
-          pods verified
-        }
+        {{- $cidrs := "" }}
+        {{- if (regexMatch ".local$" $domain) }}{{ $cidrs = printf "%s %s" $serviceCIDR $podCIDR }}{{ end }}
+        {{- include "coredns.kubernetesBlock" (dict "ctx" $ "zone" $domain "cidrs" $cidrs) | nindent 8 }}
         log . {
           {{- range $logClasses }}
           class {{ . }}
@@ -92,9 +92,7 @@ data:
           lameduck 5s
         }
         ready :8181
-        kubernetes {{ $domain }} {
-          pods verified
-        }
+        {{- include "coredns.kubernetesBlock" (dict "ctx" $ "zone" $domain "cidrs" "") | nindent 8 }}
         log . {
           {{- range $logClasses }}
           class {{ . }}

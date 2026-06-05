@@ -79,6 +79,16 @@ coredns:
       - cluster.local
     serviceCIDR: 172.31.0.0/16   # k8s service IP range — defaults to cluster.kubernetes.API.clusterIPRange
     podCIDR: 192.168.0.0/16      # pod network CIDR — defaults to cluster.calico.CIDR
+    kubernetes:          # structured kubernetes-plugin params (mirrors the CoreDNS kubernetes block); applied to cluster.local + additionalLocalZones
+      pods: verified       # disabled | insecure | verified
+      # ttl: 5             # ttl SECONDS (0–3600)
+      # endpointPodNames: false  # endpoint_pod_names
+      # noendpoints: false       # noendpoints
+      # namespaces: []           # namespaces NAMESPACE...
+      # labels: ""               # labels EXPRESSION
+      # ignoreEmptyService: false # ignore empty_service
+      # fallthrough: false       # fallthrough (bare; use raw for scoped zones)
+      # raw: ""                  # escape hatch: option lines inserted verbatim
 
   additionalLocalZones: []  # extra zones (kubernetes plugin, no CIDR ranges)
 
@@ -142,6 +152,15 @@ controlPlane:
 | `cluster.kubernetes.clusterDomain` | space-sep string | `coredns.cluster.domains` | list of strings |
 | `cluster.kubernetes.API.clusterIPRange` | string | `coredns.cluster.serviceCIDR` | string |
 | `cluster.calico.CIDR` | string | `coredns.cluster.podCIDR` | string |
+| `pods verified` (was hardcoded in template) | — | `coredns.cluster.kubernetes.pods` | string |
+| _(no equivalent)_ | — | `coredns.cluster.kubernetes.ttl` | int |
+| _(no equivalent)_ | — | `coredns.cluster.kubernetes.endpointPodNames` | bool |
+| _(no equivalent)_ | — | `coredns.cluster.kubernetes.noendpoints` | bool |
+| _(no equivalent)_ | — | `coredns.cluster.kubernetes.namespaces` | list of strings |
+| _(no equivalent)_ | — | `coredns.cluster.kubernetes.labels` | string |
+| _(no equivalent)_ | — | `coredns.cluster.kubernetes.ignoreEmptyService` | bool |
+| _(no equivalent)_ | — | `coredns.cluster.kubernetes.fallthrough` | bool |
+| _(no equivalent)_ | — | `coredns.cluster.kubernetes.raw` | string |
 | `cluster.kubernetes.DNS.IP` | string | `service.clusterIP` | string |
 | `userID` | int | `securityContext.runAsUser` | int |
 | `groupID` | int | `securityContext.runAsGroup` | int |
@@ -205,8 +224,8 @@ New parent keys that have all their children unset are declared as `{}` in `valu
 |---|---|
 | `values.yaml` | New keys added with no defaults; old keys kept as `# DEPRECATED` with migration notes |
 | `values.schema.json` | New paths added with `description` fields; deprecated paths marked |
-| `templates/configmap.yaml` | All values resolved via coalesce at top of file; cache and forward now rendered via helpers; log/domains handle list↔string conversion |
-| `templates/_helpers.tpl` | `coredns.cacheBlock` renders the cache directive; `coredns.forwardBlock` renders the `.`-zone forward directive from the structured `coredns.public.forward` map (with raw escape hatch and legacy `configmap.forwardOptions` fallback) |
+| `templates/configmap.yaml` | All values resolved via coalesce at top of file; cache, forward, and kubernetes now rendered via helpers; log/domains handle list↔string conversion |
+| `templates/_helpers.tpl` | `coredns.cacheBlock` renders the cache directive; `coredns.forwardBlock` renders the `.`-zone forward directive from the structured `coredns.public.forward` map (with raw escape hatch and legacy `configmap.forwardOptions` fallback); `coredns.kubernetesBlock` renders each local-zone kubernetes directive from the structured `coredns.cluster.kubernetes` map |
 | `templates/deployment-masters.yaml` | `securityContext`, `controlPlane` (with `kindIs "invalid"`), `ports.metrics.port` |
 | `templates/deployment-workers.yaml` | `securityContext`, `ports.metrics.port` |
 | `templates/service.yaml` | `service.clusterIP` |

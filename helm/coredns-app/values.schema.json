@@ -405,6 +405,52 @@
                         "podCIDR": {
                             "description": "Pod network CIDR (--pod-network-cidr). Used by the kubernetes plugin for PTR record handling.",
                             "type": "string"
+                        },
+                        "kubernetes": {
+                            "description": "Structured kubernetes plugin parameters, mirroring the CoreDNS kubernetes block. Applied to cluster.local and every additionalLocalZones zone. Only a representative subset is exposed; extend by adding keys here and in the coredns.kubernetesBlock helper, or use 'raw' for parameters not yet structured.",
+                            "type": "object",
+                            "properties": {
+                                "pods": {
+                                    "description": "Pod A record handling mode (kubernetes 'pods').",
+                                    "type": "string",
+                                    "enum": ["disabled", "insecure", "verified"]
+                                },
+                                "ttl": {
+                                    "description": "Custom response TTL in seconds, range 0–3600 (kubernetes 'ttl').",
+                                    "type": "integer"
+                                },
+                                "endpointPodNames": {
+                                    "description": "Use the pod name instead of the dashed IP in endpoint records (kubernetes 'endpoint_pod_names').",
+                                    "type": "boolean"
+                                },
+                                "noendpoints": {
+                                    "description": "Disable serving endpoint records (kubernetes 'noendpoints').",
+                                    "type": "boolean"
+                                },
+                                "namespaces": {
+                                    "description": "Expose only the listed namespaces (kubernetes 'namespaces').",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "labels": {
+                                    "description": "Expose only objects matching this label selector expression (kubernetes 'labels').",
+                                    "type": "string"
+                                },
+                                "ignoreEmptyService": {
+                                    "description": "Return NXDOMAIN for services without ready endpoints (kubernetes 'ignore empty_service').",
+                                    "type": "boolean"
+                                },
+                                "fallthrough": {
+                                    "description": "Pass unresolved queries to the next plugin (kubernetes 'fallthrough'). For scoped fallthrough zones use 'raw'.",
+                                    "type": "boolean"
+                                },
+                                "raw": {
+                                    "description": "Escape hatch: extra kubernetes option lines inserted verbatim (one directive per line). Use for parameters not yet exposed as structured keys.",
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 },
