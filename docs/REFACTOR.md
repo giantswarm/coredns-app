@@ -61,8 +61,16 @@ coredns:
 
   # "." zone — external/public DNS (forward zone)
   public:
-    upstreams: []        # upstream DNS servers; empty = /etc/resolv.conf
-    options: ""          # raw forward plugin options (max_fails, health_check, etc.)
+    forward:               # structured forward directive (mirrors the CoreDNS forward block); FROM is always "."
+      to: []               # upstream DNS servers (forward "TO..." targets); empty = /etc/resolv.conf
+      # policy: random       # random | round_robin | sequential
+      # forceTCP: false      # force_tcp
+      # preferUDP: false     # prefer_udp
+      # maxFails: 2          # max_fails
+      # healthCheck: 0.2s    # health_check DURATION [no_rec] [domain FQDN]
+      # expire: 10s          # expire idle connections
+      # except: []           # except NAMES...
+      # raw: ""              # escape hatch: option lines inserted verbatim
     autopath: ""         # autopath plugin args (optional)
 
   # cluster.local zone — in-cluster DNS (kubernetes plugin)
@@ -126,8 +134,8 @@ controlPlane:
 | _(no equivalent)_ | — | `coredns.cache.ttl` | int |
 | `configmap.log` | multiline string | `coredns.log` | list of strings |
 | `loadbalancePolicy` | string | `coredns.loadbalance` | string |
-| `configmap.forward` | multiline string | `coredns.public.upstreams` | list of strings |
-| `configmap.forwardOptions` | string | `coredns.public.options` | string |
+| `configmap.forward` | multiline string | `coredns.public.forward.to` | list of strings |
+| `configmap.forwardOptions` | string | `coredns.public.forward` (params) | object (structured) |
 | `configmap.autopath` | string | `coredns.public.autopath` | string |
 | `configmap.custom` | string | `coredns.custom` | string |
 | `additionalLocalZones` | list | `coredns.additionalLocalZones` | list |
@@ -160,8 +168,8 @@ Full coalesce map used in templates:
 | `cache.success.ttl` | `coalesce .Values.coredns.cache.success.ttl .Values.configmap.cache \| default 30` |
 | `log` (list) | `if not .Values.coredns.log` → fall back to `splitList "\n" .Values.configmap.log` |
 | `loadbalance` | `coalesce .Values.coredns.loadbalance .Values.loadbalancePolicy \| default "round_robin"` |
-| `public.upstreams` | `if .Values.coredns.public.upstreams` → else fall back to `configmap.forward` string |
-| `public.options` | `coalesce .Values.coredns.public.options .Values.configmap.forwardOptions` |
+| `public.forward.to` | `if .Values.coredns.public.forward.to` → else fall back to `configmap.forward` string |
+| `public.forward` (params) | rendered by the `coredns.forwardBlock` helper; falls back to the raw `configmap.forwardOptions` string when no structured params are set |
 | `public.autopath` | `coalesce .Values.coredns.public.autopath .Values.configmap.autopath` |
 | `cluster.domains` | `if not .Values.coredns.cluster.domains` → fall back to `splitList " " .Values.cluster.kubernetes.clusterDomain` |
 | `cluster.serviceCIDR` | `coalesce .Values.coredns.cluster.serviceCIDR .Values.cluster.kubernetes.API.clusterIPRange` |
@@ -197,7 +205,8 @@ New parent keys that have all their children unset are declared as `{}` in `valu
 |---|---|
 | `values.yaml` | New keys added with no defaults; old keys kept as `# DEPRECATED` with migration notes |
 | `values.schema.json` | New paths added with `description` fields; deprecated paths marked |
-| `templates/configmap.yaml` | All values resolved via coalesce at top of file; cache now rendered as full block; log/domains handle list↔string conversion |
+| `templates/configmap.yaml` | All values resolved via coalesce at top of file; cache and forward now rendered via helpers; log/domains handle list↔string conversion |
+| `templates/_helpers.tpl` | `coredns.cacheBlock` renders the cache directive; `coredns.forwardBlock` renders the `.`-zone forward directive from the structured `coredns.public.forward` map (with raw escape hatch and legacy `configmap.forwardOptions` fallback) |
 | `templates/deployment-masters.yaml` | `securityContext`, `controlPlane` (with `kindIs "invalid"`), `ports.metrics.port` |
 | `templates/deployment-workers.yaml` | `securityContext`, `ports.metrics.port` |
 | `templates/service.yaml` | `service.clusterIP` |
