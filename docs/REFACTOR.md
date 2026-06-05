@@ -70,7 +70,6 @@ coredns:
       # healthCheck: 0.2s    # health_check DURATION [no_rec] [domain FQDN]
       # expire: 10s          # expire idle connections
       # except: []           # except NAMES...
-      # raw: ""              # escape hatch: option lines inserted verbatim
     autopath: ""         # autopath plugin args (optional)
 
   # cluster.local zone — in-cluster DNS (kubernetes plugin)
@@ -87,8 +86,7 @@ coredns:
       # namespaces: []           # namespaces NAMESPACE...
       # labels: ""               # labels EXPRESSION
       # ignoreEmptyService: false # ignore empty_service
-      # fallthrough: false       # fallthrough (bare; use raw for scoped zones)
-      # raw: ""                  # escape hatch: option lines inserted verbatim
+      # fallthrough: false       # fallthrough
 
   additionalLocalZones: []  # extra zones (kubernetes plugin, no CIDR ranges)
 
@@ -160,7 +158,6 @@ controlPlane:
 | _(no equivalent)_ | — | `coredns.cluster.kubernetes.labels` | string |
 | _(no equivalent)_ | — | `coredns.cluster.kubernetes.ignoreEmptyService` | bool |
 | _(no equivalent)_ | — | `coredns.cluster.kubernetes.fallthrough` | bool |
-| _(no equivalent)_ | — | `coredns.cluster.kubernetes.raw` | string |
 | `cluster.kubernetes.DNS.IP` | string | `service.clusterIP` | string |
 | `userID` | int | `securityContext.runAsUser` | int |
 | `groupID` | int | `securityContext.runAsGroup` | int |
@@ -225,7 +222,7 @@ New parent keys that have all their children unset are declared as `{}` in `valu
 | `values.yaml` | New keys added with no defaults; old keys kept as `# DEPRECATED` with migration notes |
 | `values.schema.json` | New paths added with `description` fields; deprecated paths marked |
 | `templates/configmap.yaml` | All values resolved via coalesce at top of file; cache, forward, and kubernetes now rendered via helpers; log/domains handle list↔string conversion |
-| `templates/_helpers.tpl` | `coredns.cacheBlock` renders the cache directive; `coredns.forwardBlock` renders the `.`-zone forward directive from the structured `coredns.public.forward` map (with raw escape hatch and legacy `configmap.forwardOptions` fallback); `coredns.kubernetesBlock` renders each local-zone kubernetes directive from the structured `coredns.cluster.kubernetes` map |
+| `templates/_helpers.tpl` | `coredns.cacheBlock` renders the cache directive; `coredns.forwardBlock` renders the `.`-zone forward directive from the structured `coredns.public.forward` map (with legacy `configmap.forwardOptions` fallback); `coredns.kubernetesBlock` renders each local-zone kubernetes directive from the structured `coredns.cluster.kubernetes` map |
 | `templates/deployment-masters.yaml` | `securityContext`, `controlPlane` (with `kindIs "invalid"`), `ports.metrics.port` |
 | `templates/deployment-workers.yaml` | `securityContext`, `ports.metrics.port` |
 | `templates/service.yaml` | `service.clusterIP` |

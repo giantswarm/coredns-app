@@ -10,8 +10,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Refactored
 
 - Restructure Helm chart values interface with a zone-aware `coredns.*` layout; all old paths remain backward compatible.
-- Add `coredns.public.*` for the forward zone: `autopath` and a structured `forward` map mirroring the CoreDNS forward block — `to` (upstream targets) plus `policy`, `forceTCP`, `preferUDP`, `maxFails`, `healthCheck`, `expire`, `except`, and a `raw` escape hatch — extensible one parameter at a time.
-- Add `coredns.cluster.*` for the in-cluster zone: `domains`, `serviceCIDR`, `podCIDR`, and a structured `kubernetes` map mirroring the CoreDNS kubernetes block — `pods` (previously hardcoded to `verified`) plus `ttl`, `endpointPodNames`, `noendpoints`, `namespaces`, `labels`, `ignoreEmptyService`, `fallthrough`, and a `raw` escape hatch — extensible one parameter at a time.
+- Add `coredns.public.*` for the forward zone: `autopath` and a structured `forward` map mirroring the CoreDNS forward block — `to` (upstream targets) plus `policy`, `forceTCP`, `preferUDP`, `maxFails`, `healthCheck`, `expire`, and `except` — extensible one parameter at a time.
+- Add `coredns.cluster.*` for the in-cluster zone: `domains`, `serviceCIDR`, `podCIDR`, and a structured `kubernetes` map mirroring the CoreDNS kubernetes block — `pods` (previously hardcoded to `verified`) plus `ttl`, `endpointPodNames`, `noendpoints`, `namespaces`, `labels`, `ignoreEmptyService`, and `fallthrough` — extensible one parameter at a time.
 - Add `coredns.log`, `coredns.loadbalance`, `coredns.custom`, and `coredns.additionalLocalZones`.
 - Add `controlPlane.*`, `securityContext.*`, `service.clusterIP`, and `ports.metrics.port`.
 - Expand `coredns.cache` to expose the full CoreDNS cache directive: `success` and `denial` now have `capacity`, `ttl`, and `minTTL`; `prefetch` has `amount`, `duration`, and `percentage`; `serveStale` has `enabled`, `duration`, and `refreshMode`; new `servfail`, `disable`, `keepttl`, and `ttl` fields.

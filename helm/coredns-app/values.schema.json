@@ -333,7 +333,7 @@
                     "type": "object",
                     "properties": {
                         "forward": {
-                            "description": "Structured forward directive for the '.' zone, mirroring the CoreDNS forward block. The FROM is always '.'; 'to' holds the upstream targets and the remaining keys are forward plugin parameters. Only a representative subset is exposed; extend by adding keys here and in the coredns.forwardBlock helper, or use 'raw' for parameters not yet structured.",
+                            "description": "Structured forward directive for the '.' zone, mirroring the CoreDNS forward block. The FROM is always '.'; 'to' holds the upstream targets and the remaining keys are forward plugin parameters. Only a representative subset is exposed; extend by adding keys here and in the coredns.forwardBlock helper.",
                             "type": "object",
                             "properties": {
                                 "to": {
@@ -374,10 +374,6 @@
                                     "items": {
                                         "type": "string"
                                     }
-                                },
-                                "raw": {
-                                    "description": "Escape hatch: extra forward option lines inserted verbatim (one directive per line). Use for parameters not yet exposed as structured keys.",
-                                    "type": "string"
                                 }
                             }
                         },
@@ -407,7 +403,7 @@
                             "type": "string"
                         },
                         "kubernetes": {
-                            "description": "Structured kubernetes plugin parameters, mirroring the CoreDNS kubernetes block. Applied to cluster.local and every additionalLocalZones zone. Only a representative subset is exposed; extend by adding keys here and in the coredns.kubernetesBlock helper, or use 'raw' for parameters not yet structured.",
+                            "description": "Structured kubernetes plugin parameters, mirroring the CoreDNS kubernetes block. Applied to cluster.local and every additionalLocalZones zone. Only a representative subset is exposed; extend by adding keys here and in the coredns.kubernetesBlock helper.",
                             "type": "object",
                             "properties": {
                                 "pods": {
@@ -443,12 +439,8 @@
                                     "type": "boolean"
                                 },
                                 "fallthrough": {
-                                    "description": "Pass unresolved queries to the next plugin (kubernetes 'fallthrough'). For scoped fallthrough zones use 'raw'.",
+                                    "description": "Pass unresolved queries to the next plugin (kubernetes 'fallthrough').",
                                     "type": "boolean"
-                                },
-                                "raw": {
-                                    "description": "Escape hatch: extra kubernetes option lines inserted verbatim (one directive per line). Use for parameters not yet exposed as structured keys.",
-                                    "type": "string"
                                 }
                             }
                         }

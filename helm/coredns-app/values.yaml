@@ -104,8 +104,7 @@ coredns:
   # (https://coredns.io/plugins/forward/). The FROM is always "."; `to` holds the
   # upstream targets and the remaining keys are forward-plugin parameters. Only a
   # representative subset is wired up today; the block is designed to be extended one
-  # key at a time. Leave a key unset to keep the CoreDNS default. Use `raw` for any
-  # parameter not yet exposed.
+  # key at a time. Leave a key unset to keep the CoreDNS default.
   public:
     forward:
       to: []                # upstream DNS servers (the forward "TO..." targets); empty means use /etc/resolv.conf
@@ -116,7 +115,6 @@ coredns:
       # healthCheck: 0.2s     # health_check DURATION [no_rec] [domain FQDN]
       # expire: 10s           # expire — close idle upstream connections after this duration
       # except: []            # except NAMES... — domains to pass through unforwarded
-      # raw: ""               # escape hatch: extra option lines inserted verbatim (one directive per line)
     autopath: ""        # autopath plugin args, e.g. "@kubernetes" (optional)
 
   # cluster.local zone — in-cluster DNS (kubernetes plugin)
@@ -127,8 +125,7 @@ coredns:
     # Structured kubernetes-plugin parameters, mirroring the CoreDNS kubernetes block
     # (https://coredns.io/plugins/kubernetes/). Applied to cluster.local and every
     # additionalLocalZones zone. Only a representative subset is wired up today; the
-    # block is designed to be extended one key at a time. Use `raw` for any parameter
-    # not yet exposed.
+    # block is designed to be extended one key at a time.
     kubernetes:
       pods: verified              # pods — disabled | insecure | verified
       # ttl: 5                    # ttl SECONDS (0–3600)
@@ -137,8 +134,7 @@ coredns:
       # namespaces: []            # namespaces NAMESPACE... — expose only these namespaces
       # labels: ""                # labels EXPRESSION — expose only objects matching the selector
       # ignoreEmptyService: false # ignore empty_service — NXDOMAIN for services without ready endpoints
-      # fallthrough: false        # fallthrough — pass unresolved queries to the next plugin (use raw for scoped zones)
-      # raw: ""                   # escape hatch: extra option lines inserted verbatim (one directive per line)
+      # fallthrough: false        # fallthrough — pass unresolved queries to the next plugin
 
   additionalLocalZones: []  # extra zones served by the kubernetes plugin (no CIDR ranges)
 

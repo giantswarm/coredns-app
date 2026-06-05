@@ -67,10 +67,8 @@ Render the CoreDNS forward directive for the "." (public) zone. Call with ninden
 Forward-plugin parameters are taken from coredns.public.forward, a structured map
 that mirrors the CoreDNS forward block parameters
 (https://coredns.io/plugins/forward/). Only a representative subset of parameters is
-wired up today; the design is deliberately extensible:
-  - add a new structured key by appending one line to the option list below, plus a
-    documented key in values.yaml and values.schema.json, or
-  - set forward.raw for any parameter not yet exposed as a structured key.
+wired up today; extend it by appending one line to the option list below, plus a
+documented key in values.yaml and values.schema.json.
 
 Backward compatibility: when no structured parameters are set, the deprecated raw
 configmap.forwardOptions string is used as a fallback.
@@ -87,7 +85,6 @@ configmap.forwardOptions string is used as a fallback.
 {{- with $f.healthCheck }}{{ $lines = append $lines (printf "health_check %v" .) }}{{ end }}
 {{- with $f.expire }}{{ $lines = append $lines (printf "expire %v" .) }}{{ end }}
 {{- with $f.except }}{{ $lines = append $lines (printf "except %s" (join " " .)) }}{{ end }}
-{{- with $f.raw }}{{ range (. | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}{{ end }}
 {{- if and (not $lines) .Values.configmap.forwardOptions }}
 {{- range (.Values.configmap.forwardOptions | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}
 {{- end -}}
@@ -118,10 +115,8 @@ Render a CoreDNS kubernetes directive. Call via include with a dict context:
 Kubernetes-plugin parameters are taken from coredns.cluster.kubernetes, a structured
 map that mirrors the CoreDNS kubernetes block parameters
 (https://coredns.io/plugins/kubernetes/). Only a representative subset of parameters
-is wired up today; the design is deliberately extensible:
-  - add a new structured key by appending one line below, plus a documented key in
-    values.yaml and values.schema.json, or
-  - set kubernetes.raw for any parameter not yet exposed as a structured key.
+is wired up today; extend it by appending one line below, plus a documented key in
+values.yaml and values.schema.json.
 */}}
 {{- define "coredns.kubernetesBlock" -}}
 {{- $k := .ctx.Values.coredns.cluster.kubernetes | default dict -}}
@@ -147,11 +142,6 @@ kubernetes {{ .zone }}{{ with .cidrs }} {{ . }}{{ end }} {
   {{- end }}
   {{- if $k.fallthrough }}
   fallthrough
-  {{- end }}
-  {{- with $k.raw }}
-  {{- range (. | trimAll "\n " | splitList "\n") }}
-  {{ . }}
-  {{- end }}
   {{- end }}
 }
 {{- end -}}
