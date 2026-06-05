@@ -90,7 +90,7 @@ configmap.forwardOptions string is used as a fallback.
 {{- with $f.raw }}{{ range (. | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}{{ end }}
 {{- if and (not $lines) .Values.configmap.forwardOptions }}
 {{- range (.Values.configmap.forwardOptions | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}
-{{- end }}
+{{- end -}}
 forward . {{ join " " $upstreams }}{{ if $lines }} {
 {{- range $lines }}
   {{ . }}
@@ -98,14 +98,60 @@ forward . {{ join " " $upstreams }}{{ if $lines }} {
 }{{ end }}
 {{- else if .Values.configmap.forward }}
 {{- $lines := list }}
-{{- with .Values.configmap.forwardOptions }}{{ range (. | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}{{ end }}
+{{- with .Values.configmap.forwardOptions }}{{ range (. | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}{{ end -}}
 forward
 {{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }}{{- end }}{{ if $lines }} {
 {{- range $lines }}
   {{ . }}
 {{- end }}
 }{{ end }}
-{{- else }}
+{{- else -}}
 forward . /etc/resolv.conf
 {{- end }}
+{{- end -}}
+
+{{/*
+Render a CoreDNS kubernetes directive. Call via include with a dict context:
+  (dict "ctx" $ "zone" $domain "cidrs" "<serviceCIDR> <podCIDR>")
+"cidrs" may be empty for zones without reverse (PTR) ranges.
+
+Kubernetes-plugin parameters are taken from coredns.cluster.kubernetes, a structured
+map that mirrors the CoreDNS kubernetes block parameters
+(https://coredns.io/plugins/kubernetes/). Only a representative subset of parameters
+is wired up today; the design is deliberately extensible:
+  - add a new structured key by appending one line below, plus a documented key in
+    values.yaml and values.schema.json, or
+  - set kubernetes.raw for any parameter not yet exposed as a structured key.
+*/}}
+{{- define "coredns.kubernetesBlock" -}}
+{{- $k := .ctx.Values.coredns.cluster.kubernetes | default dict -}}
+kubernetes {{ .zone }}{{ with .cidrs }} {{ . }}{{ end }} {
+  pods {{ $k.pods | default "verified" }}
+  {{- with $k.ttl }}
+  ttl {{ . }}
+  {{- end }}
+  {{- if $k.endpointPodNames }}
+  endpoint_pod_names
+  {{- end }}
+  {{- if $k.noendpoints }}
+  noendpoints
+  {{- end }}
+  {{- with $k.namespaces }}
+  namespaces {{ join " " . }}
+  {{- end }}
+  {{- with $k.labels }}
+  labels {{ . }}
+  {{- end }}
+  {{- if $k.ignoreEmptyService }}
+  ignore empty_service
+  {{- end }}
+  {{- if $k.fallthrough }}
+  fallthrough
+  {{- end }}
+  {{- with $k.raw }}
+  {{- range (. | trimAll "\n " | splitList "\n") }}
+  {{ . }}
+  {{- end }}
+  {{- end }}
+}
 {{- end -}}

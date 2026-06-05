@@ -120,10 +120,25 @@ coredns:
     autopath: ""        # autopath plugin args, e.g. "@kubernetes" (optional)
 
   # cluster.local zone — in-cluster DNS (kubernetes plugin)
-  cluster: {}
-  # domains: [cluster.local]  # defaults to cluster.kubernetes.clusterDomain; set coredns.cluster.domains to override
-  # serviceCIDR: 172.31.0.0/16  # defaults to cluster.kubernetes.API.clusterIPRange; set coredns.cluster.serviceCIDR to override
-  # podCIDR: 192.168.0.0/16     # defaults to cluster.calico.CIDR; set coredns.cluster.podCIDR to override
+  cluster:
+    # domains: [cluster.local]   # defaults to cluster.kubernetes.clusterDomain; set coredns.cluster.domains to override
+    # serviceCIDR: 172.31.0.0/16 # defaults to cluster.kubernetes.API.clusterIPRange; set coredns.cluster.serviceCIDR to override
+    # podCIDR: 192.168.0.0/16    # defaults to cluster.calico.CIDR; set coredns.cluster.podCIDR to override
+    # Structured kubernetes-plugin parameters, mirroring the CoreDNS kubernetes block
+    # (https://coredns.io/plugins/kubernetes/). Applied to cluster.local and every
+    # additionalLocalZones zone. Only a representative subset is wired up today; the
+    # block is designed to be extended one key at a time. Use `raw` for any parameter
+    # not yet exposed.
+    kubernetes:
+      pods: verified              # pods — disabled | insecure | verified
+      # ttl: 5                    # ttl SECONDS (0–3600)
+      # endpointPodNames: false   # endpoint_pod_names — use pod name instead of dashed IP
+      # noendpoints: false        # noendpoints — disable endpoint record serving
+      # namespaces: []            # namespaces NAMESPACE... — expose only these namespaces
+      # labels: ""                # labels EXPRESSION — expose only objects matching the selector
+      # ignoreEmptyService: false # ignore empty_service — NXDOMAIN for services without ready endpoints
+      # fallthrough: false        # fallthrough — pass unresolved queries to the next plugin (use raw for scoped zones)
+      # raw: ""                   # escape hatch: extra option lines inserted verbatim (one directive per line)
 
   additionalLocalZones: []  # extra zones served by the kubernetes plugin (no CIDR ranges)
 
