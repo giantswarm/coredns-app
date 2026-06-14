@@ -27,6 +27,9 @@ A Helm chart for CoreDNS
 | coredns.cluster.cache.success.capacity | int | `9984` |  |
 | coredns.cluster.cache.success.ttl | int | `30` |  |
 | coredns.cluster.kubernetes.pods | string | `"verified"` |  |
+| coredns.cluster.loadbalance | string | `"round_robin"` |  |
+| coredns.cluster.log[0] | string | `"denial"` |  |
+| coredns.cluster.log[1] | string | `"error"` |  |
 | coredns.custom | string | `""` |  |
 | coredns.public.autopath | string | `""` |  |
 | coredns.public.cache.denial.capacity | int | `9984` |  |
@@ -35,6 +38,9 @@ A Helm chart for CoreDNS
 | coredns.public.cache.success.capacity | int | `9984` |  |
 | coredns.public.cache.success.ttl | int | `30` |  |
 | coredns.public.forward.to | list | `[]` |  |
+| coredns.public.loadbalance | string | `"round_robin"` |  |
+| coredns.public.log[0] | string | `"denial"` |  |
+| coredns.public.log[1] | string | `"error"` |  |
 | groupID | int | `33` |  |
 | hpa.behavior.scaleDown.stabilizationWindowSeconds | int | `1800` |  |
 | hpa.enabled | bool | `true` |  |

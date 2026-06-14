@@ -151,3 +151,34 @@ kubernetes {{ join " " .zone.names }}{{ with $cidrs }} {{ . }}{{ end }} {
   {{- end }}
 }
 {{- end -}}
+
+{{/*
+Render the CoreDNS log directive. Call via include with a dict context:
+  (dict "zone" $zone "ctx" $)
+The zone's log classes are read from $zone.log (a list). When absent, the deprecated
+configmap.log string is consulted as a fallback, then the built-in default
+(denial, error) applies. The block is always emitted so every zone keeps logging.
+*/}}
+{{- define "coredns.logBlock" -}}
+{{- $classes := .zone.log }}
+{{- if not $classes }}
+{{- $classes = splitList "\n" (.ctx.Values.configmap.log | trimAll "\n ") }}
+{{- end }}
+{{- if not $classes }}{{ $classes = list "denial" "error" }}{{ end -}}
+log . {
+{{- range $classes }}
+  class {{ . }}
+{{- end }}
+}
+{{- end -}}
+
+{{/*
+Render the CoreDNS loadbalance directive. Call via include with a dict context:
+  (dict "zone" $zone "ctx" $)
+The zone's policy is read from $zone.loadbalance. When absent, the deprecated
+loadbalancePolicy is consulted as a fallback, then the built-in default round_robin.
+*/}}
+{{- define "coredns.loadbalanceBlock" -}}
+{{- $policy := coalesce .zone.loadbalance .ctx.Values.loadbalancePolicy | default "round_robin" -}}
+loadbalance {{ $policy }}
+{{- end -}}

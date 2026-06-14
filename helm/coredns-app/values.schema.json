@@ -199,6 +199,19 @@
                     "type": "boolean"
                 }
             }
+        },
+        "log": {
+            "description": "List of CoreDNS log classes to emit for a zone. Omit to fall back to denial+error.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": ["all", "success", "denial", "error", "stdout", "stderr"]
+            }
+        },
+        "loadbalance": {
+            "description": "Load balancing policy applied to a zone's DNS responses with multiple A/AAAA records. Omit to fall back to round_robin.",
+            "type": "string",
+            "enum": ["round_robin", "random"]
         }
     },
     "properties": {
@@ -401,22 +414,9 @@
             }
         },
         "coredns": {
-            "description": "CoreDNS Corefile configuration. Defines cache, logging, load balancing, and per-zone settings.",
+            "description": "CoreDNS Corefile configuration. Cache, logging, and load balancing are configured per zone.",
             "type": "object",
             "properties": {
-                "log": {
-                    "description": "List of CoreDNS log classes to emit. Valid values: all, success, denial, error, stdout, stderr.",
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "enum": ["all", "success", "denial", "error", "stdout", "stderr"]
-                    }
-                },
-                "loadbalance": {
-                    "description": "Load balancing policy applied to DNS responses with multiple A/AAAA records.",
-                    "type": "string",
-                    "enum": ["round_robin", "random"]
-                },
                 "public": {
                     "description": "Configuration for the '.' (catch-all) forward zone that handles external DNS lookups.",
                     "type": "object",
@@ -427,6 +427,14 @@
                         },
                         "forward": {
                             "$ref": "#/definitions/forward"
+                        },
+                        "log": {
+                            "description": "Per-zone log classes for the '.' zone.",
+                            "$ref": "#/definitions/log"
+                        },
+                        "loadbalance": {
+                            "description": "Per-zone load balancing policy for the '.' zone.",
+                            "$ref": "#/definitions/loadbalance"
                         },
                         "autopath": {
                             "description": "Autopath plugin arguments (e.g. '@kubernetes'). Leave empty to disable.",
@@ -459,6 +467,14 @@
                         },
                         "kubernetes": {
                             "$ref": "#/definitions/kubernetes"
+                        },
+                        "log": {
+                            "description": "Per-zone log classes for the cluster-local zone.",
+                            "$ref": "#/definitions/log"
+                        },
+                        "loadbalance": {
+                            "description": "Per-zone load balancing policy for the cluster-local zone.",
+                            "$ref": "#/definitions/loadbalance"
                         }
                     }
                 },
@@ -492,6 +508,14 @@
                             },
                             "kubernetes": {
                                 "$ref": "#/definitions/kubernetes"
+                            },
+                            "log": {
+                                "description": "Optional per-zone log classes. Omit to use built-in defaults.",
+                                "$ref": "#/definitions/log"
+                            },
+                            "loadbalance": {
+                                "description": "Optional per-zone load balancing policy. Omit to use built-in defaults.",
+                                "$ref": "#/definitions/loadbalance"
                             }
                         }
                     }
@@ -538,7 +562,7 @@
             }
         },
         "loadbalancePolicy": {
-            "description": "DEPRECATED: use coredns.loadbalance",
+            "description": "DEPRECATED: use coredns.<zone>.loadbalance (per-zone)",
             "type": "string"
         },
         "cluster": {
@@ -588,7 +612,7 @@
                     "type": "integer"
                 },
                 "log": {
-                    "description": "DEPRECATED: use coredns.log",
+                    "description": "DEPRECATED: use coredns.<zone>.log (per-zone)",
                     "type": "string"
                 },
                 "custom": {

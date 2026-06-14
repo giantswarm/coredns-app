@@ -1,15 +1,9 @@
 {{- $dnsPort := .Values.ports.dns.targetPort }}
 {{- $metricsPort := coalesce .Values.ports.metrics.port .Values.ports.prometheus | default 9153 }}
-{{- $loadbalance := coalesce .Values.coredns.loadbalance .Values.loadbalancePolicy | default "round_robin" }}
 {{- $autopath := coalesce .Values.coredns.public.autopath .Values.configmap.autopath }}
 {{- $serviceCIDR := coalesce .Values.coredns.cluster.serviceCIDR .Values.cluster.kubernetes.API.clusterIPRange }}
 {{- $podCIDR := coalesce .Values.coredns.cluster.podCIDR .Values.cluster.calico.CIDR }}
 {{- $custom := coalesce .Values.coredns.custom .Values.configmap.custom }}
-
-{{- $logClasses := .Values.coredns.log }}
-{{- if not $logClasses }}
-  {{- $logClasses = splitList "\n" (.Values.configmap.log | trimAll "\n ") }}
-{{- end }}
 
 {{- $domains := .Values.coredns.cluster.domains }}
 {{- if not $domains }}
@@ -31,7 +25,7 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 data:
   Corefile: |
-    {{- $publicZone := dict "cache" .Values.coredns.public.cache "forward" .Values.coredns.public.forward "legacy" true }}
+    {{- $publicZone := dict "cache" .Values.coredns.public.cache "forward" .Values.coredns.public.forward "log" .Values.coredns.public.log "loadbalance" .Values.coredns.public.loadbalance "legacy" true }}
     .:{{ $dnsPort }} {
         {{- include "coredns.cacheBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
         errors
@@ -42,12 +36,8 @@ data:
           lameduck 5s
         }
         ready :8181
-        log . {
-          {{- range $logClasses }}
-          class {{ . }}
-          {{- end }}
-        }
-        loadbalance {{ $loadbalance }}
+        {{- include "coredns.logBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
+        {{- include "coredns.loadbalanceBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
         prometheus :{{ $metricsPort }}
         {{- include "coredns.forwardBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
         reload
@@ -59,7 +49,7 @@ data:
     {{- if not (has $domain $legacyZoneStrings) }}
     {{- $cidrsList := list }}
     {{- if (regexMatch ".local$" $domain) }}{{ $cidrsList = list $serviceCIDR $podCIDR }}{{ end }}
-    {{- $clusterZone := dict "names" (list $domain) "cidrs" $cidrsList "cache" $.Values.coredns.cluster.cache "kubernetes" $.Values.coredns.cluster.kubernetes }}
+    {{- $clusterZone := dict "names" (list $domain) "cidrs" $cidrsList "cache" $.Values.coredns.cluster.cache "kubernetes" $.Values.coredns.cluster.kubernetes "log" $.Values.coredns.cluster.log "loadbalance" $.Values.coredns.cluster.loadbalance }}
     {{ $domain }}:{{ $dnsPort }} {{- if (regexMatch ".local$" $domain ) }} {{ $serviceCIDR }}:{{ $dnsPort }} {{ $podCIDR }}:{{ $dnsPort }} {{- end }} {
         errors
         template ANY AAAA {
@@ -71,12 +61,8 @@ data:
         }
         ready :8181
         {{- include "coredns.kubernetesBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
-        log . {
-          {{- range $logClasses }}
-          class {{ . }}
-          {{- end }}
-        }
-        loadbalance {{ $loadbalance }}
+        {{- include "coredns.logBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
+        {{- include "coredns.loadbalanceBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
         prometheus :{{ $metricsPort }}
         reload
     }
@@ -103,12 +89,8 @@ data:
         {{- if $zone.forward }}
         {{- include "coredns.forwardBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
         {{- end }}
-        log . {
-          {{- range $logClasses }}
-          class {{ . }}
-          {{- end }}
-        }
-        loadbalance {{ $loadbalance }}
+        {{- include "coredns.logBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        {{- include "coredns.loadbalanceBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
         prometheus :{{ $metricsPort }}
         reload
     }
@@ -128,12 +110,8 @@ data:
         }
         ready :8181
         {{- include "coredns.kubernetesBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
-        log . {
-          {{- range $logClasses }}
-          class {{ . }}
-          {{- end }}
-        }
-        loadbalance {{ $loadbalance }}
+        {{- include "coredns.logBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        {{- include "coredns.loadbalanceBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
         prometheus :{{ $metricsPort }}
         reload
     }

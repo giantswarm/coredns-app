@@ -26,18 +26,13 @@ Introduce a new top-level key **`.Values.coredns`** that holds all CoreDNS Coref
 
 ### `.Values.coredns` — all Corefile-related config
 
-Cache is configured **per zone** (no global block); each zone (public, cluster, and every
-`additionalZones` entry) carries its own optional `cache`, falling back to built-in
-defaults (`success 9984 30` / `denial 9984 5`) when omitted.
+Cache, log, and loadbalance are configured **per zone** (no global block); each zone
+(public, cluster, and every `additionalZones` entry) carries its own optional `cache`,
+`log`, and `loadbalance`, falling back to built-in defaults when omitted (cache:
+`success 9984 30` / `denial 9984 5`; log: `denial`+`error`; loadbalance: `round_robin`).
 
 ```yaml
 coredns:
-  log:                   # list of log classes — defaults to configmap.log (global)
-    - denial
-    - error
-
-  loadbalance: round_robin   # round_robin | random — defaults to loadbalancePolicy (global)
-
   # "." zone — external/public DNS (forward zone)
   public:
     cache:                 # per-zone cache (omit -> defaults)
@@ -47,6 +42,10 @@ coredns:
     forward:               # structured forward directive (mirrors the CoreDNS forward block); FROM is always "."
       to: []               # upstream DNS servers (forward "TO..." targets); empty = /etc/resolv.conf
       # policy / forceTCP / preferUDP / maxFails / healthCheck / expire / except ...
+    log:                   # per-zone log classes (omit -> denial+error)
+      - denial
+      - error
+    loadbalance: round_robin   # round_robin | random (omit -> round_robin)
     autopath: ""         # autopath plugin args (optional)
 
   # cluster.local zone — in-cluster DNS (kubernetes plugin)
@@ -59,6 +58,8 @@ coredns:
     kubernetes:          # structured kubernetes-plugin params (mirrors the CoreDNS kubernetes block)
       pods: verified       # disabled | insecure | verified
       # ttl / endpointPodNames / noendpoints / namespaces / labels / ignoreEmptyService / fallthrough ...
+    log: [denial, error]       # per-zone log classes
+    loadbalance: round_robin   # per-zone loadbalance policy
 
   # extra zones — each a fully-templated server block
   additionalZones: []
@@ -66,6 +67,8 @@ coredns:
   #   cidrs: [10.96.0.0/12]        # optional reverse (PTR) ranges
   #   cache: {success: {ttl: 15}}  # optional per-zone cache
   #   kubernetes: {pods: verified} # forward and/or kubernetes (or neither)
+  #   log: [denial]                # optional per-zone log classes
+  #   loadbalance: random          # optional per-zone loadbalance policy
   # - names: [upstream.example.com]
   #   forward: {to: [10.0.0.53]}
 
@@ -108,8 +111,8 @@ controlPlane:
 | _(no equivalent)_ | — | `coredns.<zone>.cache.prefetch.{amount,duration,percentage}` | mixed |
 | _(no equivalent)_ | — | `coredns.<zone>.cache.serveStale.{enabled,duration,refreshMode}` | mixed |
 | _(no equivalent)_ | — | `coredns.<zone>.cache.{servfail.duration,disable.*,keepttl,ttl}` | mixed |
-| `configmap.log` | multiline string | `coredns.log` | list of strings |
-| `loadbalancePolicy` | string | `coredns.loadbalance` | string |
+| `configmap.log` | multiline string | `coredns.<zone>.log` (per-zone) | list of strings |
+| `loadbalancePolicy` | string | `coredns.<zone>.loadbalance` (per-zone) | string |
 | `configmap.forward` | multiline string | `coredns.public.forward.to` | list of strings |
 | `configmap.forwardOptions` | string | `coredns.public.forward` (params) | object (structured) |
 | `configmap.autopath` | string | `coredns.public.autopath` | string |
@@ -141,8 +144,8 @@ controlPlane:
 New keys have no defaults set in `values.yaml` — they are nil when unset. Templates use `coalesce` to prefer the new path and fall through to the old path when the new key is nil:
 
 ```yaml
-# Example — resolves to old path when coredns.loadbalance is unset:
-{{- $loadbalance := coalesce .Values.coredns.loadbalance .Values.loadbalancePolicy | default "round_robin" }}
+# Example — resolves to the deprecated path when the per-zone loadbalance is unset:
+{{- $policy := coalesce $zone.loadbalance .ctx.Values.loadbalancePolicy | default "round_robin" }}
 ```
 
 Full coalesce map used in templates:
@@ -150,8 +153,8 @@ Full coalesce map used in templates:
 | Value | Template expression |
 |---|---|
 | `<zone>.cache.success.ttl` | per zone, inside `coredns.cacheBlock`: `coalesce $success.ttl .ctx.Values.configmap.cache \| default 30` |
-| `log` (list) | `if not .Values.coredns.log` → fall back to `splitList "\n" .Values.configmap.log` |
-| `loadbalance` | `coalesce .Values.coredns.loadbalance .Values.loadbalancePolicy \| default "round_robin"` |
+| `<zone>.log` (list) | per zone, inside `coredns.logBlock`: `$zone.log` → else `splitList "\n" .ctx.Values.configmap.log` → else `denial`+`error` |
+| `<zone>.loadbalance` | per zone, inside `coredns.loadbalanceBlock`: `coalesce $zone.loadbalance .ctx.Values.loadbalancePolicy \| default "round_robin"` |
 | `public.forward.to` | `if .Values.coredns.public.forward.to` → else fall back to `configmap.forward` string (only the public zone passes `legacy: true`) |
 | `public.forward` (params) | rendered by the `coredns.forwardBlock` helper; falls back to the raw `configmap.forwardOptions` string when no structured params are set |
 | `public.autopath` | `coalesce .Values.coredns.public.autopath .Values.configmap.autopath` |
@@ -189,9 +192,9 @@ New parent keys that have all their children unset are declared as `{}` in `valu
 | File | Changes |
 |---|---|
 | `values.yaml` | New keys added with no defaults; old keys kept as `# DEPRECATED` with migration notes |
-| `values.schema.json` | `cache`/`forward`/`kubernetes` extracted to `definitions` and `$ref`'d from public/cluster/additionalZones; `additionalLocalZones` (strings) replaced by `additionalZones` (objects); deprecated paths marked |
+| `values.schema.json` | `cache`/`forward`/`kubernetes`/`log`/`loadbalance` extracted to `definitions` and `$ref`'d from public/cluster/additionalZones; `additionalLocalZones` (strings) replaced by `additionalZones` (objects); deprecated paths marked |
 | `templates/configmap.yaml` | Builds a canonical `$zone` dict per server block (public, each cluster domain, each additionalZones entry) and renders via the helpers; generic `additionalZones` loop + legacy `additionalLocalZones` string fallback |
-| `templates/_helpers.tpl` | `coredns.cacheBlock`, `coredns.forwardBlock`, `coredns.kubernetesBlock` share the uniform signature `(dict "zone" $zone "ctx" $)` — each reads its slice of the zone (`cache`/`forward`/`kubernetes`, plus `names`/`cidrs`/`legacy`). Forward's `configmap.*` fallback is gated by `$zone.legacy` (public only) |
+| `templates/_helpers.tpl` | `coredns.cacheBlock`, `coredns.forwardBlock`, `coredns.kubernetesBlock`, `coredns.logBlock`, `coredns.loadbalanceBlock` share the uniform signature `(dict "zone" $zone "ctx" $)` — each reads its slice of the zone (`cache`/`forward`/`kubernetes`/`log`/`loadbalance`, plus `names`/`cidrs`/`legacy`). Forward's `configmap.*` fallback is gated by `$zone.legacy` (public only); log/loadbalance fall back to the deprecated `configmap.log` / `loadbalancePolicy` then built-in defaults |
 | `templates/deployment-masters.yaml` | `securityContext`, `controlPlane` (with `kindIs "invalid"`), `ports.metrics.port` |
 | `templates/deployment-workers.yaml` | `securityContext`, `ports.metrics.port` |
 | `templates/service.yaml` | `service.clusterIP` |

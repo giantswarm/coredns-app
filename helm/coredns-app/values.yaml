@@ -67,16 +67,11 @@ controlPlane:
     "node-role.kubernetes.io/control-plane": '""'
 
 # ── CoreDNS Corefile configuration ───────────────────────────────────────────
-# Cache is configured per zone (coredns.public.cache, coredns.cluster.cache, and each
-# coredns.additionalZones[].cache), so different zones can cache differently. A zone that
-# omits `cache` falls back to the built-in defaults (success 9984 30 / denial 9984 5).
+# Cache, log, and loadbalance are configured per zone (coredns.public.*, coredns.cluster.*,
+# and each coredns.additionalZones[].*), so different zones can behave differently. A zone
+# that omits `cache` falls back to the built-in defaults (success 9984 30 / denial 9984 5);
+# a zone that omits `log`/`loadbalance` falls back to denial+error / round_robin.
 coredns:
-  # log:              # defaults to configmap.log
-  #   - denial
-  #   - error
-
-  # loadbalance: round_robin  # defaults to loadbalancePolicy; round_robin | random
-
   # "." zone — external/public DNS (forward zone)
   # Structured forward directive, mirroring the CoreDNS forward block
   # (https://coredns.io/plugins/forward/). The FROM is always "."; `to` holds the
@@ -117,6 +112,10 @@ coredns:
       # healthCheck: 0.2s     # health_check DURATION [no_rec] [domain FQDN]
       # expire: 10s           # expire — close idle upstream connections after this duration
       # except: []            # except NAMES... — domains to pass through unforwarded
+    log:                  # CoreDNS log classes for this zone; omit to fall back to denial+error
+      - denial
+      - error
+    loadbalance: round_robin  # round_robin | random; omit to fall back to round_robin
     autopath: ""        # autopath plugin args, e.g. "@kubernetes" (optional)
 
   # cluster.local zone — in-cluster DNS (kubernetes plugin)
@@ -160,13 +159,19 @@ coredns:
       # labels: ""                # labels EXPRESSION — expose only objects matching the selector
       # ignoreEmptyService: false # ignore empty_service — NXDOMAIN for services without ready endpoints
       # fallthrough: false        # fallthrough — pass unresolved queries to the next plugin
+    log:                  # CoreDNS log classes for this zone; omit to fall back to denial+error
+      - denial
+      - error
+    loadbalance: round_robin  # round_robin | random; omit to fall back to round_robin
 
   # Additional fully-templated local zones. Each entry is its own CoreDNS server block:
-  #   names      — zone names served by the block (required)
-  #   cidrs      — optional reverse (PTR) ranges, appended to the zone line + kubernetes args
-  #   cache      — optional per-zone cache (same shape as public/cluster; omit for defaults)
-  #   forward    — optional forward block (same shape as coredns.public.forward)
-  #   kubernetes — optional kubernetes block (same shape as coredns.cluster.kubernetes)
+  #   names       — zone names served by the block (required)
+  #   cidrs       — optional reverse (PTR) ranges, appended to the zone line + kubernetes args
+  #   cache       — optional per-zone cache (same shape as public/cluster; omit for defaults)
+  #   forward     — optional forward block (same shape as coredns.public.forward)
+  #   kubernetes  — optional kubernetes block (same shape as coredns.cluster.kubernetes)
+  #   log         — optional log classes (omit to fall back to denial+error)
+  #   loadbalance — optional policy (omit to fall back to round_robin)
   # A zone renders whichever of forward/kubernetes it declares (or both, or neither).
   additionalZones: []
   # additionalZones:
@@ -176,6 +181,8 @@ coredns:
   #     # cidrs: [10.96.0.0/12]
   #     # cache:
   #     #   success: { ttl: 15 }
+  #     # log: [denial]
+  #     # loadbalance: random
   #   - names: [upstream.example.com]
   #     forward:
   #       to: [10.0.0.53]
@@ -204,7 +211,7 @@ mastersInstance:
   nodeSelector:
     "node-role.kubernetes.io/control-plane": '""'
 
-# DEPRECATED: use coredns.loadbalance
+# DEPRECATED: use coredns.<zone>.loadbalance (per-zone)
 loadbalancePolicy: round_robin
 
 # DEPRECATED: use coredns.additionalZones
@@ -223,7 +230,7 @@ cluster:
 
 # DEPRECATED: use coredns.* instead
 # coredns.public.cache.success.ttl / coredns.cluster.cache.success.ttl replace configmap.cache
-# coredns.log replaces configmap.log
+# coredns.<zone>.log replaces configmap.log (per-zone)
 # coredns.public.forward.to replaces configmap.forward
 # coredns.public.forward.* replaces configmap.forwardOptions
 # coredns.public.autopath replaces configmap.autopath
