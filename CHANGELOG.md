@@ -14,13 +14,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Refactored
 
 - Restructure Helm chart values interface with a zone-aware `coredns.*` layout; all old paths remain backward compatible.
-- Add `coredns.public.*` for the forward zone: `autopath` and a structured `forward` map mirroring the CoreDNS forward block — `to` (upstream targets) plus `policy`, `forceTCP`, `preferUDP`, `maxFails`, `healthCheck`, `expire`, and `except` — extensible one parameter at a time.
-- Add `coredns.cluster.*` for the in-cluster zone: `domains`, `serviceCIDR`, `podCIDR`, and a structured `kubernetes` map mirroring the CoreDNS kubernetes block — `pods` (previously hardcoded to `verified`) plus `ttl`, `endpointPodNames`, `noendpoints`, `namespaces`, `labels`, `ignoreEmptyService`, and `fallthrough` — extensible one parameter at a time.
+- Add `coredns.public.*` for the forward zone: `autopath` and a structured `forward` map mirroring the CoreDNS forward block.
+- Add `coredns.cluster.*` for the in-cluster zone: `domains`, `serviceCIDR`, `podCIDR`, and a structured `kubernetes` map mirroring the CoreDNS kubernetes block.
 - Add `coredns.custom`.
 - Add `controlPlane.*`, `securityContext.*`, `service.clusterIP`, and `ports.metrics.port`.
-- Configure cache per zone: `coredns.public.cache`, `coredns.cluster.cache`, and each `coredns.additionalZones[].cache` replace the global `coredns.cache` (removed). Each exposes the full CoreDNS cache directive (`success`/`denial` with `capacity`/`ttl`/`minTTL`, `prefetch`, `serveStale`, `servfail`, `disable`, `keepttl`, `ttl`); a zone that omits `cache` uses built-in defaults, and the deprecated `configmap.cache` still seeds the success TTL.
-- Configure log and loadbalance per zone: `coredns.public.{log,loadbalance}`, `coredns.cluster.{log,loadbalance}`, and each `coredns.additionalZones[].{log,loadbalance}` replace the global `coredns.log` / `coredns.loadbalance` (removed). A zone that omits them falls back to the deprecated `configmap.log` / `loadbalancePolicy`, then to built-in defaults (`denial`+`error` / `round_robin`).
-- Replace `coredns.additionalLocalZones` (a list of zone-name strings) with `coredns.additionalZones`, a list of fully-templated zone objects — `names`, optional `cidrs`, `cache`, `log`, `loadbalance`, and a `forward` and/or `kubernetes` block. The deprecated top-level `additionalLocalZones` string list still renders as kubernetes zones.
+- Configure cache, log, and loadbalance per zone (`coredns.public.*`, `coredns.cluster.*`, and each `coredns.additionalZones[].*`), replacing the former global `coredns.cache`, `coredns.log`, and `coredns.loadbalance` (removed). A zone that omits them falls back to the deprecated paths, then to built-in defaults.
+- Replace `coredns.additionalLocalZones` (a list of zone-name strings) with `coredns.additionalZones`, a list of fully-templated zone objects. The deprecated top-level `additionalLocalZones` string list still renders as kubernetes zones.
 
 ## [1.30.3] - 2026-06-11
 
