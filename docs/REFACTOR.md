@@ -205,3 +205,5 @@ New parent keys that have all their children unset are declared as `{}` in `valu
 ## Known Behavior Change
 
 `configmap.cache: 30` was defined in the old `values.yaml` but was never referenced in the Corefile template — CoreDNS was effectively running with its built-in default of 3600s success TTL and 30s denial TTL. The per-zone `coredns.<zone>.cache` blocks are now correctly applied, bringing the effective TTLs to 30s (success) / 5s (denial). Existing installations will see a change in cache behavior on upgrade unless a higher `coredns.public.cache.success.ttl` / `coredns.cluster.cache.success.ttl` is set.
+
+The `health` plugin is process-wide and may be enabled in only one Server Block, so it is now rendered solely in the `.` (public) block instead of every zone block. The `ready` plugin is kept in every block — its readiness is aggregated across all blocks that enable it, per the [ready plugin docs](https://coredns.io/plugins/ready/).

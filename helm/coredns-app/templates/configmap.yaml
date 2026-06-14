@@ -56,9 +56,6 @@ data:
           rcode NOERROR
         }
         {{- include "coredns.cacheBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
-        health :8080 {
-          lameduck 5s
-        }
         ready :8181
         {{- include "coredns.kubernetesBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
         {{- include "coredns.logBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
@@ -79,9 +76,6 @@ data:
           rcode NOERROR
         }
         {{- include "coredns.cacheBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
-        health :8080 {
-          lameduck 5s
-        }
         ready :8181
         {{- if $zone.kubernetes }}
         {{- include "coredns.kubernetesBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
@@ -105,9 +99,6 @@ data:
           rcode NOERROR
         }
         {{- include "coredns.cacheBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
-        health :8080 {
-          lameduck 5s
-        }
         ready :8181
         {{- include "coredns.kubernetesBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
         {{- include "coredns.logBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
