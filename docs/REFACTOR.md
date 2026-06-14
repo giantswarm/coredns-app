@@ -26,50 +26,27 @@ Introduce a new top-level key **`.Values.coredns`** that holds all CoreDNS Coref
 
 ### `.Values.coredns` — all Corefile-related config
 
+Cache is configured **per zone** (no global block); each zone (public, cluster, and every
+`additionalZones` entry) carries its own optional `cache`, falling back to built-in
+defaults (`success 9984 30` / `denial 9984 5`) when omitted.
+
 ```yaml
 coredns:
-  cache:
-    # ttl: 30              # top-level TTL cap applied before success/denial checks
-    success:
-      capacity: 9984       # max cached positive responses
-      ttl: 30              # max TTL (seconds) — defaults to configmap.cache for backward compat
-      # minTTL: 0
-    denial:
-      capacity: 9984       # max cached NXDOMAIN/NODATA responses
-      ttl: 5               # max TTL (seconds)
-      # minTTL: 0
-    # prefetch:
-    #   amount: 10         # enable prefetch when this many requests received
-    #   duration: 1m       # only prefetch if requested within this duration
-    #   percentage: 20     # only prefetch if this % of TTL remains (requires duration)
-    serveStale:
-      enabled: false       # serve stale answers while refreshing
-      # duration: 1h
-      # refreshMode: ""    # immediate | background
-    # servfail:
-    #   duration: 5s       # how long to cache SERVFAIL responses
-    # disable:
-    #   success: false
-    #   denial: false
-    # keepttl: false       # preserve original TTLs instead of counting down
-
-  log:                   # list of log classes — defaults to configmap.log
+  log:                   # list of log classes — defaults to configmap.log (global)
     - denial
     - error
 
-  loadbalance: round_robin   # round_robin | random — defaults to loadbalancePolicy
+  loadbalance: round_robin   # round_robin | random — defaults to loadbalancePolicy (global)
 
   # "." zone — external/public DNS (forward zone)
   public:
+    cache:                 # per-zone cache (omit -> defaults)
+      success: {capacity: 9984, ttl: 30}   # ttl defaults to configmap.cache for backward compat
+      denial:  {capacity: 9984, ttl: 5}
+      # prefetch / serveStale / servfail / disable / keepttl / ttl ...
     forward:               # structured forward directive (mirrors the CoreDNS forward block); FROM is always "."
       to: []               # upstream DNS servers (forward "TO..." targets); empty = /etc/resolv.conf
-      # policy: random       # random | round_robin | sequential
-      # forceTCP: false      # force_tcp
-      # preferUDP: false     # prefer_udp
-      # maxFails: 2          # max_fails
-      # healthCheck: 0.2s    # health_check DURATION [no_rec] [domain FQDN]
-      # expire: 10s          # expire idle connections
-      # except: []           # except NAMES...
+      # policy / forceTCP / preferUDP / maxFails / healthCheck / expire / except ...
     autopath: ""         # autopath plugin args (optional)
 
   # cluster.local zone — in-cluster DNS (kubernetes plugin)
@@ -78,17 +55,19 @@ coredns:
       - cluster.local
     serviceCIDR: 172.31.0.0/16   # k8s service IP range — defaults to cluster.kubernetes.API.clusterIPRange
     podCIDR: 192.168.0.0/16      # pod network CIDR — defaults to cluster.calico.CIDR
-    kubernetes:          # structured kubernetes-plugin params (mirrors the CoreDNS kubernetes block); applied to cluster.local + additionalLocalZones
+    cache: {success: {...}, denial: {...}}   # per-zone cache
+    kubernetes:          # structured kubernetes-plugin params (mirrors the CoreDNS kubernetes block)
       pods: verified       # disabled | insecure | verified
-      # ttl: 5             # ttl SECONDS (0–3600)
-      # endpointPodNames: false  # endpoint_pod_names
-      # noendpoints: false       # noendpoints
-      # namespaces: []           # namespaces NAMESPACE...
-      # labels: ""               # labels EXPRESSION
-      # ignoreEmptyService: false # ignore empty_service
-      # fallthrough: false       # fallthrough
+      # ttl / endpointPodNames / noendpoints / namespaces / labels / ignoreEmptyService / fallthrough ...
 
-  additionalLocalZones: []  # extra zones (kubernetes plugin, no CIDR ranges)
+  # extra zones — each a fully-templated server block
+  additionalZones: []
+  # - names: [linkerd.local]       # zone names served by the block (required)
+  #   cidrs: [10.96.0.0/12]        # optional reverse (PTR) ranges
+  #   cache: {success: {ttl: 15}}  # optional per-zone cache
+  #   kubernetes: {pods: verified} # forward and/or kubernetes (or neither)
+  # - names: [upstream.example.com]
+  #   forward: {to: [10.0.0.53]}
 
   custom: ""  # raw Corefile snippet appended verbatim at end
 ```
@@ -123,30 +102,19 @@ controlPlane:
 
 | Old path | Old type | New path | New type |
 |---|---|---|---|
-| `configmap.cache` (was unused in template) | int | `coredns.cache.success.ttl` | int |
-| _(no equivalent)_ | — | `coredns.cache.success.capacity` | int |
-| _(no equivalent)_ | — | `coredns.cache.success.minTTL` | int |
-| _(no equivalent)_ | — | `coredns.cache.denial.ttl` | int |
-| _(no equivalent)_ | — | `coredns.cache.denial.capacity` | int |
-| _(no equivalent)_ | — | `coredns.cache.denial.minTTL` | int |
-| _(no equivalent)_ | — | `coredns.cache.prefetch.amount` | int |
-| _(no equivalent)_ | — | `coredns.cache.prefetch.duration` | string |
-| _(no equivalent)_ | — | `coredns.cache.prefetch.percentage` | int |
-| _(no equivalent)_ | — | `coredns.cache.serveStale.enabled` | bool |
-| _(no equivalent)_ | — | `coredns.cache.serveStale.duration` | string |
-| _(no equivalent)_ | — | `coredns.cache.serveStale.refreshMode` | string |
-| _(no equivalent)_ | — | `coredns.cache.servfail.duration` | string |
-| _(no equivalent)_ | — | `coredns.cache.disable.success` | bool |
-| _(no equivalent)_ | — | `coredns.cache.disable.denial` | bool |
-| _(no equivalent)_ | — | `coredns.cache.keepttl` | bool |
-| _(no equivalent)_ | — | `coredns.cache.ttl` | int |
+| `configmap.cache` (was unused in template) | int | `coredns.public.cache.success.ttl` / `coredns.cluster.cache.success.ttl` | int |
+| _(no equivalent)_ | — | `coredns.<zone>.cache.success.{capacity,minTTL}` | int |
+| _(no equivalent)_ | — | `coredns.<zone>.cache.denial.{ttl,capacity,minTTL}` | int |
+| _(no equivalent)_ | — | `coredns.<zone>.cache.prefetch.{amount,duration,percentage}` | mixed |
+| _(no equivalent)_ | — | `coredns.<zone>.cache.serveStale.{enabled,duration,refreshMode}` | mixed |
+| _(no equivalent)_ | — | `coredns.<zone>.cache.{servfail.duration,disable.*,keepttl,ttl}` | mixed |
 | `configmap.log` | multiline string | `coredns.log` | list of strings |
 | `loadbalancePolicy` | string | `coredns.loadbalance` | string |
 | `configmap.forward` | multiline string | `coredns.public.forward.to` | list of strings |
 | `configmap.forwardOptions` | string | `coredns.public.forward` (params) | object (structured) |
 | `configmap.autopath` | string | `coredns.public.autopath` | string |
 | `configmap.custom` | string | `coredns.custom` | string |
-| `additionalLocalZones` | list | `coredns.additionalLocalZones` | list |
+| `additionalLocalZones` | list of strings | `coredns.additionalZones` | list of zone objects (`names`, `cidrs`, `cache`, `forward`, `kubernetes`) |
 | `cluster.kubernetes.clusterDomain` | space-sep string | `coredns.cluster.domains` | list of strings |
 | `cluster.kubernetes.API.clusterIPRange` | string | `coredns.cluster.serviceCIDR` | string |
 | `cluster.calico.CIDR` | string | `coredns.cluster.podCIDR` | string |
@@ -181,15 +149,16 @@ Full coalesce map used in templates:
 
 | Value | Template expression |
 |---|---|
-| `cache.success.ttl` | `coalesce .Values.coredns.cache.success.ttl .Values.configmap.cache \| default 30` |
+| `<zone>.cache.success.ttl` | per zone, inside `coredns.cacheBlock`: `coalesce $success.ttl .ctx.Values.configmap.cache \| default 30` |
 | `log` (list) | `if not .Values.coredns.log` → fall back to `splitList "\n" .Values.configmap.log` |
 | `loadbalance` | `coalesce .Values.coredns.loadbalance .Values.loadbalancePolicy \| default "round_robin"` |
-| `public.forward.to` | `if .Values.coredns.public.forward.to` → else fall back to `configmap.forward` string |
+| `public.forward.to` | `if .Values.coredns.public.forward.to` → else fall back to `configmap.forward` string (only the public zone passes `legacy: true`) |
 | `public.forward` (params) | rendered by the `coredns.forwardBlock` helper; falls back to the raw `configmap.forwardOptions` string when no structured params are set |
 | `public.autopath` | `coalesce .Values.coredns.public.autopath .Values.configmap.autopath` |
 | `cluster.domains` | `if not .Values.coredns.cluster.domains` → fall back to `splitList " " .Values.cluster.kubernetes.clusterDomain` |
 | `cluster.serviceCIDR` | `coalesce .Values.coredns.cluster.serviceCIDR .Values.cluster.kubernetes.API.clusterIPRange` |
 | `cluster.podCIDR` | `coalesce .Values.coredns.cluster.podCIDR .Values.cluster.calico.CIDR` |
+| `additionalZones` | `if .Values.coredns.additionalZones` → render objects; else fall back to deprecated `additionalLocalZones` string list (rendered as kubernetes zones with default cache) |
 | `service.clusterIP` | `coalesce .Values.service.clusterIP .Values.cluster.kubernetes.DNS.IP` |
 | `ports.metrics.port` | `coalesce .Values.ports.metrics.port .Values.ports.prometheus \| default 9153` |
 | `securityContext.runAsUser` | `coalesce .Values.securityContext.runAsUser .Values.userID \| default 33` |
@@ -211,7 +180,7 @@ This means `mastersInstance.enabled: false` continues to work correctly — `con
 
 ### Parent objects
 
-New parent keys that have all their children unset are declared as `{}` in `values.yaml` rather than omitted entirely. Omitting them would make the parent nil, causing a nil pointer panic when templates access child keys. `{}` gives an empty map, which safely returns nil for any child key access.
+New parent keys that have all their children unset are declared as `{}` in `values.yaml` rather than omitted entirely. Omitting them would make the parent nil, causing a nil pointer panic when templates access child keys. `{}` gives an empty map, which safely returns nil for any child key access. The render helpers additionally guard every map they touch with `| default dict`, so a zone (e.g. an `additionalZones` entry) that omits `cache`, `forward`, or `kubernetes` renders safely.
 
 ---
 
@@ -220,9 +189,9 @@ New parent keys that have all their children unset are declared as `{}` in `valu
 | File | Changes |
 |---|---|
 | `values.yaml` | New keys added with no defaults; old keys kept as `# DEPRECATED` with migration notes |
-| `values.schema.json` | New paths added with `description` fields; deprecated paths marked |
-| `templates/configmap.yaml` | All values resolved via coalesce at top of file; cache, forward, and kubernetes now rendered via helpers; log/domains handle list↔string conversion |
-| `templates/_helpers.tpl` | `coredns.cacheBlock` renders the cache directive; `coredns.forwardBlock` renders the `.`-zone forward directive from the structured `coredns.public.forward` map (with legacy `configmap.forwardOptions` fallback); `coredns.kubernetesBlock` renders each local-zone kubernetes directive from the structured `coredns.cluster.kubernetes` map |
+| `values.schema.json` | `cache`/`forward`/`kubernetes` extracted to `definitions` and `$ref`'d from public/cluster/additionalZones; `additionalLocalZones` (strings) replaced by `additionalZones` (objects); deprecated paths marked |
+| `templates/configmap.yaml` | Builds a canonical `$zone` dict per server block (public, each cluster domain, each additionalZones entry) and renders via the helpers; generic `additionalZones` loop + legacy `additionalLocalZones` string fallback |
+| `templates/_helpers.tpl` | `coredns.cacheBlock`, `coredns.forwardBlock`, `coredns.kubernetesBlock` share the uniform signature `(dict "zone" $zone "ctx" $)` — each reads its slice of the zone (`cache`/`forward`/`kubernetes`, plus `names`/`cidrs`/`legacy`). Forward's `configmap.*` fallback is gated by `$zone.legacy` (public only) |
 | `templates/deployment-masters.yaml` | `securityContext`, `controlPlane` (with `kindIs "invalid"`), `ports.metrics.port` |
 | `templates/deployment-workers.yaml` | `securityContext`, `ports.metrics.port` |
 | `templates/service.yaml` | `service.clusterIP` |
@@ -232,4 +201,4 @@ New parent keys that have all their children unset are declared as `{}` in `valu
 
 ## Known Behavior Change
 
-`configmap.cache: 30` was defined in the old `values.yaml` but was never referenced in the Corefile template — CoreDNS was effectively running with its built-in default of 3600s success TTL and 30s denial TTL. The new `coredns.cache` block is correctly applied, bringing the effective TTLs to 30s (success) / 5s (denial). Existing installations will see a change in cache behavior on upgrade unless `coredns.cache.successTTL` is explicitly set to a higher value.
+`configmap.cache: 30` was defined in the old `values.yaml` but was never referenced in the Corefile template — CoreDNS was effectively running with its built-in default of 3600s success TTL and 30s denial TTL. The per-zone `coredns.<zone>.cache` blocks are now correctly applied, bringing the effective TTLs to 30s (success) / 5s (denial). Existing installations will see a change in cache behavior on upgrade unless a higher `coredns.public.cache.success.ttl` / `coredns.cluster.cache.success.ttl` is set.

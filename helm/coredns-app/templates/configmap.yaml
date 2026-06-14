@@ -16,9 +16,10 @@
   {{- $domains = splitList " " .Values.cluster.kubernetes.clusterDomain }}
 {{- end }}
 
-{{- $additionalLocalZones := .Values.coredns.additionalLocalZones }}
-{{- if not $additionalLocalZones }}
-  {{- $additionalLocalZones = .Values.additionalLocalZones }}
+{{- $additionalZones := .Values.coredns.additionalZones }}
+{{- $legacyZoneStrings := list }}
+{{- if not $additionalZones }}
+  {{- $legacyZoneStrings = coalesce .Values.coredns.additionalLocalZones .Values.additionalLocalZones | default (list) }}
 {{- end }}
 
 apiVersion: v1
@@ -30,8 +31,9 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 data:
   Corefile: |
+    {{- $publicZone := dict "cache" .Values.coredns.public.cache "forward" .Values.coredns.public.forward "legacy" true }}
     .:{{ $dnsPort }} {
-        {{- include "coredns.cacheBlock" . | nindent 8 }}
+        {{- include "coredns.cacheBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
         errors
         template ANY AAAA {
           rcode NOERROR
@@ -47,27 +49,28 @@ data:
         }
         loadbalance {{ $loadbalance }}
         prometheus :{{ $metricsPort }}
-        {{- include "coredns.forwardBlock" . | nindent 8 }}
+        {{- include "coredns.forwardBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
         reload
         {{- if $autopath }}
         autopath {{ $autopath }}
         {{- end }}
     }
     {{- range $index, $domain := $domains }}
-    {{- if not (has $domain $additionalLocalZones) }}
+    {{- if not (has $domain $legacyZoneStrings) }}
+    {{- $cidrsList := list }}
+    {{- if (regexMatch ".local$" $domain) }}{{ $cidrsList = list $serviceCIDR $podCIDR }}{{ end }}
+    {{- $clusterZone := dict "names" (list $domain) "cidrs" $cidrsList "cache" $.Values.coredns.cluster.cache "kubernetes" $.Values.coredns.cluster.kubernetes }}
     {{ $domain }}:{{ $dnsPort }} {{- if (regexMatch ".local$" $domain ) }} {{ $serviceCIDR }}:{{ $dnsPort }} {{ $podCIDR }}:{{ $dnsPort }} {{- end }} {
         errors
         template ANY AAAA {
           rcode NOERROR
         }
-        {{- include "coredns.cacheBlock" $ | nindent 8 }}
+        {{- include "coredns.cacheBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
         health :8080 {
           lameduck 5s
         }
         ready :8181
-        {{- $cidrs := "" }}
-        {{- if (regexMatch ".local$" $domain) }}{{ $cidrs = printf "%s %s" $serviceCIDR $podCIDR }}{{ end }}
-        {{- include "coredns.kubernetesBlock" (dict "ctx" $ "zone" $domain "cidrs" $cidrs) | nindent 8 }}
+        {{- include "coredns.kubernetesBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
         log . {
           {{- range $logClasses }}
           class {{ . }}
@@ -79,20 +82,52 @@ data:
     }
     {{- end }}
     {{- end }}
-    {{- if $additionalLocalZones }}
-    {{- range $index, $domain := $additionalLocalZones }}
+    {{- if $additionalZones }}
+    {{- range $zone := $additionalZones }}
+    {{- $names := list }}
+    {{- range $zone.names }}{{ $names = append $names (printf "%s:%v" . $dnsPort) }}{{ end }}
+    {{- range ($zone.cidrs | default list) }}{{ $names = append $names (printf "%s:%v" . $dnsPort) }}{{ end }}
+    {{ join " " $names }} {
+        errors
+        template ANY AAAA {
+          rcode NOERROR
+        }
+        {{- include "coredns.cacheBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        health :8080 {
+          lameduck 5s
+        }
+        ready :8181
+        {{- if $zone.kubernetes }}
+        {{- include "coredns.kubernetesBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        {{- end }}
+        {{- if $zone.forward }}
+        {{- include "coredns.forwardBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        {{- end }}
+        log . {
+          {{- range $logClasses }}
+          class {{ . }}
+          {{- end }}
+        }
+        loadbalance {{ $loadbalance }}
+        prometheus :{{ $metricsPort }}
+        reload
+    }
+    {{- end }}
+    {{- else if $legacyZoneStrings }}
+    {{- range $index, $domain := $legacyZoneStrings }}
     {{- if not (eq $domain "") }}
+    {{- $zone := dict "names" (list $domain) "kubernetes" $.Values.coredns.cluster.kubernetes }}
     {{ $domain }}:{{ $dnsPort }} {
         errors
         template ANY AAAA {
           rcode NOERROR
         }
-        {{- include "coredns.cacheBlock" $ | nindent 8 }}
+        {{- include "coredns.cacheBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
         health :8080 {
           lameduck 5s
         }
         ready :8181
-        {{- include "coredns.kubernetesBlock" (dict "ctx" $ "zone" $domain "cidrs" "") | nindent 8 }}
+        {{- include "coredns.kubernetesBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
         log . {
           {{- range $logClasses }}
           class {{ . }}

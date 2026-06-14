@@ -67,32 +67,10 @@ controlPlane:
     "node-role.kubernetes.io/control-plane": '""'
 
 # ── CoreDNS Corefile configuration ───────────────────────────────────────────
+# Cache is configured per zone (coredns.public.cache, coredns.cluster.cache, and each
+# coredns.additionalZones[].cache), so different zones can cache differently. A zone that
+# omits `cache` falls back to the built-in defaults (success 9984 30 / denial 9984 5).
 coredns:
-  cache:
-    # ttl: 30              # top-level TTL cap applied before success/denial checks
-    success:
-      capacity: 9984       # max number of cached positive responses
-      ttl: 30              # max TTL; defaults to configmap.cache for backward compat
-      # minTTL: 0          # min TTL for positive responses
-    denial:
-      capacity: 9984       # max number of cached NXDOMAIN/NODATA responses
-      ttl: 5               # max TTL
-      # minTTL: 0          # min TTL for denial responses
-    # prefetch:
-    #   amount: 10         # enable prefetch when this many requests received (required)
-    #   duration: 1m       # only prefetch if item was requested within this duration
-    #   percentage: 20     # only prefetch if this % of TTL remains (requires duration)
-    serveStale:
-      enabled: false       # serve stale answers while refreshing in background
-      # duration: 1h       # how long stale answers may be served
-      # refreshMode: ""    # immediate | background
-    # servfail:
-    #   duration: 5s       # how long to cache SERVFAIL responses
-    # disable:
-    #   success: false     # disable caching of positive responses
-    #   denial: false      # disable caching of NXDOMAIN/NODATA responses
-    # keepttl: false       # preserve original TTLs instead of counting down
-
   # log:              # defaults to configmap.log
   #   - denial
   #   - error
@@ -106,6 +84,30 @@ coredns:
   # representative subset is wired up today; the block is designed to be extended one
   # key at a time. Leave a key unset to keep the CoreDNS default.
   public:
+    cache:
+      # ttl: 30              # top-level TTL cap applied before success/denial checks
+      success:
+        capacity: 9984       # max number of cached positive responses
+        ttl: 30              # max TTL; defaults to configmap.cache for backward compat
+        # minTTL: 0          # min TTL for positive responses
+      denial:
+        capacity: 9984       # max number of cached NXDOMAIN/NODATA responses
+        ttl: 5               # max TTL
+        # minTTL: 0          # min TTL for denial responses
+      # prefetch:
+      #   amount: 10         # enable prefetch when this many requests received (required)
+      #   duration: 1m       # only prefetch if item was requested within this duration
+      #   percentage: 20     # only prefetch if this % of TTL remains (requires duration)
+      serveStale:
+        enabled: false       # serve stale answers while refreshing in background
+        # duration: 1h       # how long stale answers may be served
+        # refreshMode: ""    # immediate | background
+      # servfail:
+      #   duration: 5s       # how long to cache SERVFAIL responses
+      # disable:
+      #   success: false     # disable caching of positive responses
+      #   denial: false      # disable caching of NXDOMAIN/NODATA responses
+      # keepttl: false       # preserve original TTLs instead of counting down
     forward:
       to: []                # upstream DNS servers (the forward "TO..." targets); empty means use /etc/resolv.conf
       # policy: random        # random | round_robin | sequential
@@ -122,10 +124,33 @@ coredns:
     # domains: [cluster.local]   # defaults to cluster.kubernetes.clusterDomain; set coredns.cluster.domains to override
     # serviceCIDR: 172.31.0.0/16 # defaults to cluster.kubernetes.API.clusterIPRange; set coredns.cluster.serviceCIDR to override
     # podCIDR: 192.168.0.0/16    # defaults to cluster.calico.CIDR; set coredns.cluster.podCIDR to override
+    cache:
+      # ttl: 30              # top-level TTL cap applied before success/denial checks
+      success:
+        capacity: 9984       # max number of cached positive responses
+        ttl: 30              # max TTL; defaults to configmap.cache for backward compat
+        # minTTL: 0          # min TTL for positive responses
+      denial:
+        capacity: 9984       # max number of cached NXDOMAIN/NODATA responses
+        ttl: 5               # max TTL
+        # minTTL: 0          # min TTL for denial responses
+      # prefetch:
+      #   amount: 10
+      #   duration: 1m
+      #   percentage: 20
+      serveStale:
+        enabled: false       # serve stale answers while refreshing in background
+        # duration: 1h
+        # refreshMode: ""    # immediate | background
+      # servfail:
+      #   duration: 5s
+      # disable:
+      #   success: false
+      #   denial: false
+      # keepttl: false
     # Structured kubernetes-plugin parameters, mirroring the CoreDNS kubernetes block
-    # (https://coredns.io/plugins/kubernetes/). Applied to cluster.local and every
-    # additionalLocalZones zone. Only a representative subset is wired up today; the
-    # block is designed to be extended one key at a time.
+    # (https://coredns.io/plugins/kubernetes/). Only a representative subset is wired up
+    # today; the block is designed to be extended one key at a time.
     kubernetes:
       pods: verified              # pods — disabled | insecure | verified
       # ttl: 5                    # ttl SECONDS (0–3600)
@@ -136,7 +161,25 @@ coredns:
       # ignoreEmptyService: false # ignore empty_service — NXDOMAIN for services without ready endpoints
       # fallthrough: false        # fallthrough — pass unresolved queries to the next plugin
 
-  additionalLocalZones: []  # extra zones served by the kubernetes plugin (no CIDR ranges)
+  # Additional fully-templated local zones. Each entry is its own CoreDNS server block:
+  #   names      — zone names served by the block (required)
+  #   cidrs      — optional reverse (PTR) ranges, appended to the zone line + kubernetes args
+  #   cache      — optional per-zone cache (same shape as public/cluster; omit for defaults)
+  #   forward    — optional forward block (same shape as coredns.public.forward)
+  #   kubernetes — optional kubernetes block (same shape as coredns.cluster.kubernetes)
+  # A zone renders whichever of forward/kubernetes it declares (or both, or neither).
+  additionalZones: []
+  # additionalZones:
+  #   - names: [linkerd.local]
+  #     kubernetes:
+  #       pods: verified
+  #     # cidrs: [10.96.0.0/12]
+  #     # cache:
+  #     #   success: { ttl: 15 }
+  #   - names: [upstream.example.com]
+  #     forward:
+  #       to: [10.0.0.53]
+  #       # policy: random
 
   custom: ""  # raw Corefile snippet appended verbatim at end
 
@@ -164,7 +207,7 @@ mastersInstance:
 # DEPRECATED: use coredns.loadbalance
 loadbalancePolicy: round_robin
 
-# DEPRECATED: use coredns.additionalLocalZones
+# DEPRECATED: use coredns.additionalZones
 # additionalLocalZones: []
 
 # DEPRECATED: use coredns.cluster.* for Corefile config and service.clusterIP for the DNS service IP
@@ -179,10 +222,10 @@ cluster:
     clusterDomain: cluster.local
 
 # DEPRECATED: use coredns.* instead
-# coredns.cache.successTTL replaces configmap.cache
+# coredns.public.cache.success.ttl / coredns.cluster.cache.success.ttl replace configmap.cache
 # coredns.log replaces configmap.log
-# coredns.public.upstreams replaces configmap.forward
-# coredns.public.options replaces configmap.forwardOptions
+# coredns.public.forward.to replaces configmap.forward
+# coredns.public.forward.* replaces configmap.forwardOptions
 # coredns.public.autopath replaces configmap.autopath
 # coredns.custom replaces configmap.custom
 configmap:

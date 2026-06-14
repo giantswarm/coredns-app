@@ -12,9 +12,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Restructure Helm chart values interface with a zone-aware `coredns.*` layout; all old paths remain backward compatible.
 - Add `coredns.public.*` for the forward zone: `autopath` and a structured `forward` map mirroring the CoreDNS forward block — `to` (upstream targets) plus `policy`, `forceTCP`, `preferUDP`, `maxFails`, `healthCheck`, `expire`, and `except` — extensible one parameter at a time.
 - Add `coredns.cluster.*` for the in-cluster zone: `domains`, `serviceCIDR`, `podCIDR`, and a structured `kubernetes` map mirroring the CoreDNS kubernetes block — `pods` (previously hardcoded to `verified`) plus `ttl`, `endpointPodNames`, `noendpoints`, `namespaces`, `labels`, `ignoreEmptyService`, and `fallthrough` — extensible one parameter at a time.
-- Add `coredns.log`, `coredns.loadbalance`, `coredns.custom`, and `coredns.additionalLocalZones`.
+- Add `coredns.log`, `coredns.loadbalance`, and `coredns.custom`.
 - Add `controlPlane.*`, `securityContext.*`, `service.clusterIP`, and `ports.metrics.port`.
-- Expand `coredns.cache` to expose the full CoreDNS cache directive: `success` and `denial` now have `capacity`, `ttl`, and `minTTL`; `prefetch` has `amount`, `duration`, and `percentage`; `serveStale` has `enabled`, `duration`, and `refreshMode`; new `servfail`, `disable`, `keepttl`, and `ttl` fields.
+- Configure cache per zone: `coredns.public.cache`, `coredns.cluster.cache`, and each `coredns.additionalZones[].cache` replace the global `coredns.cache` (removed). Each exposes the full CoreDNS cache directive (`success`/`denial` with `capacity`/`ttl`/`minTTL`, `prefetch`, `serveStale`, `servfail`, `disable`, `keepttl`, `ttl`); a zone that omits `cache` uses built-in defaults, and the deprecated `configmap.cache` still seeds the success TTL.
+- Replace `coredns.additionalLocalZones` (a list of zone-name strings) with `coredns.additionalZones`, a list of fully-templated zone objects — `names`, optional `cidrs` and `cache`, and a `forward` and/or `kubernetes` block. The deprecated top-level `additionalLocalZones` string list still renders as kubernetes zones.
 
 ## [1.30.3] - 2026-06-11
 

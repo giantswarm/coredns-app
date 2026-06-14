@@ -29,17 +29,23 @@ k8s-app: {{ .Values.name | quote }}
 {{- end -}}
 
 {{/*
-Render the CoreDNS cache directive. Call with nindent to control indentation.
+Render the CoreDNS cache directive. Call via include with a dict context:
+  (dict "zone" $zone "ctx" $)
+The zone's cache config is read from $zone.cache (may be absent — built-in defaults
+then apply). $ctx is the root context, used only to reach the deprecated
+configmap.cache success-TTL seed.
 */}}
 {{- define "coredns.cacheBlock" -}}
-{{- $c := .Values.coredns.cache }}
-{{- $successCapacity := $c.success.capacity | default 9984 }}
-{{- $successTTL := coalesce $c.success.ttl .Values.configmap.cache | default 30 }}
-{{- $denialCapacity := $c.denial.capacity | default 9984 }}
-{{- $denialTTL := $c.denial.ttl | default 5 -}}
+{{- $c := .zone.cache | default dict }}
+{{- $success := $c.success | default dict }}
+{{- $denial := $c.denial | default dict }}
+{{- $successCapacity := $success.capacity | default 9984 }}
+{{- $successTTL := coalesce $success.ttl .ctx.Values.configmap.cache | default 30 }}
+{{- $denialCapacity := $denial.capacity | default 9984 }}
+{{- $denialTTL := $denial.ttl | default 5 -}}
 cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }} {
-  success {{ $successCapacity }} {{ $successTTL }}{{- with $c.success.minTTL }} {{ . }}{{- end }}
-  denial {{ $denialCapacity }} {{ $denialTTL }}{{- with $c.denial.minTTL }} {{ . }}{{- end }}
+  success {{ $successCapacity }} {{ $successTTL }}{{- with $success.minTTL }} {{ . }}{{- end }}
+  denial {{ $denialCapacity }} {{ $denialTTL }}{{- with $denial.minTTL }} {{ . }}{{- end }}
   {{- with $c.prefetch }}{{- if .amount }}
   prefetch {{ .amount }}{{- with .duration }} {{ . }}{{- end }}{{- with .percentage }} {{ . }}%{{- end }}
   {{- end }}{{- end }}
@@ -62,19 +68,19 @@ cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }} {
 {{- end -}}
 
 {{/*
-Render the CoreDNS forward directive for the "." (public) zone. Call with nindent.
+Render a CoreDNS forward directive. Call via include with a dict context:
+  (dict "zone" $zone "ctx" $)
+The zone's forward config is read from $zone.forward, a structured map that mirrors
+the CoreDNS forward block parameters (https://coredns.io/plugins/forward/). Only a
+representative subset of parameters is wired up today; extend it by appending one line
+to the option list below, plus a documented key in values.yaml and values.schema.json.
 
-Forward-plugin parameters are taken from coredns.public.forward, a structured map
-that mirrors the CoreDNS forward block parameters
-(https://coredns.io/plugins/forward/). Only a representative subset of parameters is
-wired up today; extend it by appending one line to the option list below, plus a
-documented key in values.yaml and values.schema.json.
-
-Backward compatibility: when no structured parameters are set, the deprecated raw
-configmap.forwardOptions string is used as a fallback.
+Backward compatibility: only when $zone.legacy is true (the public "." zone) are the
+deprecated configmap.forward / configmap.forwardOptions strings consulted as a fallback.
 */}}
 {{- define "coredns.forwardBlock" -}}
-{{- $f := .Values.coredns.public.forward | default dict }}
+{{- $f := .zone.forward | default dict }}
+{{- $legacy := .zone.legacy }}
 {{- $upstreams := $f.to }}
 {{- if $upstreams }}
 {{- $lines := list }}
@@ -85,19 +91,19 @@ configmap.forwardOptions string is used as a fallback.
 {{- with $f.healthCheck }}{{ $lines = append $lines (printf "health_check %v" .) }}{{ end }}
 {{- with $f.expire }}{{ $lines = append $lines (printf "expire %v" .) }}{{ end }}
 {{- with $f.except }}{{ $lines = append $lines (printf "except %s" (join " " .)) }}{{ end }}
-{{- if and (not $lines) .Values.configmap.forwardOptions }}
-{{- range (.Values.configmap.forwardOptions | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}
+{{- if and $legacy (not $lines) .ctx.Values.configmap.forwardOptions }}
+{{- range (.ctx.Values.configmap.forwardOptions | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}
 {{- end -}}
 forward . {{ join " " $upstreams }}{{ if $lines }} {
 {{- range $lines }}
   {{ . }}
 {{- end }}
 }{{ end }}
-{{- else if .Values.configmap.forward }}
+{{- else if and $legacy .ctx.Values.configmap.forward }}
 {{- $lines := list }}
-{{- with .Values.configmap.forwardOptions }}{{ range (. | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}{{ end -}}
+{{- with .ctx.Values.configmap.forwardOptions }}{{ range (. | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}{{ end -}}
 forward
-{{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }}{{- end }}{{ if $lines }} {
+{{- range (.ctx.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }}{{- end }}{{ if $lines }} {
 {{- range $lines }}
   {{ . }}
 {{- end }}
@@ -109,18 +115,18 @@ forward . /etc/resolv.conf
 
 {{/*
 Render a CoreDNS kubernetes directive. Call via include with a dict context:
-  (dict "ctx" $ "zone" $domain "cidrs" "<serviceCIDR> <podCIDR>")
-"cidrs" may be empty for zones without reverse (PTR) ranges.
-
-Kubernetes-plugin parameters are taken from coredns.cluster.kubernetes, a structured
-map that mirrors the CoreDNS kubernetes block parameters
+  (dict "zone" $zone "ctx" $)
+The zone names come from $zone.names (joined) and the optional reverse (PTR) ranges
+from $zone.cidrs. Kubernetes-plugin parameters are read from $zone.kubernetes, a
+structured map that mirrors the CoreDNS kubernetes block parameters
 (https://coredns.io/plugins/kubernetes/). Only a representative subset of parameters
 is wired up today; extend it by appending one line below, plus a documented key in
 values.yaml and values.schema.json.
 */}}
 {{- define "coredns.kubernetesBlock" -}}
-{{- $k := .ctx.Values.coredns.cluster.kubernetes | default dict -}}
-kubernetes {{ .zone }}{{ with .cidrs }} {{ . }}{{ end }} {
+{{- $k := .zone.kubernetes | default dict -}}
+{{- $cidrs := join " " (.zone.cidrs | default list) -}}
+kubernetes {{ join " " .zone.names }}{{ with $cidrs }} {{ . }}{{ end }} {
   pods {{ $k.pods | default "verified" }}
   {{- with $k.ttl }}
   ttl {{ . }}
