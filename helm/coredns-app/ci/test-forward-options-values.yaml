@@ -1,0 +1,7 @@
+configmap:
+  custom: |
+    test.example.com:1053 {
+        forward . 10.1.1.10 10.1.2.10
+    }
+  forward: . 10.1.1.10 10.1.2.10
+  forwardOptions: max_concurrent 1000
