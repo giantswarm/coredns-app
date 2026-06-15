@@ -108,55 +108,53 @@ jobs:
               "old/helm/${REPO_NAME}" > "/tmp/${test_file_path}/render-old.yaml"
           done
       - name: get the diffs
-        uses: mathiasvr/command-output@34408ea3d0528273faff3d9e201761ae96106cd0  # v2.0.0
-        with:
-          run: |
-            marker="=== No differences at all ==="
-            REPO_NAME="${{ github.event.repository.name }}"
-            (
-            found_differences=
-            first=1
-            for test_file_path in helm/${REPO_NAME}/ci/test-*-values.yaml; do
-              if [ "${first}" = 1 ]; then
-                first=
-              else
-                echo
-                echo
-              fi
-              echo "=== Differences when rendered with values file ${test_file_path} ==="
-              old_file="/tmp/${test_file_path}/render-old.yaml"
-              new_file="/tmp/${test_file_path}/render-new.yaml"
-              dyff between --set-exit-code --ignore-order-changes --omit-header \
-                --use-go-patch-style "${old_file}" "${new_file}" \
-                && echo "No difference" \
-                || { res=$?; found_differences=1; if [[ $res -eq 255 ]]; then echo "Diff error"; fi; }
-            done
-
-            if [ -z "${found_differences}" ]; then
+        run: |
+          marker="=== No differences at all ==="
+          REPO_NAME="${{ github.event.repository.name }}"
+          (
+          found_differences=
+          first=1
+          for test_file_path in helm/${REPO_NAME}/ci/test-*-values.yaml; do
+            if [ "${first}" = 1 ]; then
+              first=
+            else
               echo
-                echo
-                echo "${marker}"
+              echo
             fi
-            ) > /tmp/diffs
+            echo "=== Differences when rendered with values file ${test_file_path} ==="
+            old_file="/tmp/${test_file_path}/render-old.yaml"
+            new_file="/tmp/${test_file_path}/render-new.yaml"
+            dyff between --set-exit-code --ignore-order-changes --omit-header \
+              --use-go-patch-style "${old_file}" "${new_file}" \
+              && echo "No difference" \
+              || { res=$?; found_differences=1; if [[ $res -eq 255 ]]; then echo "Diff error"; fi; }
+          done
 
-            (
-              if ! grep -qF "${marker}" /tmp/diffs ; then
-                echo "**There were differences in the rendered Helm template, please check! ⚠️**"
-              else
-                echo "There were no differences in the rendered Helm template."
-              fi
-
+          if [ -z "${found_differences}" ]; then
+            echo
               echo
-              echo "<details>"
-              echo "<summary>Output</summary>"
-              echo "<!-- mandatory empty line -->"
-              echo ""
-              echo '```'
-              cat /tmp/diffs
-              echo '```'
-              echo "</details>"
-              echo "<!-- mandatory empty line -->"
-            ) > /tmp/comment-body
+              echo "${marker}"
+          fi
+          ) > /tmp/diffs
+
+          (
+            if ! grep -qF "${marker}" /tmp/diffs ; then
+              echo "**There were differences in the rendered Helm template, please check! ⚠️**"
+            else
+              echo "There were no differences in the rendered Helm template."
+            fi
+
+            echo
+            echo "<details>"
+            echo "<summary>Output</summary>"
+            echo "<!-- mandatory empty line -->"
+            echo ""
+            echo '```'
+            cat /tmp/diffs
+            echo '```'
+            echo "</details>"
+            echo "<!-- mandatory empty line -->"
+          ) > /tmp/comment-body
       - name: Find diff comment
         uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
         continue-on-error: true
