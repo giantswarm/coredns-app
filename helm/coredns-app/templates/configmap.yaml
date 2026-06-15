@@ -25,7 +25,7 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 data:
   Corefile: |
-    {{- $publicZone := dict "cache" .Values.coredns.public.cache "forward" .Values.coredns.public.forward "log" .Values.coredns.public.log "loadbalance" .Values.coredns.public.loadbalance "legacy" true }}
+    {{- $publicZone := .Values.coredns.public }}
     .:{{ $dnsPort }} {
         {{- include "coredns.cacheBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
         errors
@@ -39,7 +39,7 @@ data:
         {{- include "coredns.logBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
         {{- include "coredns.loadbalanceBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
         prometheus :{{ $metricsPort }}
-        {{- include "coredns.forwardBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
+        {{- include "coredns.forwardBlock" (dict "zone" $publicZone "compat" "true" "ctx" $) | nindent 8 }}
         reload
         {{- if $autopath }}
         autopath {{ $autopath }}
@@ -49,7 +49,7 @@ data:
     {{- if not (has $domain $legacyZoneStrings) }}
     {{- $cidrsList := list }}
     {{- if (regexMatch ".local$" $domain) }}{{ $cidrsList = list $serviceCIDR $podCIDR }}{{ end }}
-    {{- $clusterZone := dict "names" (list $domain) "cidrs" $cidrsList "cache" $.Values.coredns.cluster.cache "kubernetes" $.Values.coredns.cluster.kubernetes "log" $.Values.coredns.cluster.log "loadbalance" $.Values.coredns.cluster.loadbalance }}
+    {{- $clusterZone := merge (dict "names" (list $domain) "cidrs" $cidrsList) $.Values.coredns.cluster }}
     {{ $domain }}:{{ $dnsPort }} {{- if (regexMatch ".local$" $domain ) }} {{ $serviceCIDR }}:{{ $dnsPort }} {{ $podCIDR }}:{{ $dnsPort }} {{- end }} {
         errors
         template ANY AAAA {
@@ -92,7 +92,7 @@ data:
     {{- else if $legacyZoneStrings }}
     {{- range $index, $domain := $legacyZoneStrings }}
     {{- if not (eq $domain "") }}
-    {{- $zone := dict "names" (list $domain) "kubernetes" $.Values.coredns.cluster.kubernetes }}
+    {{- $zone := merge (dict "names" (list $domain)) $.Values.coredns.cluster }}
     {{ $domain }}:{{ $dnsPort }} {
         errors
         template ANY AAAA {
