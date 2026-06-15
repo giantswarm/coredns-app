@@ -64,7 +64,7 @@ jobs:
       - run: ls -la /opt/hostedtoolcache
       - name: render helm with current code
         run: |
-          helm repo add cluster-catalog https://giantswarm.github.io/cluster-catalog/
+          helm repo add default-catalog https://giantswarm.github.io/default-catalog/
 
           # We also add default-test-catalog so we can more easily test dev builds of subcharts.
           # Charts from default-test-catalog should be used only for testing purposes.
