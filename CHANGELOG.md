@@ -7,6 +7,21 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Render the `health` directive in only the `.` server block. The health plugin is process-wide and can be enabled in just one Server Block, so emitting it in every zone block was invalid. `ready` is kept in every block (its readiness is aggregated across blocks).
+
+### Refactored
+
+- Restructure Helm chart values interface with a zone-aware `coredns.*` layout; all old paths remain backward compatible.
+- Add `coredns.public.*` for the forward zone: `autopath` and a structured `forward` map mirroring the CoreDNS forward block, including `maxConcurrent` (`max_concurrent`).
+- Migrate the CI test value files to the new `coredns.*` interface.
+- Add `coredns.cluster.*` for the in-cluster zone: `domains`, `serviceCIDR`, `podCIDR`, and a structured `kubernetes` map mirroring the CoreDNS kubernetes block.
+- Add `coredns.custom`.
+- Add `controlPlane.*`, `securityContext.*`, `service.clusterIP`, and `ports.metrics.port`.
+- Configure cache, log, and loadbalance per zone (`coredns.public.*`, `coredns.cluster.*`, and each `coredns.additionalZones[].*`), replacing the former global `coredns.cache`, `coredns.log`, and `coredns.loadbalance` (removed). A zone that omits them falls back to the deprecated paths, then to built-in defaults.
+- Replace `coredns.additionalLocalZones` (a list of zone-name strings) with `coredns.additionalZones`, a list of fully-templated zone objects. The deprecated top-level `additionalLocalZones` string list still renders as kubernetes zones.
+
 ## [1.30.3] - 2026-06-11
 
 ### Changed

@@ -1,3 +1,21 @@
+{{- $dnsPort := .Values.ports.dns.targetPort }}
+{{- $metricsPort := coalesce .Values.ports.metrics.port .Values.ports.prometheus | default 9153 }}
+{{- $autopath := coalesce .Values.coredns.public.autopath .Values.configmap.autopath }}
+{{- $serviceCIDR := coalesce .Values.coredns.cluster.serviceCIDR .Values.cluster.kubernetes.API.clusterIPRange }}
+{{- $podCIDR := coalesce .Values.coredns.cluster.podCIDR .Values.cluster.calico.CIDR }}
+{{- $custom := coalesce .Values.coredns.custom .Values.configmap.custom }}
+
+{{- $domains := .Values.coredns.cluster.domains }}
+{{- if not $domains }}
+  {{- $domains = splitList " " .Values.cluster.kubernetes.clusterDomain }}
+{{- end }}
+
+{{- $additionalZones := .Values.coredns.additionalZones }}
+{{- $legacyZoneStrings := list }}
+{{- if not $additionalZones }}
+  {{- $legacyZoneStrings = coalesce .Values.coredns.additionalLocalZones .Values.additionalLocalZones | default (list) }}
+{{- end }}
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,8 +25,9 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 data:
   Corefile: |
-    .:{{ .Values.ports.dns.targetPort }} {
-        cache
+    {{- $publicZone := dict "cache" .Values.coredns.public.cache "forward" .Values.coredns.public.forward "log" .Values.coredns.public.log "loadbalance" .Values.coredns.public.loadbalance "legacy" true }}
+    .:{{ $dnsPort }} {
+        {{- include "coredns.cacheBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
         errors
         template ANY AAAA {
           rcode NOERROR
@@ -17,95 +36,81 @@ data:
           lameduck 5s
         }
         ready :8181
-        log . {
-          {{- range (.Values.configmap.log | trimAll "\n " |  split "\n") }}
-          class {{ . }}
-          {{- end }}
-        }
-        loadbalance {{ .Values.loadbalancePolicy }}
-        prometheus :{{ .Values.ports.prometheus }}
-
-        {{- if and .Values.configmap.forward .Values.configmap.forwardOptions }}
-        forward {{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }} {{- end }} {
-          {{ .Values.configmap.forwardOptions | trimSuffix "\n" }}
-        }
-        {{- else if .Values.configmap.forward }}
-        forward {{- range (.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }} {{- end }}
-        {{- else }}
-        forward . /etc/resolv.conf
-        {{- end }}
+        {{- include "coredns.logBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
+        {{- include "coredns.loadbalanceBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
+        prometheus :{{ $metricsPort }}
+        {{- include "coredns.forwardBlock" (dict "zone" $publicZone "ctx" $) | nindent 8 }}
         reload
-        {{- if .Values.configmap.autopath }}
-        autopath {{ .Values.configmap.autopath }}
+        {{- if $autopath }}
+        autopath {{ $autopath }}
         {{- end }}
     }
-
-    {{- $domains := split " " .Values.cluster.kubernetes.clusterDomain }}
-    {{- $dnsPort := .Values.ports.dns.targetPort }}
-    {{- $clusterIPRange := .Values.cluster.kubernetes.API.clusterIPRange }}
-    {{- $calicoCIDR:= .Values.cluster.calico.CIDR }}
-    {{- $loadbalancePolicy := .Values.loadbalancePolicy }}
-    {{- $prometheus := .Values.ports.prometheus }}
-    {{- $customLog := .Values.configmap.log }}
-    {{- $additionalLocalZones := .Values.additionalLocalZones -}}
     {{- range $index, $domain := $domains }}
-    {{- if not (has $domain $additionalLocalZones) }}
-    {{ $domain }}:{{ $dnsPort }} {{- if (regexMatch ".local$" $domain ) }} {{ $clusterIPRange }}:{{ $dnsPort }} {{ $calicoCIDR }}:{{ $dnsPort }} {{- end }} {
+    {{- if not (has $domain $legacyZoneStrings) }}
+    {{- $cidrsList := list }}
+    {{- if (regexMatch ".local$" $domain) }}{{ $cidrsList = list $serviceCIDR $podCIDR }}{{ end }}
+    {{- $clusterZone := dict "names" (list $domain) "cidrs" $cidrsList "cache" $.Values.coredns.cluster.cache "kubernetes" $.Values.coredns.cluster.kubernetes "log" $.Values.coredns.cluster.log "loadbalance" $.Values.coredns.cluster.loadbalance }}
+    {{ $domain }}:{{ $dnsPort }} {{- if (regexMatch ".local$" $domain ) }} {{ $serviceCIDR }}:{{ $dnsPort }} {{ $podCIDR }}:{{ $dnsPort }} {{- end }} {
         errors
         template ANY AAAA {
           rcode NOERROR
         }
-        cache
-        health :8080 {
-          lameduck 5s
-        }
+        {{- include "coredns.cacheBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
         ready :8181
-        kubernetes {{ $domain }} {{- if (regexMatch ".local$" $domain ) }} {{ $clusterIPRange }} {{ $calicoCIDR }} {{- end }} {
-          pods verified
-        }
-        log . {
-          {{- range ($customLog | trimAll "\n " |  split "\n") }}
-          class {{ . }}
-          {{- end }}
-        }
-        loadbalance {{ $loadbalancePolicy }}
-        prometheus :{{ $prometheus }}
+        {{- include "coredns.kubernetesBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
+        {{- include "coredns.logBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
+        {{- include "coredns.loadbalanceBlock" (dict "zone" $clusterZone "ctx" $) | nindent 8 }}
+        prometheus :{{ $metricsPort }}
         reload
     }
     {{- end }}
     {{- end }}
-
-    {{- if .Values.additionalLocalZones }}
-    {{- range $index, $domain := .Values.additionalLocalZones }}
+    {{- if $additionalZones }}
+    {{- range $zone := $additionalZones }}
+    {{- $names := list }}
+    {{- range $zone.names }}{{ $names = append $names (printf "%s:%v" . $dnsPort) }}{{ end }}
+    {{- range ($zone.cidrs | default list) }}{{ $names = append $names (printf "%s:%v" . $dnsPort) }}{{ end }}
+    {{ join " " $names }} {
+        errors
+        template ANY AAAA {
+          rcode NOERROR
+        }
+        {{- include "coredns.cacheBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        ready :8181
+        {{- if $zone.kubernetes }}
+        {{- include "coredns.kubernetesBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        {{- end }}
+        {{- if $zone.forward }}
+        {{- include "coredns.forwardBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        {{- end }}
+        {{- include "coredns.logBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        {{- include "coredns.loadbalanceBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        prometheus :{{ $metricsPort }}
+        reload
+    }
+    {{- end }}
+    {{- else if $legacyZoneStrings }}
+    {{- range $index, $domain := $legacyZoneStrings }}
     {{- if not (eq $domain "") }}
+    {{- $zone := dict "names" (list $domain) "kubernetes" $.Values.coredns.cluster.kubernetes }}
     {{ $domain }}:{{ $dnsPort }} {
         errors
         template ANY AAAA {
           rcode NOERROR
         }
-        cache
-        health :8080 {
-          lameduck 5s
-        }
+        {{- include "coredns.cacheBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
         ready :8181
-        kubernetes {{ $domain }} {
-          pods verified
-        }
-        log . {
-          {{- range ($customLog | trimAll "\n " |  split "\n") }}
-          class {{ . }}
-          {{- end }}
-        }
-        loadbalance {{ $loadbalancePolicy }}
-        prometheus :{{ $prometheus }}
+        {{- include "coredns.kubernetesBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        {{- include "coredns.logBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        {{- include "coredns.loadbalanceBlock" (dict "zone" $zone "ctx" $) | nindent 8 }}
+        prometheus :{{ $metricsPort }}
         reload
     }
     {{- end }}
     {{- end }}
     {{- end }}
-
-    {{- if .Values.configmap.custom }}
-    {{- range (.Values.configmap.custom | trimAll "\n " |  splitList "\n") }}
+    {{- if $custom }}
+    {{- range ($custom | trimAll "\n " | splitList "\n") }}
     {{ . }}
     {{- end }}
     {{- end }}

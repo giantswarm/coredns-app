@@ -18,7 +18,7 @@ spec:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
         prometheus.io/scrape: "true"
-        prometheus.io/port: "{{ .Values.ports.prometheus }}"
+        prometheus.io/port: "{{ coalesce .Values.ports.metrics.port .Values.ports.prometheus | default 9153 }}"
       labels:
         {{- include "labels.common" . | nindent 8 }}
         app.kubernetes.io/component: workers
@@ -26,8 +26,8 @@ spec:
       serviceAccountName: {{ .Values.name }}
       priorityClassName: system-cluster-critical
       securityContext:
-        runAsUser: {{ .Values.userID }}
-        runAsGroup: {{ .Values.groupID }}
+        runAsUser: {{ coalesce .Values.securityContext.runAsUser .Values.userID | default 33 }}
+        runAsGroup: {{ coalesce .Values.securityContext.runAsGroup .Values.groupID | default 33 }}
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
@@ -72,7 +72,7 @@ spec:
         - containerPort: {{ .Values.ports.dns.targetPort }}
           name: {{ .Values.ports.dns.name }}-tcp
           protocol: TCP
-        - containerPort: {{ .Values.ports.prometheus }}
+        - containerPort: {{ coalesce .Values.ports.metrics.port .Values.ports.prometheus | default 9153 }}
           name: http-metrics
           protocol: TCP
         - containerPort: 8080

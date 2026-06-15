@@ -20,7 +20,7 @@ spec:
     - port: {{ .Values.ports.dns.port }}
       protocol: TCP
   - ports:
-    - port: {{ .Values.ports.prometheus }}
+    - port: {{ coalesce .Values.ports.metrics.port .Values.ports.prometheus | default 9153 }}
       protocol: TCP
   egress:
   - {}
