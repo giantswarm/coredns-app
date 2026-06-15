@@ -14,7 +14,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Refactored
 
 - Restructure Helm chart values interface with a zone-aware `coredns.*` layout; all old paths remain backward compatible.
-- Add `coredns.public.*` for the forward zone: `autopath` and a structured `forward` map mirroring the CoreDNS forward block.
+- Add `coredns.public.*` for the forward zone: `autopath` and a structured `forward` map mirroring the CoreDNS forward block, including `maxConcurrent` (`max_concurrent`).
+- Migrate the CI test value files to the new `coredns.*` interface.
 - Add `coredns.cluster.*` for the in-cluster zone: `domains`, `serviceCIDR`, `podCIDR`, and a structured `kubernetes` map mirroring the CoreDNS kubernetes block.
 - Add `coredns.custom`.
 - Add `controlPlane.*`, `securityContext.*`, `service.clusterIP`, and `ports.metrics.port`.

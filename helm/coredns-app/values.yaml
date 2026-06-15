@@ -111,6 +111,7 @@ coredns:
       # maxFails: 2           # max_fails — consecutive failed health checks before marking an upstream down
       # healthCheck: 0.2s     # health_check DURATION [no_rec] [domain FQDN]
       # expire: 10s           # expire — close idle upstream connections after this duration
+      # maxConcurrent: 1000   # max_concurrent — maximum number of concurrent queries to forward
       # except: []            # except NAMES... — domains to pass through unforwarded
     log:                  # CoreDNS log classes for this zone; omit to fall back to denial+error
       - denial

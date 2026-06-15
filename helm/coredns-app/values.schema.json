@@ -149,6 +149,10 @@
                     "description": "Close idle upstream connections after this duration (forward 'expire'), e.g. '10s'.",
                     "type": "string"
                 },
+                "maxConcurrent": {
+                    "description": "Maximum number of concurrent queries to forward (forward 'max_concurrent').",
+                    "type": "integer"
+                },
                 "except": {
                     "description": "Domain names to pass through unforwarded (forward 'except').",
                     "type": "array",

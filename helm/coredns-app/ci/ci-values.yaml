@@ -1,11 +1,9 @@
-cluster:
-  calico:
-    CIDR: 100.64.0.0/12
-  kubernetes:
-    API:
-      clusterIPRange: 172.31.0.0/16
-    DNS:
-      IP: 172.31.0.10
+coredns:
+  cluster:
+    podCIDR: 100.64.0.0/12
+    serviceCIDR: 172.31.0.0/16
+service:
+  clusterIP: 172.31.0.10
 global:
   podSecurityStandards:
     enforced: true

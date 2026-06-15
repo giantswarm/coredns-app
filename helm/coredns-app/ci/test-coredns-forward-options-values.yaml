@@ -1,0 +1,11 @@
+coredns:
+  public:
+    forward:
+      to:
+        - 10.1.1.10
+        - 10.1.2.10
+      maxConcurrent: 1000
+  custom: |
+    test.example.com:1053 {
+        forward . 10.1.1.10 10.1.2.10
+    }

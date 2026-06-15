@@ -90,6 +90,7 @@ deprecated configmap.forward / configmap.forwardOptions strings consulted as a f
 {{- with $f.maxFails }}{{ $lines = append $lines (printf "max_fails %v" .) }}{{ end }}
 {{- with $f.healthCheck }}{{ $lines = append $lines (printf "health_check %v" .) }}{{ end }}
 {{- with $f.expire }}{{ $lines = append $lines (printf "expire %v" .) }}{{ end }}
+{{- with $f.maxConcurrent }}{{ $lines = append $lines (printf "max_concurrent %v" .) }}{{ end }}
 {{- with $f.except }}{{ $lines = append $lines (printf "except %s" (join " " .)) }}{{ end }}
 {{- if and $legacy (not $lines) .ctx.Values.configmap.forwardOptions }}
 {{- range (.ctx.Values.configmap.forwardOptions | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}
