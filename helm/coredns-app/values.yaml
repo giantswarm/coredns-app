@@ -81,6 +81,7 @@ coredns:
   public:
     cache:
       # ttl: 30              # top-level TTL cap applied before success/denial checks
+      # zones: []            # cache ZONES... — limit caching to these zones (default: server-block zones)
       success:
         capacity: 9984       # max number of cached positive responses
         ttl: 30              # max TTL; defaults to configmap.cache for backward compat
@@ -96,23 +97,40 @@ coredns:
       serveStale:
         enabled: false       # serve stale answers while refreshing in background
         # duration: 1h       # how long stale answers may be served
-        # refreshMode: ""    # immediate | background
+        # refreshMode: ""    # immediate | verify
+        # verifyTimeout: 100ms # only with refreshMode verify — max wait for upstream verify before serving stale
       # servfail:
       #   duration: 5s       # how long to cache SERVFAIL responses
       # disable:
       #   success: false     # disable caching of positive responses
+      #   successZones: []   # disable success ZONES... — limit the disable to these zones
       #   denial: false      # disable caching of NXDOMAIN/NODATA responses
+      #   denialZones: []    # disable denial ZONES... — limit the disable to these zones
       # keepttl: false       # preserve original TTLs instead of counting down
     forward:
       to: []                # upstream DNS servers (the forward "TO..." targets); empty means use /etc/resolv.conf
-      # policy: random        # random | round_robin | sequential
+      # except: []            # except NAMES... — domains to pass through unforwarded
       # forceTCP: false       # force_tcp — always use TCP to the upstream
       # preferUDP: false      # prefer_udp — try UDP first even for queries received over TCP
-      # maxFails: 2           # max_fails — consecutive failed health checks before marking an upstream down
-      # healthCheck: 0.2s     # health_check DURATION [no_rec] [domain FQDN]
       # expire: 10s           # expire — close idle upstream connections after this duration
+      # maxIdleConns: 0       # max_idle_conns — idle connections cached per upstream (0 = unlimited)
+      # maxFails: 2           # max_fails — consecutive failed health checks before marking an upstream down
+      # maxConnectAttempts: 0 # max_connect_attempts — cap on connect attempts per request (0 = no cap)
+      # dohMethod: POST       # doh_method — GET | POST for DoH requests
+      # tls:                  # tls CERT KEY CA — set cert+key, ca, all three, or enabled for bare tls
+      #   enabled: false      #   emit bare "tls" (system CAs, no client auth)
+      #   cert: ""            #   client cert file path
+      #   key: ""             #   client key file path
+      #   ca: ""              #   CA cert file path
+      # tlsServername: ""     # tls_servername NAME — expected server cert name (e.g. dns.quad9.net)
+      # policy: random        # random | round_robin | sequential
+      # healthCheck: 0.2s     # health_check DURATION [no_rec] [domain FQDN]
       # maxConcurrent: 1000   # max_concurrent — maximum number of concurrent queries to forward
-      # except: []            # except NAMES... — domains to pass through unforwarded
+      # next: []              # next RCODE... — run next forward plugin on these rcodes (e.g. [NXDOMAIN])
+      # nextOnNodata: false   # next_on_nodata — run next forward plugin on empty NOERROR answers
+      # failfastAllUnhealthyUpstreams: false # failfast_all_unhealthy_upstreams — SERVFAIL when all down
+      # failover: []          # failover RCODE... — retry next upstream on these rcodes (e.g. [SERVFAIL, REFUSED])
+      # resolver: []          # resolver IP[:PORT]... — resolvers for hostname-based "to" endpoints
     log:                  # CoreDNS log classes for this zone; omit to fall back to denial+error
       - denial
       - error
@@ -126,6 +144,7 @@ coredns:
     # podCIDR: 192.168.0.0/16    # defaults to cluster.calico.CIDR; set coredns.cluster.podCIDR to override
     cache:
       # ttl: 30              # top-level TTL cap applied before success/denial checks
+      # zones: []            # cache ZONES... — limit caching to these zones (default: server-block zones)
       success:
         capacity: 9984       # max number of cached positive responses
         ttl: 30              # max TTL; defaults to configmap.cache for backward compat
@@ -141,25 +160,42 @@ coredns:
       serveStale:
         enabled: false       # serve stale answers while refreshing in background
         # duration: 1h
-        # refreshMode: ""    # immediate | background
+        # refreshMode: ""    # immediate | verify
+        # verifyTimeout: 100ms # only with refreshMode verify — max wait for upstream verify before serving stale
       # servfail:
       #   duration: 5s
       # disable:
       #   success: false
+      #   successZones: []
       #   denial: false
+      #   denialZones: []
       # keepttl: false
     # Structured kubernetes-plugin parameters, mirroring the CoreDNS kubernetes block
-    # (https://coredns.io/plugins/kubernetes/). Only a representative subset is wired up
-    # today; the block is designed to be extended one key at a time.
+    # (https://coredns.io/plugins/kubernetes/). Leave a key unset to keep the CoreDNS default.
     kubernetes:
       pods: verified              # pods — disabled | insecure | verified
+      # endpoint: ""              # endpoint URL — remote k8s API endpoint (omit for in-cluster)
+      # tls:                      # tls CERT KEY CACERT — for a remote k8s connection
+      #   cert: ""
+      #   key: ""
+      #   ca: ""
+      # kubeconfig:               # kubeconfig KUBECONFIG [CONTEXT] — authenticate via kubeconfig file
+      #   path: ""
+      #   context: ""
+      # apiserverQPS: 0           # apiserver_qps — max queries-per-second to the API server
+      # apiserverBurst: 0         # apiserver_burst — max burst size for API server requests
+      # apiserverMaxInflight: 0   # apiserver_max_inflight — max concurrent in-flight API server requests
       # ttl: 5                    # ttl SECONDS (0–3600)
       # endpointPodNames: false   # endpoint_pod_names — use pod name instead of dashed IP
       # noendpoints: false        # noendpoints — disable endpoint record serving
       # namespaces: []            # namespaces NAMESPACE... — expose only these namespaces
+      # namespaceLabels: ""       # namespace_labels EXPRESSION — expose only namespaces matching the selector
       # labels: ""                # labels EXPRESSION — expose only objects matching the selector
       # ignoreEmptyService: false # ignore empty_service — NXDOMAIN for services without ready endpoints
-      # fallthrough: false        # fallthrough — pass unresolved queries to the next plugin
+      # fallthrough: false        # fallthrough — pass unresolved queries to the next plugin (all zones)
+      # fallthroughZones: []      # fallthrough ZONES... — limit fallthrough to these zones
+      # multicluster: []          # multicluster ZONES... — MCS-API multicluster zones
+      # startupTimeout: 5s        # startup_timeout — wait for informer cache sync at startup
     log:                  # CoreDNS log classes for this zone; omit to fall back to denial+error
       - denial
       - error

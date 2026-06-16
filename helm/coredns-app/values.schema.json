@@ -10,6 +10,13 @@
                     "description": "Top-level TTL cap applied to all cached entries (seconds).",
                     "type": "integer"
                 },
+                "zones": {
+                    "description": "Zones the cache applies to (cache 'ZONES'). If empty, the zones from the server block are used.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "success": {
                     "description": "Configuration for caching positive (success) responses.",
                     "type": "object",
@@ -77,9 +84,13 @@
                             "type": "string"
                         },
                         "refreshMode": {
-                            "description": "Refresh mode for stale entries.",
+                            "description": "Refresh mode for stale entries. 'immediate' serves the stale entry before checking the source; 'verify' confirms the entry is still unavailable first.",
                             "type": "string",
-                            "enum": ["immediate", "background"]
+                            "enum": ["immediate", "verify"]
+                        },
+                        "verifyTimeout": {
+                            "description": "Only valid with refreshMode 'verify'. Bounds how long the cache waits for the upstream verify before falling back to the stale entry (e.g. 100ms). Default 0 waits for the upstream's own timeout.",
+                            "type": "string"
                         }
                     }
                 },
@@ -101,9 +112,23 @@
                             "description": "Disable caching of positive responses.",
                             "type": "boolean"
                         },
+                        "successZones": {
+                            "description": "Limit the success-cache disable to these zones (disable success 'ZONES'). Omit to disable for all zones.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
                         "denial": {
                             "description": "Disable caching of NXDOMAIN/NODATA responses.",
                             "type": "boolean"
+                        },
+                        "denialZones": {
+                            "description": "Limit the denial-cache disable to these zones (disable denial 'ZONES'). Omit to disable for all zones.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
                         }
                     }
                 },
@@ -141,8 +166,47 @@
                     "description": "Consecutive failed health checks before an upstream is considered down (forward 'max_fails').",
                     "type": "integer"
                 },
+                "maxConnectAttempts": {
+                    "description": "Cap on total upstream connect attempts per request (forward 'max_connect_attempts'). 0 means no cap.",
+                    "type": "integer"
+                },
+                "maxIdleConns": {
+                    "description": "Maximum idle connections cached per upstream for reuse (forward 'max_idle_conns'). 0 means unlimited.",
+                    "type": "integer"
+                },
                 "healthCheck": {
-                    "description": "Upstream health-check configuration (forward 'health_check'), e.g. '0.2s' or '0.2s no_rec'.",
+                    "description": "Upstream health-check configuration (forward 'health_check'), e.g. '0.2s', '0.2s no_rec', or '5s domain example.org'.",
+                    "type": "string"
+                },
+                "dohMethod": {
+                    "description": "HTTP method for DoH requests (forward 'doh_method').",
+                    "type": "string",
+                    "enum": ["GET", "POST"]
+                },
+                "tls": {
+                    "description": "TLS configuration for the upstream connection (forward 'tls'). Provide cert+key (client auth), ca (custom server verification), all three, or set enabled for a bare 'tls' using system CAs.",
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "description": "Emit a bare 'tls' directive (system CAs, no client auth) when no cert/key/ca are set.",
+                            "type": "boolean"
+                        },
+                        "cert": {
+                            "description": "Client certificate file path.",
+                            "type": "string"
+                        },
+                        "key": {
+                            "description": "Client key file path.",
+                            "type": "string"
+                        },
+                        "ca": {
+                            "description": "CA certificate file path used to verify the server certificate.",
+                            "type": "string"
+                        }
+                    }
+                },
+                "tlsServername": {
+                    "description": "Server name expected in the upstream TLS certificate (forward 'tls_servername'), e.g. 'dns.quad9.net'. Strongly recommended when forwarding over TLS.",
                     "type": "string"
                 },
                 "expire": {
@@ -152,6 +216,35 @@
                 "maxConcurrent": {
                     "description": "Maximum number of concurrent queries to forward (forward 'max_concurrent').",
                     "type": "integer"
+                },
+                "next": {
+                    "description": "Response codes that cause the next forward plugin to be executed (forward 'next'), e.g. ['NXDOMAIN'].",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "nextOnNodata": {
+                    "description": "Execute the next forward plugin when the upstream returns NOERROR with an empty answer (forward 'next_on_nodata').",
+                    "type": "boolean"
+                },
+                "failfastAllUnhealthyUpstreams": {
+                    "description": "Immediately return SERVFAIL when all upstreams are unhealthy instead of spraying to a random upstream (forward 'failfast_all_unhealthy_upstreams').",
+                    "type": "boolean"
+                },
+                "failover": {
+                    "description": "Response codes that trigger a retry on the next upstream (forward 'failover'), e.g. ['SERVFAIL', 'REFUSED']. NOERROR is not allowed.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "resolver": {
+                    "description": "DNS resolver addresses used to resolve hostname-based 'to' endpoints at startup (forward 'resolver'), each a bare IP or IP:PORT.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "except": {
                     "description": "Domain names to pass through unforwarded (forward 'except').",
@@ -166,6 +259,54 @@
             "description": "Structured kubernetes plugin parameters, mirroring the CoreDNS kubernetes block. Only a representative subset is exposed; extend by adding keys here and in the coredns.kubernetesBlock helper.",
             "type": "object",
             "properties": {
+                "endpoint": {
+                    "description": "URL of a remote k8s API endpoint (kubernetes 'endpoint'). Omit to connect in-cluster. Ignored when kubeconfig is set.",
+                    "type": "string"
+                },
+                "tls": {
+                    "description": "TLS cert, key and CA cert file paths for a remote k8s connection (kubernetes 'tls'). Ignored when connecting in-cluster.",
+                    "type": "object",
+                    "properties": {
+                        "cert": {
+                            "description": "Client certificate file path.",
+                            "type": "string"
+                        },
+                        "key": {
+                            "description": "Client key file path.",
+                            "type": "string"
+                        },
+                        "ca": {
+                            "description": "CA certificate file path.",
+                            "type": "string"
+                        }
+                    }
+                },
+                "kubeconfig": {
+                    "description": "Authenticate to a remote k8s cluster using a kubeconfig file (kubernetes 'kubeconfig').",
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "description": "Path to the kubeconfig file.",
+                            "type": "string"
+                        },
+                        "context": {
+                            "description": "Optional kubeconfig context. Defaults to the current context.",
+                            "type": "string"
+                        }
+                    }
+                },
+                "apiserverQPS": {
+                    "description": "Maximum queries-per-second rate limit for API server requests (kubernetes 'apiserver_qps').",
+                    "type": "integer"
+                },
+                "apiserverBurst": {
+                    "description": "Maximum burst size for API server requests (kubernetes 'apiserver_burst').",
+                    "type": "integer"
+                },
+                "apiserverMaxInflight": {
+                    "description": "Maximum number of concurrent in-flight API server requests (kubernetes 'apiserver_max_inflight').",
+                    "type": "integer"
+                },
                 "pods": {
                     "description": "Pod A record handling mode (kubernetes 'pods').",
                     "type": "string",
@@ -190,6 +331,10 @@
                         "type": "string"
                     }
                 },
+                "namespaceLabels": {
+                    "description": "Expose only namespaces matching this label selector expression (kubernetes 'namespace_labels').",
+                    "type": "string"
+                },
                 "labels": {
                     "description": "Expose only objects matching this label selector expression (kubernetes 'labels').",
                     "type": "string"
@@ -199,8 +344,26 @@
                     "type": "boolean"
                 },
                 "fallthrough": {
-                    "description": "Pass unresolved queries to the next plugin (kubernetes 'fallthrough').",
+                    "description": "Pass unresolved queries to the next plugin for all authoritative zones (kubernetes 'fallthrough'). Ignored when fallthroughZones is set.",
                     "type": "boolean"
+                },
+                "fallthroughZones": {
+                    "description": "Limit fallthrough to these zones (kubernetes 'fallthrough ZONES'), e.g. ['in-addr.arpa', 'ip6.arpa'].",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "multicluster": {
+                    "description": "Multicluster zones served via the MCS-API (kubernetes 'multicluster'). The plugin must be authoritative for these zones.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "startupTimeout": {
+                    "description": "Time to wait for the informer cache to sync at startup (kubernetes 'startup_timeout'), e.g. '5s'.",
+                    "type": "string"
                 }
             }
         },

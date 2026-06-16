@@ -1,0 +1,35 @@
+# Exercises the structured cache block parameters wired up from the CoreDNS
+# cache plugin README. Layered on top of ci-values.yaml by the render-diff CI.
+coredns:
+  public:
+    cache:
+      ttl: 30
+      zones:
+        - example.org
+      success:
+        capacity: 5000
+        ttl: 30
+        minTTL: 5
+      denial:
+        capacity: 2500
+        ttl: 5
+        minTTL: 5
+      prefetch:
+        amount: 10
+        duration: 1m
+        percentage: 20
+      serveStale:
+        enabled: true
+        duration: 1h
+        refreshMode: verify
+        verifyTimeout: 100ms
+      servfail:
+        duration: 5s
+      disable:
+        success: true
+        successZones:
+          - a.example.org
+        denial: true
+        denialZones:
+          - b.example.org
+      keepttl: true
