@@ -20,7 +20,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Add `coredns.custom`.
 - Add `controlPlane.*`, `securityContext.*`, `service.clusterIP`, and `ports.metrics.port`.
 - Configure cache, log, and loadbalance per zone (`coredns.public.*`, `coredns.cluster.*`, and each `coredns.additionalZones[].*`), replacing the former global `coredns.cache`, `coredns.log`, and `coredns.loadbalance` (removed). A zone that omits them falls back to the deprecated paths, then to built-in defaults.
-- Replace `coredns.additionalLocalZones` (a list of zone-name strings) with `coredns.additionalZones`, a list of fully-templated zone objects. The deprecated top-level `additionalLocalZones` string list still renders as kubernetes zones.
+- Replace `coredns.additionalLocalZones` (a list of zone-name strings) with `coredns.additionalZones`, a list of fully-templated zone objects. The deprecated top-level `additionalLocalZones` string list still renders as kubernetes zones, now inheriting the `coredns.cluster.*` cache, log, and loadbalance config.
 
 ## [1.30.3] - 2026-06-11
 

@@ -69,18 +69,18 @@ cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }} {
 
 {{/*
 Render a CoreDNS forward directive. Call via include with a dict context:
-  (dict "zone" $zone "ctx" $)
+  (dict "zone" $zone "compat" "true" "ctx" $)
 The zone's forward config is read from $zone.forward, a structured map that mirrors
 the CoreDNS forward block parameters (https://coredns.io/plugins/forward/). Only a
 representative subset of parameters is wired up today; extend it by appending one line
 to the option list below, plus a documented key in values.yaml and values.schema.json.
 
-Backward compatibility: only when $zone.legacy is true (the public "." zone) are the
-deprecated configmap.forward / configmap.forwardOptions strings consulted as a fallback.
+Backward compatibility: only when the "compat" param is truthy (the public "." zone) are
+the deprecated configmap.forward / configmap.forwardOptions strings consulted as a fallback.
 */}}
 {{- define "coredns.forwardBlock" -}}
 {{- $f := .zone.forward | default dict }}
-{{- $legacy := .zone.legacy }}
+{{- $compat := .compat }}
 {{- $upstreams := $f.to }}
 {{- if $upstreams }}
 {{- $lines := list }}
@@ -92,7 +92,7 @@ deprecated configmap.forward / configmap.forwardOptions strings consulted as a f
 {{- with $f.expire }}{{ $lines = append $lines (printf "expire %v" .) }}{{ end }}
 {{- with $f.maxConcurrent }}{{ $lines = append $lines (printf "max_concurrent %v" .) }}{{ end }}
 {{- with $f.except }}{{ $lines = append $lines (printf "except %s" (join " " .)) }}{{ end }}
-{{- if and $legacy (not $lines) .ctx.Values.configmap.forwardOptions }}
+{{- if and $compat (not $lines) .ctx.Values.configmap.forwardOptions }}
 {{- range (.ctx.Values.configmap.forwardOptions | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}
 {{- end -}}
 forward . {{ join " " $upstreams }}{{ if $lines }} {
@@ -100,7 +100,7 @@ forward . {{ join " " $upstreams }}{{ if $lines }} {
   {{ . }}
 {{- end }}
 }{{ end }}
-{{- else if and $legacy .ctx.Values.configmap.forward }}
+{{- else if and $compat .ctx.Values.configmap.forward }}
 {{- $lines := list }}
 {{- with .ctx.Values.configmap.forwardOptions }}{{ range (. | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}{{ end -}}
 forward
