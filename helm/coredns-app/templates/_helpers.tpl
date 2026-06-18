@@ -43,23 +43,23 @@ configmap.cache success-TTL seed.
 {{- $successTTL := coalesce $success.ttl .ctx.Values.configmap.cache | default 30 }}
 {{- $denialCapacity := $denial.capacity | default 9984 }}
 {{- $denialTTL := $denial.ttl | default 5 -}}
-cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }} {
+cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }}{{- with $c.zones }} {{ join " " . }}{{- end }} {
   success {{ $successCapacity }} {{ $successTTL }}{{- with $success.minTTL }} {{ . }}{{- end }}
   denial {{ $denialCapacity }} {{ $denialTTL }}{{- with $denial.minTTL }} {{ . }}{{- end }}
   {{- with $c.prefetch }}{{- if .amount }}
   prefetch {{ .amount }}{{- with .duration }} {{ . }}{{- end }}{{- with .percentage }} {{ . }}%{{- end }}
   {{- end }}{{- end }}
   {{- if and $c.serveStale $c.serveStale.enabled }}
-  serve_stale{{- with $c.serveStale.duration }} {{ . }}{{- end }}{{- with $c.serveStale.refreshMode }} {{ . }}{{- end }}
+  serve_stale{{- with $c.serveStale.duration }} {{ . }}{{- end }}{{- with $c.serveStale.refreshMode }} {{ . }}{{- with $c.serveStale.verifyTimeout }} {{ . }}{{- end }}{{- end }}
   {{- end }}
   {{- with $c.servfail }}{{- with .duration }}
   servfail {{ . }}
   {{- end }}{{- end }}
   {{- if and $c.disable $c.disable.success }}
-  disable success
+  disable success{{- with $c.disable.successZones }} {{ join " " . }}{{- end }}
   {{- end }}
   {{- if and $c.disable $c.disable.denial }}
-  disable denial
+  disable denial{{- with $c.disable.denialZones }} {{ join " " . }}{{- end }}
   {{- end }}
   {{- if $c.keepttl }}
   keepttl
@@ -84,14 +84,29 @@ the deprecated configmap.forward / configmap.forwardOptions strings consulted as
 {{- $upstreams := $f.to }}
 {{- if $upstreams }}
 {{- $lines := list }}
-{{- with $f.policy }}{{ $lines = append $lines (printf "policy %v" .) }}{{ end }}
+{{- with $f.except }}{{ $lines = append $lines (printf "except %s" (join " " .)) }}{{ end }}
 {{- if $f.forceTCP }}{{ $lines = append $lines "force_tcp" }}{{ end }}
 {{- if $f.preferUDP }}{{ $lines = append $lines "prefer_udp" }}{{ end }}
-{{- with $f.maxFails }}{{ $lines = append $lines (printf "max_fails %v" .) }}{{ end }}
-{{- with $f.healthCheck }}{{ $lines = append $lines (printf "health_check %v" .) }}{{ end }}
 {{- with $f.expire }}{{ $lines = append $lines (printf "expire %v" .) }}{{ end }}
+{{- with $f.maxIdleConns }}{{ $lines = append $lines (printf "max_idle_conns %v" .) }}{{ end }}
+{{- with $f.maxFails }}{{ $lines = append $lines (printf "max_fails %v" .) }}{{ end }}
+{{- with $f.maxConnectAttempts }}{{ $lines = append $lines (printf "max_connect_attempts %v" .) }}{{ end }}
+{{- with $f.dohMethod }}{{ $lines = append $lines (printf "doh_method %v" .) }}{{ end }}
+{{- with $f.tls }}
+{{- if and .cert .key .ca }}{{ $lines = append $lines (printf "tls %s %s %s" .cert .key .ca) }}
+{{- else if and .cert .key }}{{ $lines = append $lines (printf "tls %s %s" .cert .key) }}
+{{- else if .ca }}{{ $lines = append $lines (printf "tls %s" .ca) }}
+{{- else if .enabled }}{{ $lines = append $lines "tls" }}{{ end }}
+{{- end }}
+{{- with $f.tlsServername }}{{ $lines = append $lines (printf "tls_servername %v" .) }}{{ end }}
+{{- with $f.policy }}{{ $lines = append $lines (printf "policy %v" .) }}{{ end }}
+{{- with $f.healthCheck }}{{ $lines = append $lines (printf "health_check %v" .) }}{{ end }}
 {{- with $f.maxConcurrent }}{{ $lines = append $lines (printf "max_concurrent %v" .) }}{{ end }}
-{{- with $f.except }}{{ $lines = append $lines (printf "except %s" (join " " .)) }}{{ end }}
+{{- with $f.next }}{{ $lines = append $lines (printf "next %s" (join " " .)) }}{{ end }}
+{{- if $f.nextOnNodata }}{{ $lines = append $lines "next_on_nodata" }}{{ end }}
+{{- if $f.failfastAllUnhealthyUpstreams }}{{ $lines = append $lines "failfast_all_unhealthy_upstreams" }}{{ end }}
+{{- with $f.failover }}{{ $lines = append $lines (printf "failover %s" (join " " .)) }}{{ end }}
+{{- with $f.resolver }}{{ $lines = append $lines (printf "resolver %s" (join " " .)) }}{{ end }}
 {{- if and $compat (not $lines) .ctx.Values.configmap.forwardOptions }}
 {{- range (.ctx.Values.configmap.forwardOptions | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}
 {{- end -}}
@@ -128,27 +143,56 @@ values.yaml and values.schema.json.
 {{- $k := .zone.kubernetes | default dict -}}
 {{- $cidrs := join " " (.zone.cidrs | default list) -}}
 kubernetes {{ join " " .zone.names }}{{ with $cidrs }} {{ . }}{{ end }} {
-  pods {{ $k.pods | default "verified" }}
-  {{- with $k.ttl }}
-  ttl {{ . }}
+  {{- with $k.endpoint }}
+  endpoint {{ . }}
   {{- end }}
-  {{- if $k.endpointPodNames }}
-  endpoint_pod_names
+  {{- with $k.tls }}{{- if and .cert .key .ca }}
+  tls {{ .cert }} {{ .key }} {{ .ca }}
+  {{- end }}{{- end }}
+  {{- with $k.kubeconfig }}{{- with .path }}
+  kubeconfig {{ . }}{{- with $k.kubeconfig.context }} {{ . }}{{- end }}
+  {{- end }}{{- end }}
+  {{- with $k.apiserverQPS }}
+  apiserver_qps {{ . }}
   {{- end }}
-  {{- if $k.noendpoints }}
-  noendpoints
+  {{- with $k.apiserverBurst }}
+  apiserver_burst {{ . }}
+  {{- end }}
+  {{- with $k.apiserverMaxInflight }}
+  apiserver_max_inflight {{ . }}
   {{- end }}
   {{- with $k.namespaces }}
   namespaces {{ join " " . }}
   {{- end }}
+  {{- with $k.namespaceLabels }}
+  namespace_labels {{ . }}
+  {{- end }}
   {{- with $k.labels }}
   labels {{ . }}
+  {{- end }}
+  pods {{ $k.pods | default "verified" }}
+  {{- if $k.endpointPodNames }}
+  endpoint_pod_names
+  {{- end }}
+  {{- with $k.ttl }}
+  ttl {{ . }}
+  {{- end }}
+  {{- if $k.noendpoints }}
+  noendpoints
+  {{- end }}
+  {{- if $k.fallthroughZones }}
+  fallthrough {{ join " " $k.fallthroughZones }}
+  {{- else if $k.fallthrough }}
+  fallthrough
   {{- end }}
   {{- if $k.ignoreEmptyService }}
   ignore empty_service
   {{- end }}
-  {{- if $k.fallthrough }}
-  fallthrough
+  {{- with $k.multicluster }}
+  multicluster {{ join " " . }}
+  {{- end }}
+  {{- with $k.startupTimeout }}
+  startup_timeout {{ . }}
   {{- end }}
 }
 {{- end -}}

@@ -1,0 +1,32 @@
+# Exercises the structured kubernetes block parameters wired up from the CoreDNS
+# kubernetes plugin README. Layered on top of ci-values.yaml by the render-diff CI.
+coredns:
+  cluster:
+    kubernetes:
+      pods: verified
+      endpoint: https://k8s-endpoint:8443
+      tls:
+        cert: /etc/coredns/tls/cert.pem
+        key: /etc/coredns/tls/key.pem
+        ca: /etc/coredns/tls/ca.pem
+      kubeconfig:
+        path: /etc/coredns/kubeconfig
+        context: default
+      apiserverQPS: 50
+      apiserverBurst: 100
+      apiserverMaxInflight: 10
+      ttl: 30
+      endpointPodNames: true
+      noendpoints: true
+      namespaces:
+        - test
+        - staging
+      namespaceLabels: istio-injection=enabled
+      labels: application=nginx
+      ignoreEmptyService: true
+      fallthroughZones:
+        - in-addr.arpa
+        - ip6.arpa
+      multicluster:
+        - clusterset.local
+      startupTimeout: 10s

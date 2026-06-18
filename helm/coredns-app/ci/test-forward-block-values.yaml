@@ -1,0 +1,35 @@
+# Exercises the structured forward block parameters wired up from the CoreDNS
+# forward plugin README. Layered on top of ci-values.yaml by the render-diff CI.
+coredns:
+  public:
+    forward:
+      to:
+        - tls://9.9.9.9
+        - tls://1.1.1.1
+      except:
+        - example.org
+      forceTCP: true
+      preferUDP: true
+      expire: 10s
+      maxIdleConns: 5
+      maxFails: 2
+      maxConnectAttempts: 3
+      dohMethod: POST
+      tls:
+        cert: /etc/coredns/tls/cert.pem
+        key: /etc/coredns/tls/key.pem
+        ca: /etc/coredns/tls/ca.pem
+      tlsServername: dns.quad9.net
+      policy: sequential
+      healthCheck: 5s no_rec domain example.org
+      maxConcurrent: 1000
+      next:
+        - NXDOMAIN
+      nextOnNodata: true
+      failfastAllUnhealthyUpstreams: true
+      failover:
+        - SERVFAIL
+        - REFUSED
+      resolver:
+        - 10.0.0.1
+        - 10.0.0.2:5353
