@@ -1,215 +1,420 @@
-# Default values for coredns-chart
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
+# -- Name used for the CoreDNS workload and its resources.
 name: coredns
+# -- Namespace the CoreDNS resources are deployed into.
 namespace: kube-system
+# -- Giant Swarm service type label applied to the resources.
 serviceType: managed
 
-# ── Pod security context ──────────────────────────────────────────────────────
-securityContext: {}
-# runAsUser: 33  # defaults to userID; set securityContext.runAsUser to override
-# runAsGroup: 33 # defaults to groupID; set securityContext.runAsGroup to override
+# -- Pod-level security context for the CoreDNS containers.
+securityContext:
+  # @schema type: [null, integer]
+  # -- UID the CoreDNS process runs as. Defaults to userID when unset.
+  runAsUser:
+  # @schema type: [null, integer]
+  # -- GID the CoreDNS process runs as. Defaults to groupID when unset.
+  runAsGroup:
 
-# ── Service ──────────────────────────────────────────────────────────────────
-service: {}
-# clusterIP: 172.31.0.10  # defaults to cluster.kubernetes.DNS.IP; set service.clusterIP to override
+# -- Configuration for the CoreDNS Service.
+service:
+  # @schema type: [null, string]
+  # -- Cluster IP of the DNS Service. Defaults to cluster.kubernetes.DNS.IP when unset.
+  clusterIP:
 
-# ── Image ────────────────────────────────────────────────────────────────────
+# -- Container image for CoreDNS.
 image:
+  # -- Image registry.
   registry: gsoci.azurecr.io
+  # -- Image repository.
   name: giantswarm/coredns
+  # -- Image tag.
   tag: 1.14.4
 
-# ── Ports ────────────────────────────────────────────────────────────────────
+# -- Ports exposed by CoreDNS.
 ports:
+  # -- DNS port configuration.
   dns:
+    # -- Port name.
     name: dns
+    # -- Container port CoreDNS listens on.
     targetPort: 1053
+    # -- Service port exposed for DNS.
     port: 53
-  metrics: {}
-  # port: 9153  # defaults to ports.prometheus; set ports.metrics.port to override
+  # -- Prometheus metrics port configuration.
+  metrics:
+    # @schema type: [null, integer]
+    # -- Port for the Prometheus metrics endpoint. Defaults to 9153 when unset.
+    port:
 
-# ── Workload ──────────────────────────────────────────────────────────────────
+# -- Resource requests and limits for the CoreDNS containers.
 resources:
+  # -- Resource limits.
   limits:
+    # -- Memory limit.
     memory: 1Gi
+  # -- Resource requests.
   requests:
+    # -- CPU request.
     cpu: 250m
+    # -- Memory request.
     memory: 512Mi
 
+# -- Update strategy for the CoreDNS workloads.
 updateStrategy:
+  # @schema enum: [RollingUpdate, OnDelete]
+  # -- Update strategy type.
   type: RollingUpdate
+  # -- Rolling update parameters.
   rollingUpdate:
+    # @schema type: [integer, string]
+    # -- Maximum number of pods that can be unavailable during the update.
     maxUnavailable: 1
 
+# -- Pod disruption budget for the CoreDNS workloads.
 podDisruptionBudget:
+  # @schema type: [integer, string]
+  # -- Maximum number of pods that can be unavailable to voluntary disruptions.
   maxUnavailable: 25%
 
-# ── Scaling ───────────────────────────────────────────────────────────────────
+# -- Horizontal Pod Autoscaler configuration.
 hpa:
+  # -- Enable the HorizontalPodAutoscaler.
   enabled: true
+  # -- Minimum number of replicas.
   minReplicas: 2
+  # -- Maximum number of replicas.
   maxReplicas: 50
+  # -- Target average CPU utilization percentage.
   targetCPUUtilizationPercentage: 80
+  # -- Target average memory utilization percentage. Set to 0 to disable the memory metric.
   targetMemoryUtilizationPercentage: 0
+  # @schema item: object
+  # -- Additional custom metrics for the HPA (autoscaling/v2 metric objects).
   metrics: []
-  # The stabilization window is used to restrict the flapping of replica count
-  # when the metrics used for scaling keep fluctuating.
+  # -- Scaling behavior. The stabilization window restricts replica-count flapping when the scaling metrics keep fluctuating.
   behavior:
+    # -- Scale-down behavior.
     scaleDown:
+      # -- Seconds to consider while scaling down to prevent flapping.
       stabilizationWindowSeconds: 1800
 
-# ── Control-plane instance ────────────────────────────────────────────────────
+# -- Control-plane CoreDNS instance configuration.
 controlPlane:
-  # enabled: true  # defaults to mastersInstance.enabled for backward compat; set explicitly to override
+  # @schema type: [null, boolean]
+  # -- Whether to deploy the control-plane CoreDNS instance. Defaults to mastersInstance.enabled for backward compatibility.
+  enabled:
+  # -- Node selector for the control-plane CoreDNS instance.
   nodeSelector:
     "node-role.kubernetes.io/control-plane": '""'
 
-# ── CoreDNS Corefile configuration ───────────────────────────────────────────
-# Cache, log, and loadbalance are configured per zone (coredns.public.*, coredns.cluster.*,
-# and each coredns.additionalZones[].*), so different zones can behave differently. A zone
-# that omits `cache` falls back to the built-in defaults (success 9984 30 / denial 9984 5);
-# a zone that omits `log`/`loadbalance` falls back to denial+error / round_robin.
+# -- CoreDNS Corefile configuration. Cache, log and loadbalance are configured per zone, so different zones can behave differently. A zone that omits cache falls back to the built-in defaults (success 9984 30 / denial 9984 5); a zone that omits log/loadbalance falls back to denial+error / round_robin.
 coredns:
-  # "." zone — external/public DNS (forward zone)
-  # Structured forward directive, mirroring the CoreDNS forward block
-  # (https://coredns.io/plugins/forward/). The FROM is always "."; `to` holds the
-  # upstream targets and the remaining keys are forward-plugin parameters. Only a
-  # representative subset is wired up today; the block is designed to be extended one
-  # key at a time. Leave a key unset to keep the CoreDNS default.
+  # -- The "." zone — external/public DNS served by the forward plugin.
   public:
+    # -- Cache plugin configuration for this zone (https://coredns.io/plugins/cache/).
     cache:
-      # ttl: 30              # top-level TTL cap applied before success/denial checks
-      # zones: []            # cache ZONES... — limit caching to these zones (default: server-block zones)
+      # @schema type: [null, integer]
+      # -- Top-level TTL cap applied before the success/denial checks (seconds).
+      ttl:
+      # @schema item: string
+      # -- Cache ZONES — limit caching to these zones. Empty means the server-block zones.
+      zones: []
+      # -- Caching of positive (success) responses.
       success:
-        capacity: 9984       # max number of cached positive responses
-        ttl: 30              # max TTL; defaults to configmap.cache for backward compat
-        # minTTL: 0          # min TTL for positive responses
+        # -- Maximum number of cached positive responses.
+        capacity: 9984
+        # -- Max TTL for positive responses (seconds). Defaults to configmap.cache for backward compatibility.
+        ttl: 30
+        # @schema type: [null, integer]
+        # -- Min TTL for positive responses (seconds).
+        minTTL:
+      # -- Caching of negative (NXDOMAIN/NODATA) responses.
       denial:
-        capacity: 9984       # max number of cached NXDOMAIN/NODATA responses
-        ttl: 5               # max TTL
-        # minTTL: 0          # min TTL for denial responses
-      # prefetch:
-      #   amount: 10         # enable prefetch when this many requests received (required)
-      #   duration: 1m       # only prefetch if item was requested within this duration
-      #   percentage: 20     # only prefetch if this % of TTL remains (requires duration)
+        # -- Maximum number of cached negative responses.
+        capacity: 9984
+        # -- Max TTL for negative responses (seconds).
+        ttl: 5
+        # @schema type: [null, integer]
+        # -- Min TTL for negative responses (seconds).
+        minTTL:
+      # -- Prefetch popular entries before they expire.
+      prefetch:
+        # @schema type: [null, integer]
+        # -- Prefetch when at least this many requests are received (enables prefetch).
+        amount:
+        # @schema type: [null, string]
+        # -- Only prefetch if the item was requested within this duration.
+        duration:
+        # @schema type: [null, integer]
+        # -- Only prefetch if this percentage of the TTL remains (requires duration).
+        percentage:
+      # -- Serve stale answers while refreshing in the background.
       serveStale:
-        enabled: false       # serve stale answers while refreshing in background
-        # duration: 1h       # how long stale answers may be served
-        # refreshMode: ""    # immediate | verify
-        # verifyTimeout: 100ms # only with refreshMode verify — max wait for upstream verify before serving stale
-      # servfail:
-      #   duration: 5s       # how long to cache SERVFAIL responses
-      # disable:
-      #   success: false     # disable caching of positive responses
-      #   successZones: []   # disable success ZONES... — limit the disable to these zones
-      #   denial: false      # disable caching of NXDOMAIN/NODATA responses
-      #   denialZones: []    # disable denial ZONES... — limit the disable to these zones
-      # keepttl: false       # preserve original TTLs instead of counting down
+        # -- Enable serving stale answers.
+        enabled: false
+        # @schema type: [null, string]
+        # -- How long stale answers may be served.
+        duration:
+        # @schema type: [null, string]; enum: [immediate, verify, null]
+        # -- Refresh mode.
+        refreshMode:
+        # @schema type: [null, string]
+        # -- With refreshMode verify — max wait for upstream verify before serving stale.
+        verifyTimeout:
+      # -- SERVFAIL caching.
+      servfail:
+        # @schema type: [null, string]
+        # -- How long to cache SERVFAIL responses.
+        duration:
+      # -- Selectively disable caching.
+      disable:
+        # @schema type: [null, boolean]
+        # -- Disable caching of positive responses.
+        success:
+        # @schema item: string
+        # -- Limit the success disable to these zones.
+        successZones: []
+        # @schema type: [null, boolean]
+        # -- Disable caching of negative responses.
+        denial:
+        # @schema item: string
+        # -- Limit the denial disable to these zones.
+        denialZones: []
+      # -- Preserve original TTLs instead of counting them down.
+      keepttl: false
+    # -- Forward plugin configuration (https://coredns.io/plugins/forward/). The FROM is always ".". Only a representative subset of parameters is wired up today; leave a key unset to keep the CoreDNS default.
     forward:
-      to: []                # upstream DNS servers (the forward "TO..." targets); empty means use /etc/resolv.conf
-      # except: []            # except NAMES... — domains to pass through unforwarded
-      # forceTCP: false       # force_tcp — always use TCP to the upstream
-      # preferUDP: false      # prefer_udp — try UDP first even for queries received over TCP
-      # expire: 10s           # expire — close idle upstream connections after this duration
-      # maxIdleConns: 0       # max_idle_conns — idle connections cached per upstream (0 = unlimited)
-      # maxFails: 2           # max_fails — consecutive failed health checks before marking an upstream down
-      # maxConnectAttempts: 0 # max_connect_attempts — cap on connect attempts per request (0 = no cap)
-      # dohMethod: POST       # doh_method — GET | POST for DoH requests
-      # tls:                  # tls CERT KEY CA — set cert+key, ca, all three, or enabled for bare tls
-      #   enabled: false      #   emit bare "tls" (system CAs, no client auth)
-      #   cert: ""            #   client cert file path
-      #   key: ""             #   client key file path
-      #   ca: ""              #   CA cert file path
-      # tlsServername: ""     # tls_servername NAME — expected server cert name (e.g. dns.quad9.net)
-      # policy: random        # random | round_robin | sequential
-      # healthCheck: 0.2s     # health_check DURATION [no_rec] [domain FQDN]
-      # maxConcurrent: 1000   # max_concurrent — maximum number of concurrent queries to forward
-      # next: []              # next RCODE... — run next forward plugin on these rcodes (e.g. [NXDOMAIN])
-      # nextOnNodata: false   # next_on_nodata — run next forward plugin on empty NOERROR answers
-      # failfastAllUnhealthyUpstreams: false # failfast_all_unhealthy_upstreams — SERVFAIL when all down
-      # failover: []          # failover RCODE... — retry next upstream on these rcodes (e.g. [SERVFAIL, REFUSED])
-      # resolver: []          # resolver IP[:PORT]... — resolvers for hostname-based "to" endpoints
-    log:                  # CoreDNS log classes for this zone; omit to fall back to denial+error
+      # @schema item: string
+      # -- Upstream DNS servers (the forward TO targets). Empty means use /etc/resolv.conf.
+      to: []
+      # @schema item: string
+      # -- except NAMES — domains to pass through unforwarded.
+      except: []
+      # -- force_tcp — always use TCP to the upstream.
+      forceTCP: false
+      # -- prefer_udp — try UDP first even for queries received over TCP.
+      preferUDP: false
+      # @schema type: [null, string]
+      # -- expire — close idle upstream connections after this duration.
+      expire:
+      # @schema type: [null, integer]
+      # -- max_idle_conns — idle connections cached per upstream (0 = unlimited).
+      maxIdleConns:
+      # @schema type: [null, integer]
+      # -- max_fails — consecutive failed health checks before marking an upstream down.
+      maxFails:
+      # @schema type: [null, integer]
+      # -- max_connect_attempts — cap on connect attempts per request (0 = no cap).
+      maxConnectAttempts:
+      # @schema type: [null, string]; enum: [GET, POST, null]
+      # -- doh_method — HTTP method for DoH requests.
+      dohMethod:
+      # -- tls CERT KEY CA — set cert+key, ca, all three, or enabled for bare tls.
+      tls:
+        # -- Emit bare "tls" (system CAs, no client auth).
+        enabled: false
+        # @schema type: [null, string]
+        # -- Client cert file path.
+        cert:
+        # @schema type: [null, string]
+        # -- Client key file path.
+        key:
+        # @schema type: [null, string]
+        # -- CA cert file path.
+        ca:
+      # @schema type: [null, string]
+      # -- tls_servername NAME — expected server cert name (e.g. dns.quad9.net).
+      tlsServername:
+      # @schema type: [null, string]; enum: [random, round_robin, sequential, null]
+      # -- policy — upstream selection policy.
+      policy:
+      # @schema type: [null, string]
+      # -- health_check DURATION [no_rec] [domain FQDN].
+      healthCheck:
+      # @schema type: [null, integer]
+      # -- max_concurrent — maximum number of concurrent queries to forward.
+      maxConcurrent:
+      # @schema item: string
+      # -- next RCODE... — run the next forward plugin on these rcodes (e.g. [NXDOMAIN]).
+      next: []
+      # -- next_on_nodata — run the next forward plugin on empty NOERROR answers.
+      nextOnNodata: false
+      # -- failfast_all_unhealthy_upstreams — SERVFAIL when all upstreams are down.
+      failfastAllUnhealthyUpstreams: false
+      # @schema item: string
+      # -- failover RCODE... — retry the next upstream on these rcodes (e.g. [SERVFAIL, REFUSED]).
+      failover: []
+      # @schema item: string
+      # -- resolver IP[:PORT]... — resolvers for hostname-based "to" endpoints.
+      resolver: []
+    # @schema itemEnum: [success, denial, error, all]
+    # -- CoreDNS log classes for this zone. Omit to fall back to denial+error.
+    log:
       - denial
       - error
-    loadbalance: round_robin  # round_robin | random; omit to fall back to round_robin
-    autopath: ""        # autopath plugin args, e.g. "@kubernetes" (optional)
+    # @schema enum: [round_robin, random]
+    # -- Load balancing policy. Omit to fall back to round_robin.
+    loadbalance: round_robin
+    # -- autopath plugin args, e.g. "@kubernetes". Empty disables autopath.
+    autopath: ""
 
-  # cluster.local zone — in-cluster DNS (kubernetes plugin)
+  # -- The cluster.local zone — in-cluster DNS served by the kubernetes plugin.
   cluster:
-    # domains: [cluster.local]   # defaults to cluster.kubernetes.clusterDomain; set coredns.cluster.domains to override
-    # serviceCIDR: 172.31.0.0/16 # defaults to cluster.kubernetes.API.clusterIPRange; set coredns.cluster.serviceCIDR to override
-    # podCIDR: 192.168.0.0/16    # defaults to cluster.calico.CIDR; set coredns.cluster.podCIDR to override
+    # @schema type: [null, array]
+    # -- Zone names served by this block. Defaults to cluster.kubernetes.clusterDomain when unset.
+    domains:
+    # @schema type: [null, string]
+    # -- Service CIDR for the reverse zone. Defaults to cluster.kubernetes.API.clusterIPRange when unset.
+    serviceCIDR:
+    # @schema type: [null, string]
+    # -- Pod CIDR for the reverse zone. Defaults to cluster.calico.CIDR when unset.
+    podCIDR:
+    # -- Cache plugin configuration for this zone (https://coredns.io/plugins/cache/).
     cache:
-      # ttl: 30              # top-level TTL cap applied before success/denial checks
-      # zones: []            # cache ZONES... — limit caching to these zones (default: server-block zones)
+      # @schema type: [null, integer]
+      # -- Top-level TTL cap applied before the success/denial checks (seconds).
+      ttl:
+      # @schema item: string
+      # -- Cache ZONES — limit caching to these zones. Empty means the server-block zones.
+      zones: []
+      # -- Caching of positive (success) responses.
       success:
-        capacity: 9984       # max number of cached positive responses
-        ttl: 30              # max TTL; defaults to configmap.cache for backward compat
-        # minTTL: 0          # min TTL for positive responses
+        # -- Maximum number of cached positive responses.
+        capacity: 9984
+        # -- Max TTL for positive responses (seconds). Defaults to configmap.cache for backward compatibility.
+        ttl: 30
+        # @schema type: [null, integer]
+        # -- Min TTL for positive responses (seconds).
+        minTTL:
+      # -- Caching of negative (NXDOMAIN/NODATA) responses.
       denial:
-        capacity: 9984       # max number of cached NXDOMAIN/NODATA responses
-        ttl: 5               # max TTL
-        # minTTL: 0          # min TTL for denial responses
-      # prefetch:
-      #   amount: 10
-      #   duration: 1m
-      #   percentage: 20
+        # -- Maximum number of cached negative responses.
+        capacity: 9984
+        # -- Max TTL for negative responses (seconds).
+        ttl: 5
+        # @schema type: [null, integer]
+        # -- Min TTL for negative responses (seconds).
+        minTTL:
+      # -- Prefetch popular entries before they expire.
+      prefetch:
+        # @schema type: [null, integer]
+        # -- Prefetch when at least this many requests are received (enables prefetch).
+        amount:
+        # @schema type: [null, string]
+        # -- Only prefetch if the item was requested within this duration.
+        duration:
+        # @schema type: [null, integer]
+        # -- Only prefetch if this percentage of the TTL remains (requires duration).
+        percentage:
+      # -- Serve stale answers while refreshing in the background.
       serveStale:
-        enabled: false       # serve stale answers while refreshing in background
-        # duration: 1h
-        # refreshMode: ""    # immediate | verify
-        # verifyTimeout: 100ms # only with refreshMode verify — max wait for upstream verify before serving stale
-      # servfail:
-      #   duration: 5s
-      # disable:
-      #   success: false
-      #   successZones: []
-      #   denial: false
-      #   denialZones: []
-      # keepttl: false
-    # Structured kubernetes-plugin parameters, mirroring the CoreDNS kubernetes block
-    # (https://coredns.io/plugins/kubernetes/). Leave a key unset to keep the CoreDNS default.
+        # -- Enable serving stale answers.
+        enabled: false
+        # @schema type: [null, string]
+        # -- How long stale answers may be served.
+        duration:
+        # @schema type: [null, string]; enum: [immediate, verify, null]
+        # -- Refresh mode.
+        refreshMode:
+        # @schema type: [null, string]
+        # -- With refreshMode verify — max wait for upstream verify before serving stale.
+        verifyTimeout:
+      # -- SERVFAIL caching.
+      servfail:
+        # @schema type: [null, string]
+        # -- How long to cache SERVFAIL responses.
+        duration:
+      # -- Selectively disable caching.
+      disable:
+        # @schema type: [null, boolean]
+        # -- Disable caching of positive responses.
+        success:
+        # @schema item: string
+        # -- Limit the success disable to these zones.
+        successZones: []
+        # @schema type: [null, boolean]
+        # -- Disable caching of negative responses.
+        denial:
+        # @schema item: string
+        # -- Limit the denial disable to these zones.
+        denialZones: []
+      # -- Preserve original TTLs instead of counting them down.
+      keepttl: false
+    # -- Kubernetes plugin configuration (https://coredns.io/plugins/kubernetes/). Leave a key unset to keep the CoreDNS default.
     kubernetes:
-      pods: verified              # pods — disabled | insecure | verified
-      # endpoint: ""              # endpoint URL — remote k8s API endpoint (omit for in-cluster)
-      # tls:                      # tls CERT KEY CACERT — for a remote k8s connection
-      #   cert: ""
-      #   key: ""
-      #   ca: ""
-      # kubeconfig:               # kubeconfig KUBECONFIG [CONTEXT] — authenticate via kubeconfig file
-      #   path: ""
-      #   context: ""
-      # apiserverQPS: 0           # apiserver_qps — max queries-per-second to the API server
-      # apiserverBurst: 0         # apiserver_burst — max burst size for API server requests
-      # apiserverMaxInflight: 0   # apiserver_max_inflight — max concurrent in-flight API server requests
-      # ttl: 5                    # ttl SECONDS (0–3600)
-      # endpointPodNames: false   # endpoint_pod_names — use pod name instead of dashed IP
-      # noendpoints: false        # noendpoints — disable endpoint record serving
-      # namespaces: []            # namespaces NAMESPACE... — expose only these namespaces
-      # namespaceLabels: ""       # namespace_labels EXPRESSION — expose only namespaces matching the selector
-      # labels: ""                # labels EXPRESSION — expose only objects matching the selector
-      # ignoreEmptyService: false # ignore empty_service — NXDOMAIN for services without ready endpoints
-      # fallthrough: false        # fallthrough — pass unresolved queries to the next plugin (all zones)
-      # fallthroughZones: []      # fallthrough ZONES... — limit fallthrough to these zones
-      # multicluster: []          # multicluster ZONES... — MCS-API multicluster zones
-      # startupTimeout: 5s        # startup_timeout — wait for informer cache sync at startup
-    log:                  # CoreDNS log classes for this zone; omit to fall back to denial+error
+      # @schema enum: [disabled, insecure, verified]
+      # -- pods — pod record mode.
+      pods: verified
+      # @schema type: [null, string]
+      # -- endpoint URL — remote k8s API endpoint (omit for in-cluster).
+      endpoint:
+      # -- tls CERT KEY CACERT — for a remote k8s connection.
+      tls:
+        # @schema type: [null, string]
+        # -- Client cert file path.
+        cert:
+        # @schema type: [null, string]
+        # -- Client key file path.
+        key:
+        # @schema type: [null, string]
+        # -- CA cert file path.
+        ca:
+      # -- kubeconfig KUBECONFIG [CONTEXT] — authenticate via a kubeconfig file.
+      kubeconfig:
+        # @schema type: [null, string]
+        # -- Path to the kubeconfig file.
+        path:
+        # @schema type: [null, string]
+        # -- Context within the kubeconfig file.
+        context:
+      # @schema type: [null, integer]
+      # -- apiserver_qps — max queries-per-second to the API server.
+      apiserverQPS:
+      # @schema type: [null, integer]
+      # -- apiserver_burst — max burst size for API server requests.
+      apiserverBurst:
+      # @schema type: [null, integer]
+      # -- apiserver_max_inflight — max concurrent in-flight API server requests.
+      apiserverMaxInflight:
+      # @schema type: [null, integer]; minimum: 0; maximum: 3600
+      # -- ttl SECONDS (0–3600).
+      ttl:
+      # -- endpoint_pod_names — use the pod name instead of the dashed IP.
+      endpointPodNames: false
+      # -- noendpoints — disable endpoint record serving.
+      noendpoints: false
+      # @schema item: string
+      # -- namespaces NAMESPACE... — expose only these namespaces.
+      namespaces: []
+      # @schema type: [null, string]
+      # -- namespace_labels EXPRESSION — expose only namespaces matching the selector.
+      namespaceLabels:
+      # @schema type: [null, string]
+      # -- labels EXPRESSION — expose only objects matching the selector.
+      labels:
+      # -- ignore empty_service — NXDOMAIN for services without ready endpoints.
+      ignoreEmptyService: false
+      # -- fallthrough — pass unresolved queries to the next plugin (all zones).
+      fallthrough: false
+      # @schema item: string
+      # -- fallthrough ZONES... — limit fallthrough to these zones.
+      fallthroughZones: []
+      # @schema item: string
+      # -- multicluster ZONES... — MCS-API multicluster zones.
+      multicluster: []
+      # @schema type: [null, string]
+      # -- startup_timeout — wait for informer cache sync at startup.
+      startupTimeout:
+    # @schema itemEnum: [success, denial, error, all]
+    # -- CoreDNS log classes for this zone. Omit to fall back to denial+error.
+    log:
       - denial
       - error
-    loadbalance: round_robin  # round_robin | random; omit to fall back to round_robin
+    # @schema enum: [round_robin, random]
+    # -- Load balancing policy. Omit to fall back to round_robin.
+    loadbalance: round_robin
 
-  # Additional fully-templated local zones. Each entry is its own CoreDNS server block:
-  #   names       — zone names served by the block (required)
-  #   cidrs       — optional reverse (PTR) ranges, appended to the zone line + kubernetes args
-  #   cache       — optional per-zone cache (same shape as public/cluster; omit for defaults)
-  #   forward     — optional forward block (same shape as coredns.public.forward)
-  #   kubernetes  — optional kubernetes block (same shape as coredns.cluster.kubernetes)
-  #   log         — optional log classes (omit to fall back to denial+error)
-  #   loadbalance — optional policy (omit to fall back to round_robin)
-  # A zone renders whichever of forward/kubernetes it declares (or both, or neither).
+  # @schema item: object
+  # -- Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance — same shapes as coredns.public/coredns.cluster.
   additionalZones: []
   # additionalZones:
   #   - names: [linkerd.local]
@@ -225,61 +430,69 @@ coredns:
   #       to: [10.0.0.53]
   #       # policy: random
 
-  custom: ""  # raw Corefile snippet appended verbatim at end
+  # -- Raw Corefile snippet appended verbatim at the end of the configuration.
+  custom: ""
 
-# ── Adopter job ───────────────────────────────────────────────────────────────
+# -- Adopter job that takes ownership of pre-existing CoreDNS resources.
 adopter:
+  # -- Enable the adopter job.
   enabled: false
+  # -- Image used by the adopter job.
   image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.1
 
-# ── DEPRECATED ───────────────────────────────────────────────────────────────
-# The following values are superseded by the structure above.
-# They remain for backward compatibility and will be removed in a future major release.
-# NOTE: if you have custom overrides for these values, migrate them to the new paths.
+# The following values are superseded by the structure above. They remain for
+# backward compatibility and will be removed in a future major release. If you
+# have custom overrides for these values, migrate them to the new paths.
 
-# DEPRECATED: use securityContext.runAsUser / securityContext.runAsGroup
+# -- DEPRECATED: use securityContext.runAsUser. UID the CoreDNS process runs as.
 userID: 33
+# -- DEPRECATED: use securityContext.runAsGroup. GID the CoreDNS process runs as.
 groupID: 33
 
-# DEPRECATED: use controlPlane
-# mastersInstance.enabled is backward compatible — controlPlane.enabled takes precedence only when explicitly set
+# -- DEPRECATED: use controlPlane. mastersInstance.enabled stays backward compatible — controlPlane.enabled takes precedence only when explicitly set.
 mastersInstance:
+  # -- Whether to deploy the control-plane CoreDNS instance.
   enabled: true
+  # -- Node selector for the control-plane CoreDNS instance.
   nodeSelector:
     "node-role.kubernetes.io/control-plane": '""'
 
-# DEPRECATED: use coredns.<zone>.loadbalance (per-zone)
+# @schema enum: [round_robin, random]
+# -- DEPRECATED: use coredns.<zone>.loadbalance (per-zone). Load balancing policy.
 loadbalancePolicy: round_robin
 
-# DEPRECATED: use coredns.additionalZones
-# additionalLocalZones: []
-
-# DEPRECATED: use coredns.cluster.* for Corefile config and service.clusterIP for the DNS service IP
+# -- DEPRECATED: use coredns.cluster.* for Corefile config and service.clusterIP for the DNS service IP.
 cluster:
+  # -- Calico configuration.
   calico:
+    # -- Pod CIDR.
     CIDR: 192.168.0.0/16
+  # -- Kubernetes cluster configuration.
   kubernetes:
+    # -- API server configuration.
     API:
+      # -- Service IP range.
       clusterIPRange: 172.31.0.0/16
+    # -- Cluster DNS configuration.
     DNS:
+      # -- Cluster DNS service IP.
       IP: 172.31.0.10
+    # -- Cluster DNS domain.
     clusterDomain: cluster.local
 
-# DEPRECATED: use coredns.* instead
-# coredns.public.cache.success.ttl / coredns.cluster.cache.success.ttl replace configmap.cache
-# coredns.<zone>.log replaces configmap.log (per-zone)
-# coredns.public.forward.to replaces configmap.forward
-# coredns.public.forward.* replaces configmap.forwardOptions
-# coredns.public.autopath replaces configmap.autopath
-# coredns.custom replaces configmap.custom
+# -- DEPRECATED: use coredns.* instead. coredns.public.cache.success.ttl / coredns.cluster.cache.success.ttl replace configmap.cache; coredns.<zone>.log replaces configmap.log; coredns.public.forward.to replaces configmap.forward; coredns.public.forward.* replaces configmap.forwardOptions; coredns.public.autopath replaces configmap.autopath; coredns.custom replaces configmap.custom.
 configmap:
+  # -- DEPRECATED: use coredns.<zone>.cache.success.ttl. Cache TTL seed (seconds).
   cache: 30
+  # -- DEPRECATED: use coredns.custom. Raw Corefile snippet.
   custom: ""
+  # -- DEPRECATED: use coredns.<zone>.log. Newline-separated log classes.
   log: |
     denial
     error
-
-  # Uncomment and define `forward` to enable and configure forwarding rules for CoreDNS forward plugin (for syntax see https://coredns.io/plugins/forward/)
-  # forward: . 192.168.1.1 /etc/resolv.conf
-  # forwardOptions: |
-  #   policy random
+  # @schema type: [null, string]
+  # -- DEPRECATED: use coredns.public.forward.to. Forward directive (see https://coredns.io/plugins/forward/), e.g. ". 192.168.1.1 /etc/resolv.conf".
+  forward:
+  # @schema type: [null, string]
+  # -- DEPRECATED: use coredns.public.forward. Newline-separated forward plugin options.
+  forwardOptions:
