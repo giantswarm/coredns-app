@@ -438,7 +438,7 @@ adopter:
   # -- Enable the adopter job.
   enabled: false
   # -- Image used by the adopter job.
-  image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.1
+  image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.2
 
 # The following values are superseded by the structure above. They remain for
 # backward compatibility and will be removed in a future major release. If you
