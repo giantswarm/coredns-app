@@ -30,17 +30,16 @@ k8s-app: {{ .Values.name | quote }}
 
 {{/*
 Render the CoreDNS cache directive. Call via include with a dict context:
-  (dict "zone" $zone "ctx" $)
+  (dict "zone" $zone)
 The zone's cache config is read from $zone.cache (may be absent — built-in defaults
-then apply). When the zone's success TTL is unset, the deprecated configmap.cache is
-consulted as a fallback, then the built-in default 30 applies.
+then apply).
 */}}
 {{- define "coredns.cacheBlock" -}}
 {{- $c := .zone.cache | default dict }}
 {{- $success := $c.success | default dict }}
 {{- $denial := $c.denial | default dict }}
 {{- $successCapacity := $success.capacity | default 9984 }}
-{{- $successTTL := coalesce $success.ttl .ctx.Values.configmap.cache | default 30 }}
+{{- $successTTL := $success.ttl | default 30 }}
 {{- $denialCapacity := $denial.capacity | default 9984 }}
 {{- $denialTTL := $denial.ttl | default 5 -}}
 cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }}{{- with $c.zones }} {{ join " " . }}{{- end }} {
@@ -69,18 +68,14 @@ cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }}{{- with $c.zones }} {{ join " " . }
 
 {{/*
 Render a CoreDNS forward directive. Call via include with a dict context:
-  (dict "zone" $zone "compat" "true" "ctx" $)
+  (dict "zone" $zone)
 The zone's forward config is read from $zone.forward, a structured map that mirrors
 the CoreDNS forward block parameters (https://coredns.io/plugins/forward/). Only a
 representative subset of parameters is wired up today; extend it by appending one line
 to the option list below, plus a documented key in values.yaml and values.schema.json.
-
-Backward compatibility: only when the "compat" param is truthy (the public "." zone) are
-the deprecated configmap.forward / configmap.forwardOptions strings consulted as a fallback.
 */}}
 {{- define "coredns.forwardBlock" -}}
 {{- $f := .zone.forward | default dict }}
-{{- $compat := .compat }}
 {{- $upstreams := $f.to }}
 {{- if $upstreams }}
 {{- $lines := list }}
@@ -108,19 +103,7 @@ the deprecated configmap.forward / configmap.forwardOptions strings consulted as
 {{- if $f.failfastAllUnhealthyUpstreams }}{{ $lines = append $lines "failfast_all_unhealthy_upstreams" }}{{ end }}
 {{- with $f.failover }}{{ $lines = append $lines (printf "failover %s" (join " " .)) }}{{ end }}
 {{- with $f.resolver }}{{ $lines = append $lines (printf "resolver %s" (join " " .)) }}{{ end }}
-{{- if and $compat (not $lines) .ctx.Values.configmap.forwardOptions }}
-{{- range (.ctx.Values.configmap.forwardOptions | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}
-{{- end -}}
-forward . {{ join " " $upstreams }}{{ if $lines }} {
-{{- range $lines }}
-  {{ . }}
-{{- end }}
-}{{ end }}
-{{- else if and $compat .ctx.Values.configmap.forward }}
-{{- $lines := list }}
-{{- with .ctx.Values.configmap.forwardOptions }}{{ range (. | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}{{ end -}}
-forward
-{{- range (.ctx.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }}{{- end }}{{ if $lines }} {
+{{- printf "forward . %s" (join " " $upstreams) }}{{ if $lines }} {
 {{- range $lines }}
   {{ . }}
 {{- end }}
@@ -132,7 +115,7 @@ forward . /etc/resolv.conf
 
 {{/*
 Render a CoreDNS kubernetes directive. Call via include with a dict context:
-  (dict "zone" $zone "ctx" $)
+  (dict "zone" $zone)
 The zone names come from $zone.names (joined) and the optional reverse (PTR) ranges
 from $zone.cidrs. Kubernetes-plugin parameters are read from $zone.kubernetes, a
 structured map that mirrors the CoreDNS kubernetes block parameters
@@ -200,16 +183,12 @@ kubernetes {{ join " " .zone.names }}{{ with $cidrs }} {{ . }}{{ end }} {
 
 {{/*
 Render the CoreDNS log directive. Call via include with a dict context:
-  (dict "zone" $zone "ctx" $)
-The zone's log classes are read from $zone.log (a list). When absent, the deprecated
-configmap.log string is consulted as a fallback, then the built-in default
-(denial, error) applies. The block is always emitted so every zone keeps logging.
+  (dict "zone" $zone)
+The zone's log classes are read from $zone.log (a list). When absent, the built-in
+default (denial, error) applies. The block is always emitted so every zone keeps logging.
 */}}
 {{- define "coredns.logBlock" -}}
 {{- $classes := .zone.log }}
-{{- if not $classes }}
-{{- $classes = splitList "\n" (.ctx.Values.configmap.log | trimAll "\n ") }}
-{{- end }}
 {{- if not $classes }}{{ $classes = list "denial" "error" }}{{ end -}}
 log . {
 {{- range $classes }}
@@ -220,11 +199,11 @@ log . {
 
 {{/*
 Render the CoreDNS loadbalance directive. Call via include with a dict context:
-  (dict "zone" $zone "ctx" $)
-The zone's policy is read from $zone.loadbalance. When absent, the deprecated
-loadbalancePolicy is consulted as a fallback, then the built-in default round_robin.
+  (dict "zone" $zone)
+The zone's policy is read from $zone.loadbalance. When absent, the built-in default
+round_robin applies.
 */}}
 {{- define "coredns.loadbalanceBlock" -}}
-{{- $policy := coalesce .zone.loadbalance .ctx.Values.loadbalancePolicy | default "round_robin" -}}
+{{- $policy := .zone.loadbalance | default "round_robin" -}}
 loadbalance {{ $policy }}
 {{- end -}}

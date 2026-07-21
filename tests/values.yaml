@@ -1,5 +1,3 @@
 name: coredns-test
-cluster:
-  kubernetes:
-    DNS:
-      IP: 10.96.0.11
+service:
+  clusterIP: 10.96.0.11
