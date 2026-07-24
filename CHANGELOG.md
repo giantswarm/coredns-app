@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [1.31.1] - 2026-07-24
 
+### Changed
+
+- Rebuild with `app-build-suite` 2.2.0 (via `architect` orb 9.6.0): the packaged chart now carries Artifact Hub metadata (`artifacthub.io/license` and a Support link). No functional chart changes.
+
 ## [1.31.0] - 2026-06-30
 
 ### Changed
