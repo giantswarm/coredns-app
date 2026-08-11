@@ -104,7 +104,18 @@ controlPlane:
   enabled:
   # -- Node selector for the control-plane CoreDNS instance.
   nodeSelector:
-    "node-role.kubernetes.io/control-plane": '""'
+    node-role.kubernetes.io/control-plane: ""
+  # @schema itemProperties: {}
+  # -- Tolerations for the control-plane CoreDNS instance.
+  tolerations:
+  - key: node-role.kubernetes.io/master
+    effect: NoSchedule
+    operator: Exists
+  - key: node-role.kubernetes.io/control-plane
+    effect: NoSchedule
+    operator: Exists
+  - key: node.cloudprovider.kubernetes.io/uninitialized
+    operator: Exists
 
 # -- CoreDNS Corefile configuration. Cache, log and loadbalance are configured per zone, so different zones can behave differently. A zone that omits cache falls back to the built-in defaults (success 9984 30 / denial 9984 5); a zone that omits log/loadbalance falls back to denial+error / round_robin.
 coredns:
@@ -439,6 +450,10 @@ adopter:
   enabled: false
   # -- Image used by the adopter job.
   image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.3
+  # @schema itemProperties: {}
+  # -- Tolerations for the adopter job.
+  tolerations:
+  - operator: Exists
 
 # The following values are superseded by the structure above. They remain for
 # backward compatibility and will be removed in a future major release. If you
@@ -455,11 +470,19 @@ mastersInstance:
   enabled: true
   # -- Node selector for the control-plane CoreDNS instance.
   nodeSelector:
-    "node-role.kubernetes.io/control-plane": '""'
+    node-role.kubernetes.io/control-plane: ""
 
 # @schema enum: [round_robin, random]
 # -- DEPRECATED: use coredns.<zone>.loadbalance (per-zone). Load balancing policy.
 loadbalancePolicy: round_robin
+
+# @schema itemProperties: {}
+# -- Tolerations for the CoreDNS workers.
+tolerations:
+- key: node.cloudprovider.kubernetes.io/uninitialized
+  operator: Exists
+- key: node.cluster.x-k8s.io/uninitialized
+  operator: Exists
 
 # -- DEPRECATED: use coredns.cluster.* for Corefile config and service.clusterIP for the DNS service IP.
 cluster:

@@ -37,15 +37,10 @@ spec:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
+      {{- if .Values.controlPlane.tolerations }}
       tolerations:
-      - effect: NoSchedule
-        operator: "Exists"
-        key: node-role.kubernetes.io/master
-      - effect: NoSchedule
-        operator: "Exists"
-        key: node-role.kubernetes.io/control-plane
-      - operator: "Exists"
-        key: "node.cloudprovider.kubernetes.io/uninitialized"
+      {{- .Values.controlPlane.tolerations | toYaml | nindent 6 }}
+      {{- end }}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -59,15 +54,15 @@ spec:
                     - {{ .Values.name }}
               topologyKey: kubernetes.io/hostname
       nodeSelector:
-        {{- $nodeSelector := coalesce .Values.controlPlane.nodeSelector .Values.mastersInstance.nodeSelector }}
-        {{-  range $key, $value := $nodeSelector }}
-          {{- if and (eq $key "node-role.kubernetes.io/control-plane") (semverCompare "<1.24" $.Capabilities.KubeVersion.Version) }}
-            # node-role.kubernets.io/master is deprecated and removed in v1.24 of kubeadm however, we still need to support clusters with older versions.
-            node-role.kubernetes.io/master: ""
-          {{- else }}
-            {{ $key }}: {{ $value }}
-          {{- end }}
+      {{- $nodeSelector := coalesce .Values.controlPlane.nodeSelector .Values.mastersInstance.nodeSelector }}
+      {{- range $key, $value := $nodeSelector }}
+        {{- /* node-role.kubernets.io/master is deprecated and removed in v1.24 of kubeadm however, we still need to support clusters with older versions. */}}
+        {{- if and (eq $key "node-role.kubernetes.io/control-plane") (semverCompare "<1.24" $.Capabilities.KubeVersion.Version) }}
+        node-role.kubernetes.io/master: ""
+        {{- else }}
+        {{ $key }}: {{ $value | quote }}
         {{- end }}
+      {{- end }}
       containers:
       - name: coredns
         image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"

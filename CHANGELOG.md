@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Chart: Make tolerations configurable.
+
 ## [1.31.1] - 2026-07-24
 
 ### Changed

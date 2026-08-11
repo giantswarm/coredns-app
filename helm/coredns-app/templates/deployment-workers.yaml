@@ -31,9 +31,10 @@ spec:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
+      {{- if .Values.tolerations }}
       tolerations:
-      - operator: "Exists"
-        key: "node.cloudprovider.kubernetes.io/uninitialized"
+      {{- .Values.tolerations | toYaml | nindent 6 }}
+      {{- end }}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
