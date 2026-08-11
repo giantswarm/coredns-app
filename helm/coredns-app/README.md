@@ -1,6 +1,6 @@
 # coredns-app
 
-![Version: 1.30.3](https://img.shields.io/badge/Version-1.30.3-informational?style=flat-square) ![AppVersion: 1.14.4](https://img.shields.io/badge/AppVersion-1.14.4-informational?style=flat-square)
+![Version: 1.31.1](https://img.shields.io/badge/Version-1.31.1-informational?style=flat-square) ![AppVersion: 1.14.4](https://img.shields.io/badge/AppVersion-1.14.4-informational?style=flat-square)
 
 A Helm chart for CoreDNS
 
@@ -10,9 +10,10 @@ A Helm chart for CoreDNS
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| adopter | object | `{"enabled":false,"image":"gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.1"}` | Adopter job that takes ownership of pre-existing CoreDNS resources. |
+| adopter | object | `{"enabled":false,"image":"gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.3","tolerations":[{"operator":"Exists"}]}` | Adopter job that takes ownership of pre-existing CoreDNS resources. |
 | adopter.enabled | bool | `false` | Enable the adopter job. |
-| adopter.image | string | `"gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.1"` | Image used by the adopter job. |
+| adopter.image | string | `"gsoci.azurecr.io/giantswarm/docker-kubectl:1.36.3"` | Image used by the adopter job. |
+| adopter.tolerations | list | `[{"operator":"Exists"}]` | Tolerations for the adopter job. |
 | cluster | object | `{"calico":{"CIDR":"192.168.0.0/16"},"kubernetes":{"API":{"clusterIPRange":"172.31.0.0/16"},"DNS":{"IP":"172.31.0.10"},"clusterDomain":"cluster.local"}}` | DEPRECATED: use coredns.cluster.* for Corefile config and service.clusterIP for the DNS service IP. |
 | cluster.calico | object | `{"CIDR":"192.168.0.0/16"}` | Calico configuration. |
 | cluster.calico.CIDR | string | `"192.168.0.0/16"` | Pod CIDR. |
@@ -28,9 +29,10 @@ A Helm chart for CoreDNS
 | configmap.forward | string | `nil` | DEPRECATED: use coredns.public.forward.to. Forward directive (see https://coredns.io/plugins/forward/), e.g. ". 192.168.1.1 /etc/resolv.conf". |
 | configmap.forwardOptions | string | `nil` | DEPRECATED: use coredns.public.forward. Newline-separated forward plugin options. |
 | configmap.log | string | `"denial\nerror\n"` | DEPRECATED: use coredns.<zone>.log. Newline-separated log classes. |
-| controlPlane | object | `{"enabled":null,"nodeSelector":{"node-role.kubernetes.io/control-plane":"\"\""}}` | Control-plane CoreDNS instance configuration. |
+| controlPlane | object | `{"enabled":null,"nodeSelector":{"node-role.kubernetes.io/control-plane":""},"tolerations":[{"effect":"NoSchedule","key":"node-role.kubernetes.io/master","operator":"Exists"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"},{"key":"node.cloudprovider.kubernetes.io/uninitialized","operator":"Exists"}]}` | Control-plane CoreDNS instance configuration. |
 | controlPlane.enabled | string | `nil` | Whether to deploy the control-plane CoreDNS instance. Defaults to mastersInstance.enabled for backward compatibility. |
-| controlPlane.nodeSelector | object | `{"node-role.kubernetes.io/control-plane":"\"\""}` | Node selector for the control-plane CoreDNS instance. |
+| controlPlane.nodeSelector | object | `{"node-role.kubernetes.io/control-plane":""}` | Node selector for the control-plane CoreDNS instance. |
+| controlPlane.tolerations | list | `[{"effect":"NoSchedule","key":"node-role.kubernetes.io/master","operator":"Exists"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"},{"key":"node.cloudprovider.kubernetes.io/uninitialized","operator":"Exists"}]` | Tolerations for the control-plane CoreDNS instance. |
 | coredns | object | `{"additionalZones":[],"cluster":{"cache":{"denial":{"capacity":9984,"minTTL":null,"ttl":5},"disable":{"denial":null,"denialZones":[],"success":null,"successZones":[]},"keepttl":false,"prefetch":{"amount":null,"duration":null,"percentage":null},"serveStale":{"duration":null,"enabled":false,"refreshMode":null,"verifyTimeout":null},"servfail":{"duration":null},"success":{"capacity":9984,"minTTL":null,"ttl":30},"ttl":null,"zones":[]},"domains":null,"kubernetes":{"apiserverBurst":null,"apiserverMaxInflight":null,"apiserverQPS":null,"endpoint":null,"endpointPodNames":false,"fallthrough":false,"fallthroughZones":[],"ignoreEmptyService":false,"kubeconfig":{"context":null,"path":null},"labels":null,"multicluster":[],"namespaceLabels":null,"namespaces":[],"noendpoints":false,"pods":"verified","startupTimeout":null,"tls":{"ca":null,"cert":null,"key":null},"ttl":null},"loadbalance":"round_robin","log":["denial","error"],"podCIDR":null,"serviceCIDR":null},"custom":"","public":{"autopath":"","cache":{"denial":{"capacity":9984,"minTTL":null,"ttl":5},"disable":{"denial":null,"denialZones":[],"success":null,"successZones":[]},"keepttl":false,"prefetch":{"amount":null,"duration":null,"percentage":null},"serveStale":{"duration":null,"enabled":false,"refreshMode":null,"verifyTimeout":null},"servfail":{"duration":null},"success":{"capacity":9984,"minTTL":null,"ttl":30},"ttl":null,"zones":[]},"forward":{"dohMethod":null,"except":[],"expire":null,"failfastAllUnhealthyUpstreams":false,"failover":[],"forceTCP":false,"healthCheck":null,"maxConcurrent":null,"maxConnectAttempts":null,"maxFails":null,"maxIdleConns":null,"next":[],"nextOnNodata":false,"policy":null,"preferUDP":false,"resolver":[],"tls":{"ca":null,"cert":null,"enabled":false,"key":null},"tlsServername":null,"to":[]},"loadbalance":"round_robin","log":["denial","error"]}}` | CoreDNS Corefile configuration. Cache, log and loadbalance are configured per zone, so different zones can behave differently. A zone that omits cache falls back to the built-in defaults (success 9984 30 / denial 9984 5); a zone that omits log/loadbalance falls back to denial+error / round_robin. |
 | coredns.additionalZones | list | `[]` | Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance — same shapes as coredns.public/coredns.cluster. |
 | coredns.cluster | object | `{"cache":{"denial":{"capacity":9984,"minTTL":null,"ttl":5},"disable":{"denial":null,"denialZones":[],"success":null,"successZones":[]},"keepttl":false,"prefetch":{"amount":null,"duration":null,"percentage":null},"serveStale":{"duration":null,"enabled":false,"refreshMode":null,"verifyTimeout":null},"servfail":{"duration":null},"success":{"capacity":9984,"minTTL":null,"ttl":30},"ttl":null,"zones":[]},"domains":null,"kubernetes":{"apiserverBurst":null,"apiserverMaxInflight":null,"apiserverQPS":null,"endpoint":null,"endpointPodNames":false,"fallthrough":false,"fallthroughZones":[],"ignoreEmptyService":false,"kubeconfig":{"context":null,"path":null},"labels":null,"multicluster":[],"namespaceLabels":null,"namespaces":[],"noendpoints":false,"pods":"verified","startupTimeout":null,"tls":{"ca":null,"cert":null,"key":null},"ttl":null},"loadbalance":"round_robin","log":["denial","error"],"podCIDR":null,"serviceCIDR":null}` | The cluster.local zone — in-cluster DNS served by the kubernetes plugin. |
@@ -164,9 +166,9 @@ A Helm chart for CoreDNS
 | image.registry | string | `"gsoci.azurecr.io"` | Image registry. |
 | image.tag | string | `"1.14.4"` | Image tag. |
 | loadbalancePolicy | string | `"round_robin"` | DEPRECATED: use coredns.<zone>.loadbalance (per-zone). Load balancing policy. |
-| mastersInstance | object | `{"enabled":true,"nodeSelector":{"node-role.kubernetes.io/control-plane":"\"\""}}` | DEPRECATED: use controlPlane. mastersInstance.enabled stays backward compatible — controlPlane.enabled takes precedence only when explicitly set. |
+| mastersInstance | object | `{"enabled":true,"nodeSelector":{"node-role.kubernetes.io/control-plane":""}}` | DEPRECATED: use controlPlane. mastersInstance.enabled stays backward compatible — controlPlane.enabled takes precedence only when explicitly set. |
 | mastersInstance.enabled | bool | `true` | Whether to deploy the control-plane CoreDNS instance. |
-| mastersInstance.nodeSelector | object | `{"node-role.kubernetes.io/control-plane":"\"\""}` | Node selector for the control-plane CoreDNS instance. |
+| mastersInstance.nodeSelector | object | `{"node-role.kubernetes.io/control-plane":""}` | Node selector for the control-plane CoreDNS instance. |
 | name | string | `"coredns"` | Name used for the CoreDNS workload and its resources. |
 | namespace | string | `"kube-system"` | Namespace the CoreDNS resources are deployed into. |
 | podDisruptionBudget | object | `{"maxUnavailable":"25%"}` | Pod disruption budget for the CoreDNS workloads. |
@@ -190,6 +192,7 @@ A Helm chart for CoreDNS
 | service | object | `{"clusterIP":null}` | Configuration for the CoreDNS Service. |
 | service.clusterIP | string | `nil` | Cluster IP of the DNS Service. Defaults to cluster.kubernetes.DNS.IP when unset. |
 | serviceType | string | `"managed"` | Giant Swarm service type label applied to the resources. |
+| tolerations | list | `[{"key":"node.cloudprovider.kubernetes.io/uninitialized","operator":"Exists"},{"key":"node.cluster.x-k8s.io/uninitialized","operator":"Exists"}]` | Tolerations for the CoreDNS workers. |
 | updateStrategy | object | `{"rollingUpdate":{"maxUnavailable":1},"type":"RollingUpdate"}` | Update strategy for the CoreDNS workloads. |
 | updateStrategy.rollingUpdate | object | `{"maxUnavailable":1}` | Rolling update parameters. |
 | updateStrategy.rollingUpdate.maxUnavailable | int | `1` | Maximum number of pods that can be unavailable during the update. |
@@ -197,4 +200,4 @@ A Helm chart for CoreDNS
 | userID | int | `33` | DEPRECATED: use securityContext.runAsUser. UID the CoreDNS process runs as. |
 
 ----------------------------------------------
-Autogenerated from chart metadata using [helm-docs v1.11.0](https://github.com/norwoodj/helm-docs/releases/v1.11.0)
+Autogenerated from chart metadata using [helm-docs v1.14.2](https://github.com/norwoodj/helm-docs/releases/v1.14.2)

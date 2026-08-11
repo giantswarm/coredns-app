@@ -32,8 +32,10 @@ spec:
       activeDeadlineSeconds: 1800 # 30 minutes
       restartPolicy: Never
       serviceAccountName: coredns-adopter
+      {{- if .Values.adopter.tolerations }}
       tolerations:
-      - operator: Exists
+      {{- .Values.adopter.tolerations | toYaml | nindent 6 }}
+      {{- end }}
       hostNetwork: true # No need to wait for CNI to be ready
       initContainers:
       - name: wait-for-apiserver

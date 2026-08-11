@@ -13,6 +13,13 @@
                 "image": {
                     "description": "Image used by the adopter job.",
                     "type": "string"
+                },
+                "tolerations": {
+                    "description": "Tolerations for the adopter job.",
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
                 }
             }
         },
@@ -112,6 +119,13 @@
                         "node-role.kubernetes.io/control-plane": {
                             "type": "string"
                         }
+                    }
+                },
+                "tolerations": {
+                    "description": "Tolerations for the control-plane CoreDNS instance.",
+                    "type": "array",
+                    "items": {
+                        "type": "object"
                     }
                 }
             }
@@ -1105,6 +1119,13 @@
         "serviceType": {
             "description": "Giant Swarm service type label applied to the resources.",
             "type": "string"
+        },
+        "tolerations": {
+            "description": "Tolerations for the CoreDNS workers.",
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
         },
         "updateStrategy": {
             "description": "Update strategy for the CoreDNS workloads.",
