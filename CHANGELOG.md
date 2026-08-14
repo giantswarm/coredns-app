@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Update `coredns` image to [1.14.6](https://github.com/coredns/coredns/releases/tag/v1.14.6).
+- Run the E2E test suites automatically on release PRs by adding `.github/release-pr-body.md`.
 
 ## [1.32.0] - 2026-08-11
 
