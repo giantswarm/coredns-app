@@ -74,7 +74,7 @@
             "type": "object",
             "properties": {
                 "cache": {
-                    "description": "DEPRECATED: use coredns.\u003czone\u003e.cache.success.ttl. Cache TTL seed (seconds).",
+                    "description": "DEPRECATED: use coredns.\u003czone\u003e.cache.success.ttl. Success cache TTL (seconds), applied to every zone that leaves its own success TTL unset.",
                     "type": "integer"
                 },
                 "custom": {
@@ -131,7 +131,7 @@
             }
         },
         "coredns": {
-            "description": "CoreDNS Corefile configuration. Cache, log and loadbalance are configured per zone, so different zones can behave differently. A zone that omits cache falls back to the built-in defaults (success 9984 30 / denial 9984 5); a zone that omits log/loadbalance falls back to denial+error / round_robin.",
+            "description": "CoreDNS Corefile configuration. Cache, log and loadbalance are configured per zone, so different zones can behave differently. A zone that omits cache falls back to the built-in defaults (success 9984 30 / denial 9984 5), with the success TTL falling back to the deprecated configmap.cache first; a zone that omits log/loadbalance falls back to the deprecated configmap.log / loadbalancePolicy, then to denial+error / round_robin.",
             "type": "object",
             "properties": {
                 "additionalZones": {
@@ -300,8 +300,11 @@
                                             ]
                                         },
                                         "ttl": {
-                                            "description": "Max TTL for positive responses (seconds). Defaults to configmap.cache for backward compatibility.",
-                                            "type": "integer"
+                                            "description": "Max TTL for positive responses (seconds). Omit to fall back to the deprecated configmap.cache, then to 30.",
+                                            "type": [
+                                                "null",
+                                                "integer"
+                                            ]
                                         }
                                     }
                                 },
@@ -486,16 +489,23 @@
                             }
                         },
                         "loadbalance": {
-                            "description": "Load balancing policy. Omit to fall back to round_robin.",
-                            "type": "string",
+                            "description": "Load balancing policy. Omit to fall back to the deprecated loadbalancePolicy, then to round_robin.",
+                            "type": [
+                                "null",
+                                "string"
+                            ],
                             "enum": [
                                 "round_robin",
-                                "random"
+                                "random",
+                                null
                             ]
                         },
                         "log": {
-                            "description": "CoreDNS log classes for this zone. Omit to fall back to denial+error.",
-                            "type": "array",
+                            "description": "CoreDNS log classes for this zone. Omit to fall back to the deprecated configmap.log, then to denial+error.",
+                            "type": [
+                                "null",
+                                "array"
+                            ],
                             "items": {
                                 "type": "string",
                                 "enum": [
@@ -689,8 +699,11 @@
                                             ]
                                         },
                                         "ttl": {
-                                            "description": "Max TTL for positive responses (seconds). Defaults to configmap.cache for backward compatibility.",
-                                            "type": "integer"
+                                            "description": "Max TTL for positive responses (seconds). Omit to fall back to the deprecated configmap.cache, then to 30.",
+                                            "type": [
+                                                "null",
+                                                "integer"
+                                            ]
                                         }
                                     }
                                 },
@@ -873,16 +886,23 @@
                             }
                         },
                         "loadbalance": {
-                            "description": "Load balancing policy. Omit to fall back to round_robin.",
-                            "type": "string",
+                            "description": "Load balancing policy. Omit to fall back to the deprecated loadbalancePolicy, then to round_robin.",
+                            "type": [
+                                "null",
+                                "string"
+                            ],
                             "enum": [
                                 "round_robin",
-                                "random"
+                                "random",
+                                null
                             ]
                         },
                         "log": {
-                            "description": "CoreDNS log classes for this zone. Omit to fall back to denial+error.",
-                            "type": "array",
+                            "description": "CoreDNS log classes for this zone. Omit to fall back to the deprecated configmap.log, then to denial+error.",
+                            "type": [
+                                "null",
+                                "array"
+                            ],
                             "items": {
                                 "type": "string",
                                 "enum": [

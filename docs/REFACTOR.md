@@ -18,7 +18,11 @@ The previous `values.yaml` had grown organically. Key problems:
 
 ## Approach
 
-Introduce a new top-level key **`.Values.coredns`** that holds all CoreDNS Corefile configuration in a zone-aware structure. All existing keys are kept and continue to work. New keys have **no defaults** in `values.yaml` — templates fall back to old paths automatically when new keys are unset, so old overrides are never silently ignored.
+Introduce a new top-level key **`.Values.coredns`** that holds all CoreDNS Corefile configuration in a zone-aware structure. All existing keys are kept and continue to work.
+
+Any new key that has a deprecated counterpart is left **unset** in `values.yaml`, so the template's fallback to the old path is reachable and old overrides are never silently ignored. This applies to `coredns.<zone>.log` (falls back to `configmap.log`), `coredns.<zone>.loadbalance` (falls back to `loadbalancePolicy`), `coredns.<zone>.cache.success.ttl` (falls back to `configmap.cache`), `coredns.cluster.domains` / `serviceCIDR` / `podCIDR`, `service.clusterIP`, `securityContext.*`, `ports.metrics.port` and `controlPlane.enabled`. Keys with an empty-but-present default (`coredns.public.forward.to: []`, `coredns.public.autopath: ""`, `coredns.custom: ""`) work the same way, because the empty value is falsy and `coalesce` falls through.
+
+New keys with **no** deprecated counterpart do carry real defaults — `coredns.<zone>.cache.success.capacity` / `denial`, `coredns.cluster.kubernetes.pods`. Do not add a default to any key in the first group: it shadows the fallback and turns the old key into a silent no-op.
 
 ---
 
@@ -28,15 +32,16 @@ Introduce a new top-level key **`.Values.coredns`** that holds all CoreDNS Coref
 
 Cache, log, and loadbalance are configured **per zone** (no global block); each zone
 (public, cluster, and every `additionalZones` entry) carries its own optional `cache`,
-`log`, and `loadbalance`, falling back to built-in defaults when omitted (cache:
-`success 9984 30` / `denial 9984 5`; log: `denial`+`error`; loadbalance: `round_robin`).
+`log`, and `loadbalance`, falling back to the deprecated keys and then to built-in
+defaults when omitted (cache: `success 9984 30` / `denial 9984 5`; log:
+`denial`+`error`; loadbalance: `round_robin`).
 
 ```yaml
 coredns:
   # "." zone — external/public DNS (forward zone)
   public:
     cache:                 # per-zone cache (omit -> defaults)
-      success: {capacity: 9984, ttl: 30}   # ttl defaults to configmap.cache for backward compat
+      success: {capacity: 9984}            # ttl unset -> configmap.cache -> 30
       denial:  {capacity: 9984, ttl: 5}
       # prefetch / serveStale / servfail / disable / keepttl / ttl ...
     forward:               # structured forward directive (mirrors the CoreDNS forward block); FROM is always "."
@@ -105,7 +110,7 @@ controlPlane:
 
 | Old path | Old type | New path | New type |
 |---|---|---|---|
-| `configmap.cache` (was unused in template) | int | `coredns.public.cache.success.ttl` / `coredns.cluster.cache.success.ttl` | int |
+| `configmap.cache` | int | `coredns.public.cache.success.ttl` / `coredns.cluster.cache.success.ttl` | int |
 | _(no equivalent)_ | — | `coredns.<zone>.cache.success.{capacity,minTTL}` | int |
 | _(no equivalent)_ | — | `coredns.<zone>.cache.denial.{ttl,capacity,minTTL}` | int |
 | _(no equivalent)_ | — | `coredns.<zone>.cache.prefetch.{amount,duration,percentage}` | mixed |
@@ -155,7 +160,7 @@ Full coalesce map used in templates:
 | `<zone>.cache.success.ttl` | per zone, inside `coredns.cacheBlock`: `coalesce $success.ttl .ctx.Values.configmap.cache \| default 30` |
 | `<zone>.log` (list) | per zone, inside `coredns.logBlock`: `$zone.log` → else `splitList "\n" .ctx.Values.configmap.log` → else `denial`+`error` |
 | `<zone>.loadbalance` | per zone, inside `coredns.loadbalanceBlock`: `coalesce $zone.loadbalance .ctx.Values.loadbalancePolicy \| default "round_robin"` |
-| `public.forward.to` | `if .Values.coredns.public.forward.to` → else fall back to `configmap.forward` string (only the public zone passes `legacy: true`) |
+| `public.forward.to` | `if .Values.coredns.public.forward.to` → else fall back to `configmap.forward` string (only the public zone is called with `compat: "true"`) |
 | `public.forward` (params) | rendered by the `coredns.forwardBlock` helper; falls back to the raw `configmap.forwardOptions` string when no structured params are set |
 | `public.autopath` | `coalesce .Values.coredns.public.autopath .Values.configmap.autopath` |
 | `cluster.domains` | `if not .Values.coredns.cluster.domains` → fall back to `splitList " " .Values.cluster.kubernetes.clusterDomain` |
@@ -192,9 +197,9 @@ New parent keys that have all their children unset are declared as `{}` in `valu
 | File | Changes |
 |---|---|
 | `values.yaml` | New keys added with no defaults; old keys kept as `# DEPRECATED` with migration notes |
-| `values.schema.json` | `cache`/`forward`/`kubernetes`/`log`/`loadbalance` extracted to `definitions` and `$ref`'d from public/cluster/additionalZones; `additionalLocalZones` (strings) replaced by `additionalZones` (objects); deprecated paths marked |
+| `values.schema.json` | `cache`/`forward`/`kubernetes`/`log`/`loadbalance` described in full under public/cluster (the generator expands them rather than emitting `$ref`s); `additionalLocalZones` (strings) replaced by `additionalZones` (objects); deprecated paths marked |
 | `templates/configmap.yaml` | Builds a canonical `$zone` dict per server block (public, each cluster domain, each additionalZones entry) and renders via the helpers; generic `additionalZones` loop + legacy `additionalLocalZones` string fallback |
-| `templates/_helpers.tpl` | `coredns.cacheBlock`, `coredns.forwardBlock`, `coredns.kubernetesBlock`, `coredns.logBlock`, `coredns.loadbalanceBlock` share the uniform signature `(dict "zone" $zone "ctx" $)` — each reads its slice of the zone (`cache`/`forward`/`kubernetes`/`log`/`loadbalance`, plus `names`/`cidrs`/`legacy`). Forward's `configmap.*` fallback is gated by `$zone.legacy` (public only); log/loadbalance fall back to the deprecated `configmap.log` / `loadbalancePolicy` then built-in defaults |
+| `templates/_helpers.tpl` | `coredns.cacheBlock`, `coredns.forwardBlock`, `coredns.kubernetesBlock`, `coredns.logBlock`, `coredns.loadbalanceBlock` share the uniform signature `(dict "zone" $zone "ctx" $)` — each reads its slice of the zone (`cache`/`forward`/`kubernetes`/`log`/`loadbalance`, plus `names`/`cidrs`). Forward's `configmap.*` fallback is gated by a separate `compat` param in the dict, passed as `"true"` only for the public zone; cache/log/loadbalance fall back to the deprecated `configmap.cache` / `configmap.log` / `loadbalancePolicy` then built-in defaults |
 | `templates/deployment-masters.yaml` | `securityContext`, `controlPlane` (with `kindIs "invalid"`), `ports.metrics.port` |
 | `templates/deployment-workers.yaml` | `securityContext`, `ports.metrics.port` |
 | `templates/service.yaml` | `service.clusterIP` |
@@ -204,6 +209,6 @@ New parent keys that have all their children unset are declared as `{}` in `valu
 
 ## Known Behavior Change
 
-`configmap.cache: 30` was defined in the old `values.yaml` but was never referenced in the Corefile template — CoreDNS was effectively running with its built-in default of 3600s success TTL and 30s denial TTL. The per-zone `coredns.<zone>.cache` blocks are now correctly applied, bringing the effective TTLs to 30s (success) / 5s (denial). Existing installations will see a change in cache behavior on upgrade unless a higher `coredns.public.cache.success.ttl` / `coredns.cluster.cache.success.ttl` is set.
+`configmap.cache: 30` was defined in the old `values.yaml` but was never referenced in the Corefile template — CoreDNS was effectively running with its built-in default of 3600s success TTL and 30s denial TTL. The per-zone `coredns.<zone>.cache` blocks are now correctly applied, bringing the effective TTLs to 30s (success) / 5s (denial). Existing installations will see a change in cache behavior on upgrade unless a higher `coredns.public.cache.success.ttl` / `coredns.cluster.cache.success.ttl` is set, or `configmap.cache` is set — that old key now seeds the success TTL of every zone that leaves its own unset.
 
 The `health` plugin is process-wide and may be enabled in only one Server Block, so it is now rendered solely in the `.` (public) block instead of every zone block. The `ready` plugin is kept in every block — its readiness is aggregated across all blocks that enable it, per the [ready plugin docs](https://coredns.io/plugins/ready/).

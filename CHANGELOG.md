@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Honor the deprecated `configmap.log`, `loadbalancePolicy` and `configmap.cache` again. Since 1.31.0 `coredns.<zone>.log`, `coredns.<zone>.loadbalance` and `coredns.<zone>.cache.success.ttl` shipped defaults that shadowed them, so the old keys were silently ignored. They are now unset by default, restoring the documented fallback chain. Rendering with default values is unchanged.
+
 ### Changed
 
 - Update `coredns` image to [1.14.6](https://github.com/coredns/coredns/releases/tag/v1.14.6).
