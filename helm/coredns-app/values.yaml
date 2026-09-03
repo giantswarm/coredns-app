@@ -117,7 +117,7 @@ controlPlane:
   - key: node.cloudprovider.kubernetes.io/uninitialized
     operator: Exists
 
-# -- CoreDNS Corefile configuration. Cache, log and loadbalance are configured per zone, so different zones can behave differently. A zone that omits cache falls back to the built-in defaults (success 9984 30 / denial 9984 5); a zone that omits log/loadbalance falls back to denial+error / round_robin.
+# -- CoreDNS Corefile configuration. Cache, log and loadbalance are configured per zone, so different zones can behave differently. A zone that omits cache falls back to the built-in defaults (success 9984 30 / denial 9984 5), with the success TTL falling back to the deprecated configmap.cache first; a zone that omits log/loadbalance falls back to the deprecated configmap.log / loadbalancePolicy, then to denial+error / round_robin.
 coredns:
   # -- The "." zone — external/public DNS served by the forward plugin.
   public:
@@ -133,8 +133,9 @@ coredns:
       success:
         # -- Maximum number of cached positive responses.
         capacity: 9984
-        # -- Max TTL for positive responses (seconds). Defaults to configmap.cache for backward compatibility.
-        ttl: 30
+        # @schema type: [null, integer]
+        # -- Max TTL for positive responses (seconds). Omit to fall back to the deprecated configmap.cache, then to 30.
+        ttl:
         # @schema type: [null, integer]
         # -- Min TTL for positive responses (seconds).
         minTTL:
@@ -257,14 +258,12 @@ coredns:
       # @schema item: string
       # -- resolver IP[:PORT]... — resolvers for hostname-based "to" endpoints.
       resolver: []
-    # @schema itemEnum: [success, denial, error, all]
-    # -- CoreDNS log classes for this zone. Omit to fall back to denial+error.
+    # @schema type: [null, array]; itemEnum: [success, denial, error, all]
+    # -- CoreDNS log classes for this zone. Omit to fall back to the deprecated configmap.log, then to denial+error.
     log:
-      - denial
-      - error
-    # @schema enum: [round_robin, random]
-    # -- Load balancing policy. Omit to fall back to round_robin.
-    loadbalance: round_robin
+    # @schema type: [null, string]; enum: [round_robin, random, null]
+    # -- Load balancing policy. Omit to fall back to the deprecated loadbalancePolicy, then to round_robin.
+    loadbalance:
     # -- autopath plugin args, e.g. "@kubernetes". Empty disables autopath.
     autopath: ""
 
@@ -291,8 +290,9 @@ coredns:
       success:
         # -- Maximum number of cached positive responses.
         capacity: 9984
-        # -- Max TTL for positive responses (seconds). Defaults to configmap.cache for backward compatibility.
-        ttl: 30
+        # @schema type: [null, integer]
+        # -- Max TTL for positive responses (seconds). Omit to fall back to the deprecated configmap.cache, then to 30.
+        ttl:
         # @schema type: [null, integer]
         # -- Min TTL for positive responses (seconds).
         minTTL:
@@ -415,14 +415,12 @@ coredns:
       # @schema type: [null, string]
       # -- startup_timeout — wait for informer cache sync at startup.
       startupTimeout:
-    # @schema itemEnum: [success, denial, error, all]
-    # -- CoreDNS log classes for this zone. Omit to fall back to denial+error.
+    # @schema type: [null, array]; itemEnum: [success, denial, error, all]
+    # -- CoreDNS log classes for this zone. Omit to fall back to the deprecated configmap.log, then to denial+error.
     log:
-      - denial
-      - error
-    # @schema enum: [round_robin, random]
-    # -- Load balancing policy. Omit to fall back to round_robin.
-    loadbalance: round_robin
+    # @schema type: [null, string]; enum: [round_robin, random, null]
+    # -- Load balancing policy. Omit to fall back to the deprecated loadbalancePolicy, then to round_robin.
+    loadbalance:
 
   # @schema item: object
   # -- Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance — same shapes as coredns.public/coredns.cluster.
@@ -505,7 +503,7 @@ cluster:
 
 # -- DEPRECATED: use coredns.* instead. coredns.public.cache.success.ttl / coredns.cluster.cache.success.ttl replace configmap.cache; coredns.<zone>.log replaces configmap.log; coredns.public.forward.to replaces configmap.forward; coredns.public.forward.* replaces configmap.forwardOptions; coredns.public.autopath replaces configmap.autopath; coredns.custom replaces configmap.custom.
 configmap:
-  # -- DEPRECATED: use coredns.<zone>.cache.success.ttl. Cache TTL seed (seconds).
+  # -- DEPRECATED: use coredns.<zone>.cache.success.ttl. Success cache TTL (seconds), applied to every zone that leaves its own success TTL unset.
   cache: 30
   # -- DEPRECATED: use coredns.custom. Raw Corefile snippet.
   custom: ""
