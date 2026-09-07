@@ -32,8 +32,8 @@ k8s-app: {{ .Values.name | quote }}
 Render the CoreDNS cache directive. Call via include with a dict context:
   (dict "zone" $zone "ctx" $)
 The zone's cache config is read from $zone.cache (may be absent — built-in defaults
-then apply). $ctx is the root context, used only to reach the deprecated
-configmap.cache success-TTL seed.
+then apply). When the zone's success TTL is unset, the deprecated configmap.cache is
+consulted as a fallback, then the built-in default 30 applies.
 */}}
 {{- define "coredns.cacheBlock" -}}
 {{- $c := .zone.cache | default dict }}

@@ -1,0 +1,15 @@
+# Regression guard for the deprecated -> new fallback chain. The per-zone keys
+# ship unset precisely so these old paths stay reachable; if a default is ever
+# added back to coredns.<zone>.cache.success.ttl, coredns.<zone>.log or
+# coredns.<zone>.loadbalance, the render diff for this file shows the fallback
+# silently breaking.
+# Expected: every zone renders "success 9984 120", "class all" and
+# "loadbalance random".
+# Layered on top of ci-values.yaml by the render-diff CI.
+configmap:
+  cache: 120
+  log: |
+    all
+loadbalancePolicy: random
+additionalLocalZones:
+  - linkerd.local
