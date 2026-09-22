@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Chart metadata: add `io.giantswarm.application.managed` annotation (`"true"`).
+- Chart metadata: add `keywords`.
+
 ## [1.33.0] - 2026-09-11
 
 ### Fixed
