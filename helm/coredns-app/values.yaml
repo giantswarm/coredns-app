@@ -27,7 +27,7 @@ image:
   # -- Image repository.
   name: giantswarm/coredns
   # -- Image tag.
-  tag: 1.14.6
+  tag: 1.14.7
 
 # -- Ports exposed by CoreDNS.
 ports:
