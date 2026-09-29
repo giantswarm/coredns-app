@@ -3,7 +3,7 @@ annotations:
   io.giantswarm.application.managed: "true"
   io.giantswarm.application.audience: "all"
 apiVersion: v2
-appVersion: 1.14.6
+appVersion: 1.14.7
 description: A Helm chart for CoreDNS
 home: https://github.com/giantswarm/coredns-app
 icon: https://s.giantswarm.io/app-icons/coredns/1/light.svg
