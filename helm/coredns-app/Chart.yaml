@@ -8,7 +8,7 @@ description: A Helm chart for CoreDNS
 home: https://github.com/giantswarm/coredns-app
 icon: https://s.giantswarm.io/app-icons/coredns/1/light.svg
 name: coredns-app
-version: 1.33.0
+version: 1.34.0
 keywords:
   - dns
   - coredns
