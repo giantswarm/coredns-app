@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update gsoci.azurecr.io/giantswarm/docker-kubectl to v1.37.1 (giantswarm/coredns-app#520)
+
 ## [1.34.0] - 2026-09-29
 
 ### Changed
