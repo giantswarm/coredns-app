@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update architect to v10.12.0 (giantswarm/coredns-app#522)
+
 ## [1.34.0] - 2026-09-29
 
 ### Changed
