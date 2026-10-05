@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Update architect to v10.12.0 (giantswarm/coredns-app#522)
+- Update gsoci.azurecr.io/giantswarm/docker-kubectl to v1.37.1 (giantswarm/coredns-app#520)
 
 ## [1.34.0] - 2026-09-29
 
