@@ -9,11 +9,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Support the forward `max_age` option.
+- Support the forward `max_age` option (giantswarm/coredns-app#528)
 
 ### Fixed
 
-- Render forward integer options when set to `0`.
+- Render forward integer options when set to `0` (giantswarm/coredns-app#528)
 
 ### Changed
 
