@@ -52,5 +52,5 @@ All of these must pass before the PR leaves draft:
 - CI schema check: validate `values.yaml` and every `helm/coredns-app/ci/*.yaml` merged into it with `yajsv` (as `giantswarm/github-workflows/.github/workflows/chart-values.yaml` does).
 - Lint: `helm lint helm/coredns-app`.
 - Corefile parses on the new image: take the rendered Corefile (or the changed block, with `.:1053` as the server address) and run
-  `docker run --rm -v "$PWD/cf:/cf:ro" coredns/coredns:<NEW> -conf /cf/Corefile`. It must print `CoreDNS-<NEW>`, not a `plugin/...` error.
+  `docker run --rm -v "$PWD/cf:/cf:ro" gsoci.azurecr.io/giantswarm/coredns:<NEW> -conf /cf/Corefile`. It must print `CoreDNS-<NEW>`, not a `plugin/...` error.
 - Run E2E by commenting `/run app-test-suites` on the PR, and tick the E2E checkbox once it passes.
