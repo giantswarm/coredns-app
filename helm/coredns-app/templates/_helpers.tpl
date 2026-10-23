@@ -88,9 +88,10 @@ the deprecated configmap.forward / configmap.forwardOptions strings consulted as
 {{- if $f.forceTCP }}{{ $lines = append $lines "force_tcp" }}{{ end }}
 {{- if $f.preferUDP }}{{ $lines = append $lines "prefer_udp" }}{{ end }}
 {{- with $f.expire }}{{ $lines = append $lines (printf "expire %v" .) }}{{ end }}
-{{- with $f.maxIdleConns }}{{ $lines = append $lines (printf "max_idle_conns %v" .) }}{{ end }}
-{{- with $f.maxFails }}{{ $lines = append $lines (printf "max_fails %v" .) }}{{ end }}
-{{- with $f.maxConnectAttempts }}{{ $lines = append $lines (printf "max_connect_attempts %v" .) }}{{ end }}
+{{- with $f.maxAge }}{{ $lines = append $lines (printf "max_age %v" .) }}{{ end }}
+{{- if not (kindIs "invalid" $f.maxIdleConns) }}{{ $lines = append $lines (printf "max_idle_conns %v" $f.maxIdleConns) }}{{ end }}
+{{- if not (kindIs "invalid" $f.maxFails) }}{{ $lines = append $lines (printf "max_fails %v" $f.maxFails) }}{{ end }}
+{{- if not (kindIs "invalid" $f.maxConnectAttempts) }}{{ $lines = append $lines (printf "max_connect_attempts %v" $f.maxConnectAttempts) }}{{ end }}
 {{- with $f.dohMethod }}{{ $lines = append $lines (printf "doh_method %v" .) }}{{ end }}
 {{- with $f.tls }}
 {{- if and .cert .key .ca }}{{ $lines = append $lines (printf "tls %s %s %s" .cert .key .ca) }}
@@ -101,7 +102,7 @@ the deprecated configmap.forward / configmap.forwardOptions strings consulted as
 {{- with $f.tlsServername }}{{ $lines = append $lines (printf "tls_servername %v" .) }}{{ end }}
 {{- with $f.policy }}{{ $lines = append $lines (printf "policy %v" .) }}{{ end }}
 {{- with $f.healthCheck }}{{ $lines = append $lines (printf "health_check %v" .) }}{{ end }}
-{{- with $f.maxConcurrent }}{{ $lines = append $lines (printf "max_concurrent %v" .) }}{{ end }}
+{{- if not (kindIs "invalid" $f.maxConcurrent) }}{{ $lines = append $lines (printf "max_concurrent %v" $f.maxConcurrent) }}{{ end }}
 {{- with $f.next }}{{ $lines = append $lines (printf "next %s" (join " " .)) }}{{ end }}
 {{- if $f.nextOnNodata }}{{ $lines = append $lines "next_on_nodata" }}{{ end }}
 {{- if $f.failfastAllUnhealthyUpstreams }}{{ $lines = append $lines "failfast_all_unhealthy_upstreams" }}{{ end }}
