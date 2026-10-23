@@ -1,0 +1,8 @@
+# TODO: Remove once platform releases with a fixed external-dns are used in e2e test clusters.
+# Workaround: pull the external-dns image from gsoci.azurecr.io.
+global:
+  apps:
+    externalDns:
+      values:
+        image:
+          registry: gsoci.azurecr.io
