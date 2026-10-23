@@ -19,7 +19,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Update `coredns` image to [1.15.0](https://github.com/coredns/coredns/releases/tag/v1.15.0).
-- Update architect to v10.12.0 (#522)
 - Update gsoci.azurecr.io/giantswarm/docker-kubectl to v1.37.1 (#520)
 
 ## [1.34.0] - 2026-09-29
