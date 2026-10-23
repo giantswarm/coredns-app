@@ -7,6 +7,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Support the forward `max_age` option.
+
+### Fixed
+
+- Render forward integer options when set to `0`.
+
 ### Changed
 
 - Update `coredns` image to [1.15.0](https://github.com/coredns/coredns/releases/tag/v1.15.0).

@@ -775,6 +775,13 @@
                                         "string"
                                     ]
                                 },
+                                "maxAge": {
+                                    "description": "max_age — replace connections after this total lifetime. Must not be less than expire.",
+                                    "type": [
+                                        "null",
+                                        "string"
+                                    ]
+                                },
                                 "maxConcurrent": {
                                     "description": "max_concurrent — maximum number of concurrent queries to forward.",
                                     "type": [

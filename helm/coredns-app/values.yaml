@@ -208,6 +208,9 @@ coredns:
       # @schema type: [null, string]
       # -- expire — close idle upstream connections after this duration.
       expire:
+      # @schema type: [null, string]
+      # -- max_age — replace connections after this total lifetime. Must not be less than expire.
+      maxAge:
       # @schema type: [null, integer]
       # -- max_idle_conns — idle connections cached per upstream (0 = unlimited).
       maxIdleConns:
