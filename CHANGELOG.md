@@ -9,18 +9,18 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Support the forward `max_age` option (giantswarm/coredns-app#528)
+- Support the forward `max_age` option (#528)
 
 ### Fixed
 
-- Render forward integer options when set to `0` (giantswarm/coredns-app#528)
-- Validate `additionalZones` cache, forward, kubernetes, log and loadbalance blocks against the public and cluster zone schemas (giantswarm/coredns-app#528)
+- Render forward integer options when set to `0` (#528)
+- Validate `additionalZones` cache, forward, kubernetes, log and loadbalance blocks against the public and cluster zone schemas (#528)
 
 ### Changed
 
 - Update `coredns` image to [1.15.0](https://github.com/coredns/coredns/releases/tag/v1.15.0).
-- Update architect to v10.12.0 (giantswarm/coredns-app#522)
-- Update gsoci.azurecr.io/giantswarm/docker-kubectl to v1.37.1 (giantswarm/coredns-app#520)
+- Update architect to v10.12.0 (#522)
+- Update gsoci.azurecr.io/giantswarm/docker-kubectl to v1.37.1 (#520)
 
 ## [1.34.0] - 2026-09-29
 

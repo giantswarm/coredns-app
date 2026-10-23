@@ -9,7 +9,7 @@ Follow every step for each CoreDNS version bump, including patch releases.
 - `helm/coredns-app/values.yaml`: `image.tag`.
 - `helm/coredns-app/Chart.yaml`: `appVersion`.
 - `helm/coredns-app/README.md`: the AppVersion badge and the `image` / `image.tag` default rows.
-- `CHANGELOG.md`: an entry under `[Unreleased]` linking the upstream release, with `(giantswarm/coredns-app#<PR>)`.
+- `CHANGELOG.md`: an entry under `[Unreleased]` linking the upstream release, with `(#<PR>)`.
 - PR title in conventional commit format (e.g. `chore: update CoreDNS image to 1.15.0`); the `semantic-pull-request` check enforces it.
 
 ### 2. Diff the upstream plugin docs
