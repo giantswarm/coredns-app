@@ -53,4 +53,4 @@ All of these must pass before the PR leaves draft:
 - Lint: `helm lint helm/coredns-app`.
 - Corefile parses on the new image: take the rendered Corefile (or the changed block, with `.:1053` as the server address) and run
   `docker run --rm -v "$PWD/cf:/cf:ro" coredns/coredns:<NEW> -conf /cf/Corefile`. It must print `CoreDNS-<NEW>`, not a `plugin/...` error.
-- Run E2E (`run-tests-with-ats`) and tick the E2E checkbox in the PR.
+- Run E2E by commenting `/run app-test-suites` on the PR, and tick the E2E checkbox once it passes.
