@@ -141,8 +141,20 @@
                             "type": "array",
                             "items": {
                                 "properties": {
+                                    "cache": {
+                                        "$ref": "#/properties/coredns/properties/cluster/properties/cache"
+                                    },
                                     "forward": {
                                         "$ref": "#/properties/coredns/properties/public/properties/forward"
+                                    },
+                                    "kubernetes": {
+                                        "$ref": "#/properties/coredns/properties/cluster/properties/kubernetes"
+                                    },
+                                    "loadbalance": {
+                                        "$ref": "#/properties/coredns/properties/cluster/properties/loadbalance"
+                                    },
+                                    "log": {
+                                        "$ref": "#/properties/coredns/properties/cluster/properties/log"
                                     }
                                 }
                             }
