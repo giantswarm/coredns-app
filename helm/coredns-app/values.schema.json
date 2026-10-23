@@ -136,7 +136,18 @@
             "properties": {
                 "additionalZones": {
                     "description": "Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance — same shapes as coredns.public/coredns.cluster.",
-                    "type": "array",
+                    "allOf": [
+                        {
+                            "type": "array",
+                            "items": {
+                                "properties": {
+                                    "forward": {
+                                        "$ref": "#/properties/coredns/properties/public/properties/forward"
+                                    }
+                                }
+                            }
+                        }
+                    ],
                     "items": {
                         "type": "object"
                     }

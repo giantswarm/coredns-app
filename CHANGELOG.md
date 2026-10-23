@@ -14,6 +14,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Fixed
 
 - Render forward integer options when set to `0` (giantswarm/coredns-app#528)
+- Validate `additionalZones` forward blocks against the public forward schema (giantswarm/coredns-app#528)
 
 ### Changed
 
