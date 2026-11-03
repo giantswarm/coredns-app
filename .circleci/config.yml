@@ -39,6 +39,10 @@ workflows:
             - master
     - architect/run-tests-with-ats:
         name: run-tests-with-ats
+        context: architect
+        app-test-suite_container_tag: 1.1.1
+        create_kind_cluster: true
+        kind_config: tests/cluster.yaml
         filters:
           branches:
             ignore:
