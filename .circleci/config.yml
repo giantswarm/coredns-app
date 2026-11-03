@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@10.16.3
+  architect: giantswarm/architect@10.16.7
 
 workflows:
   build:
@@ -39,6 +39,10 @@ workflows:
             - master
     - architect/run-tests-with-ats:
         name: run-tests-with-ats
+        context: architect
+        app-test-suite_container_tag: 1.1.1
+        create_kind_cluster: true
+        kind_config: tests/cluster.yaml
         filters:
           branches:
             ignore:
