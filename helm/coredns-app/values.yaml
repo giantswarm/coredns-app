@@ -451,7 +451,7 @@ adopter:
   # -- Enable the adopter job.
   enabled: false
   # -- Image used by the adopter job.
-  image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.37.1
+  image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.37.2
   # @schema itemProperties: {}
   # -- Tolerations for the adopter job.
   tolerations:
