@@ -194,9 +194,9 @@ A Helm chart for CoreDNS
 | service.clusterIP | string | `nil` | Cluster IP of the DNS Service. Defaults to cluster.kubernetes.DNS.IP when unset. |
 | serviceType | string | `"managed"` | Giant Swarm service type label applied to the resources. |
 | tolerations | list | `[{"key":"node.cloudprovider.kubernetes.io/uninitialized","operator":"Exists"},{"key":"node.cluster.x-k8s.io/uninitialized","operator":"Exists"}]` | Tolerations for the CoreDNS workers. |
-| updateStrategy | object | `{"rollingUpdate":{"maxUnavailable":1},"type":"RollingUpdate"}` | Update strategy for the CoreDNS workloads. |
-| updateStrategy.rollingUpdate | object | `{"maxUnavailable":1}` | Rolling update parameters. |
-| updateStrategy.rollingUpdate.maxUnavailable | int | `1` | Maximum number of pods that can be unavailable during the update. |
+| updateStrategy | object | `{"rollingUpdate":{"maxUnavailable":0},"type":"RollingUpdate"}` | Update strategy for the CoreDNS workloads. |
+| updateStrategy.rollingUpdate | object | `{"maxUnavailable":0}` | Rolling update parameters. |
+| updateStrategy.rollingUpdate.maxUnavailable | int | `0` | Maximum number of pods that can be unavailable during the update. |
 | updateStrategy.type | string | `"RollingUpdate"` | Update strategy type. |
 | userID | int | `33` | DEPRECATED: use securityContext.runAsUser. UID the CoreDNS process runs as. |
 
