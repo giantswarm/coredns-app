@@ -1,5 +1,5 @@
 app-tests-app-config-file: tests/values.yaml
 app-tests-deploy-namespace: kube-system
 
-upgrade-tests-app-catalog-url: https://giantswarm.github.io/giantswarm-catalog
+upgrade-tests-app-catalog-url: https://giantswarm.github.io/default-catalog
 upgrade-tests-app-config-file: tests/values.yaml
