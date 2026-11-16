@@ -1,4 +1,4 @@
 chart-dir: helm/coredns-app
 replace-chart-version-with-git: true
 generate-metadata: true
-catalog-base-url: https://giantswarm.github.io/giantswarm-catalog/
+catalog-base-url: https://giantswarm.github.io/default-catalog/

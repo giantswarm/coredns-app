@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Prepare for generated CI, which publishes only to `default-catalog` and drops `giantswarm-catalog`: move the ATS kind config to `.ats/kind-config.yaml` and make the values schema strict.
+
 ## [1.35.0] - 2026-10-26
 
 ### Added
