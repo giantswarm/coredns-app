@@ -32,7 +32,6 @@ jobs:
           fi
     - continuation/continue:
         configuration_path: .circleci/continue.yml
-
 workflows:
   setup:
     jobs:
