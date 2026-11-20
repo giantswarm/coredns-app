@@ -142,7 +142,7 @@
             "properties": {
                 "additionalZones": {
                     "type": "array",
-                    "description": "Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Unlike the public and cluster zones, AAAA queries are not filtered, and ready is only rendered when kubernetes is set. Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance, rewrite — same shapes as coredns.public/coredns.cluster.",
+                    "description": "Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Unlike the public and cluster zones, AAAA queries are not filtered, and ready is only rendered when kubernetes is set. Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance, rewrite, with the same shapes as coredns.public/coredns.cluster.",
                     "items": {
                         "type": "object",
                         "required": [
@@ -573,7 +573,7 @@
                         },
                         "rewrite": {
                             "type": "array",
-                            "description": "rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as \"rewrite name MATCH FROM TO\". match defaults to exact.",
+                            "description": "rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as \"rewrite name MATCH FROM TO\". match defaults to exact; other match types also get \"answer auto\". The rewritten name must be served by this same block.",
                             "items": {
                                 "type": "object",
                                 "required": [
@@ -1001,7 +1001,7 @@
                         },
                         "rewrite": {
                             "type": "array",
-                            "description": "rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as \"rewrite name MATCH FROM TO\". match defaults to exact.",
+                            "description": "rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as \"rewrite name MATCH FROM TO\". match defaults to exact; other match types also get \"answer auto\". The rewritten name must be served by this same block.",
                             "items": {
                                 "type": "object",
                                 "required": [

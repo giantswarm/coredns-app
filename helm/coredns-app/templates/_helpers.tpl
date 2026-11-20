@@ -36,7 +36,7 @@ then apply). Renders nothing when cache.enabled is false.
 */}}
 {{- define "coredns.cacheBlock" -}}
 {{- $c := .zone.cache | default dict }}
-{{- if not (and (hasKey $c "enabled") (not $c.enabled)) }}
+{{- if dig "enabled" true $c }}
 {{- $success := $c.success | default dict }}
 {{- $denial := $c.denial | default dict }}
 {{- $successCapacity := $success.capacity | default 9984 }}
@@ -220,6 +220,7 @@ Each $zone.rewrite entry renders as "rewrite name MATCH FROM TO" (match defaults
 {{- define "coredns.rewriteBlock" -}}
 {{- range $i, $r := (.zone.rewrite | default list) }}
 {{- if $i }}{{ "\n" }}{{ end -}}
-rewrite name {{ $r.match | default "exact" }} {{ $r.from }} {{ $r.to }}
+{{- $match := $r.match | default "exact" -}}
+rewrite name {{ $match }} {{ $r.from }} {{ $r.to }}{{ if ne $match "exact" }} answer auto{{ end }}
 {{- end }}
 {{- end -}}
