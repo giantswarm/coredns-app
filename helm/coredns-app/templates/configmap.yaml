@@ -22,9 +22,7 @@ data:
     .:{{ $dnsPort }} {
         {{- with include "coredns.cacheBlock" (dict "zone" $publicZone) }}{{ . | nindent 8 }}{{ end }}
         errors
-        template ANY AAAA {
-          rcode NOERROR
-        }
+        {{- with include "coredns.templateBlock" (dict "zone" $publicZone) }}{{ . | nindent 8 }}{{ end }}
         health :8080 {
           lameduck 5s
         }
@@ -45,9 +43,7 @@ data:
     {{- $clusterZone := merge (dict "names" (list $domain) "cidrs" $cidrsList) $.Values.coredns.cluster }}
     {{ $domain }}:{{ $dnsPort }} {{- if (regexMatch ".local$" $domain ) }} {{ $serviceCIDR }}:{{ $dnsPort }} {{ $podCIDR }}:{{ $dnsPort }} {{- end }} {
         errors
-        template ANY AAAA {
-          rcode NOERROR
-        }
+        {{- with include "coredns.templateBlock" (dict "zone" $clusterZone) }}{{ . | nindent 8 }}{{ end }}
         {{- with include "coredns.cacheBlock" (dict "zone" $clusterZone) }}{{ . | nindent 8 }}{{ end }}
         ready :8181
         {{- include "coredns.kubernetesBlock" (dict "zone" $clusterZone) | nindent 8 }}
@@ -64,6 +60,7 @@ data:
     {{- range ($zone.cidrs | default list) }}{{ $names = append $names (printf "%s:%v" . $dnsPort) }}{{ end }}
     {{ join " " $names }} {
         errors
+        {{- with include "coredns.templateBlock" (dict "zone" $zone) }}{{ . | nindent 8 }}{{ end }}
         {{- with include "coredns.cacheBlock" (dict "zone" $zone) }}{{ . | nindent 8 }}{{ end }}
         {{- if $zone.kubernetes }}
         ready :8181

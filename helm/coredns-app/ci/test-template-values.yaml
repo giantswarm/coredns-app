@@ -1,0 +1,27 @@
+coredns:
+  public:
+    template:
+      invalid:
+        type: ANY
+        zones: [invalid]
+        rcode: NXDOMAIN
+  cluster:
+    template:
+      filterAAAA: null
+  additionalZones:
+    - names: [devices.example.com]
+      template:
+        device:
+          type: A
+          match: ['^(?P<host>[a-z0-9-]+)\.devices\.example\.com\.$']
+          answer: ['{{ .Name }} 60 IN A 10.0.0.10']
+          additional: ['ns.devices.example.com. 60 IN A 10.0.0.1']
+          authority: ['devices.example.com. 60 IN NS ns.devices.example.com.']
+          fallthrough: true
+        txt:
+          class: ANY
+          type: TXT
+          answer: ['{{ .Name }} 60 IN TXT "hello world"']
+          fallthrough: [devices.example.com]
+      forward:
+        to: [10.0.0.53]
