@@ -20,7 +20,7 @@ data:
   Corefile: |
     {{- $publicZone := .Values.coredns.public }}
     .:{{ $dnsPort }} {
-        {{- include "coredns.cacheBlock" (dict "zone" $publicZone) | nindent 8 }}
+        {{- with include "coredns.cacheBlock" (dict "zone" $publicZone) }}{{ . | nindent 8 }}{{ end }}
         errors
         template ANY AAAA {
           rcode NOERROR
@@ -29,10 +29,11 @@ data:
           lameduck 5s
         }
         ready :8181
-        {{- include "coredns.logBlock" (dict "zone" $publicZone) | nindent 8 }}
+        {{- with include "coredns.logBlock" (dict "zone" $publicZone) }}{{ . | nindent 8 }}{{ end }}
         {{- include "coredns.loadbalanceBlock" (dict "zone" $publicZone) | nindent 8 }}
         prometheus :{{ $metricsPort }}
         {{- include "coredns.forwardBlock" (dict "zone" $publicZone) | nindent 8 }}
+        {{- with include "coredns.rewriteBlock" (dict "zone" $publicZone) }}{{ . | nindent 8 }}{{ end }}
         reload
         {{- if $autopath }}
         autopath {{ $autopath }}
@@ -47,13 +48,13 @@ data:
         template ANY AAAA {
           rcode NOERROR
         }
-        {{- include "coredns.cacheBlock" (dict "zone" $clusterZone) | nindent 8 }}
+        {{- with include "coredns.cacheBlock" (dict "zone" $clusterZone) }}{{ . | nindent 8 }}{{ end }}
         ready :8181
         {{- include "coredns.kubernetesBlock" (dict "zone" $clusterZone) | nindent 8 }}
-        {{- include "coredns.logBlock" (dict "zone" $clusterZone) | nindent 8 }}
+        {{- with include "coredns.logBlock" (dict "zone" $clusterZone) }}{{ . | nindent 8 }}{{ end }}
         {{- include "coredns.loadbalanceBlock" (dict "zone" $clusterZone) | nindent 8 }}
+        {{- with include "coredns.rewriteBlock" (dict "zone" $clusterZone) }}{{ . | nindent 8 }}{{ end }}
         prometheus :{{ $metricsPort }}
-        reload
     }
     {{- end }}
     {{- if $additionalZones }}
@@ -63,21 +64,18 @@ data:
     {{- range ($zone.cidrs | default list) }}{{ $names = append $names (printf "%s:%v" . $dnsPort) }}{{ end }}
     {{ join " " $names }} {
         errors
-        template ANY AAAA {
-          rcode NOERROR
-        }
-        {{- include "coredns.cacheBlock" (dict "zone" $zone) | nindent 8 }}
-        ready :8181
+        {{- with include "coredns.cacheBlock" (dict "zone" $zone) }}{{ . | nindent 8 }}{{ end }}
         {{- if $zone.kubernetes }}
+        ready :8181
         {{- include "coredns.kubernetesBlock" (dict "zone" $zone) | nindent 8 }}
         {{- end }}
         {{- if $zone.forward }}
         {{- include "coredns.forwardBlock" (dict "zone" $zone) | nindent 8 }}
         {{- end }}
-        {{- include "coredns.logBlock" (dict "zone" $zone) | nindent 8 }}
+        {{- with include "coredns.logBlock" (dict "zone" $zone) }}{{ . | nindent 8 }}{{ end }}
         {{- include "coredns.loadbalanceBlock" (dict "zone" $zone) | nindent 8 }}
+        {{- with include "coredns.rewriteBlock" (dict "zone" $zone) }}{{ . | nindent 8 }}{{ end }}
         prometheus :{{ $metricsPort }}
-        reload
     }
     {{- end }}
     {{- end }}

@@ -10,6 +10,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Prepare for generated CI, which publishes only to `default-catalog` and drops `giantswarm-catalog`: move the ATS kind config to `.ats/kind-config.yaml` and make the values schema strict.
+- **Breaking:** `additionalZones` entries no longer filter AAAA queries and only render `ready` when they set `kubernetes`. `reload` is rendered only in the public zone.
+- **Breaking:** `log: []` disables logging for a zone instead of falling back to the default classes.
+
+### Added
+
+- Per-zone `cache.enabled` to disable the cache plugin.
+- Per-zone `rewrite` name rules.
 
 ### Removed
 
