@@ -226,6 +226,18 @@ rewrite name {{ $match }} {{ $r.from }} {{ $r.to }}{{ if ne $match "exact" }} an
 {{- end -}}
 
 {{/*
+Quote a string as a Corefile token. The Corefile lexer only unescapes \" inside
+quotes and keeps every other backslash, so a backslash before a quote or at the
+end of the value cannot be represented and fails the render.
+*/}}
+{{- define "coredns.corefileQuote" -}}
+{{- if or (contains "\\\"" .) (hasSuffix "\\" .) }}
+{{- fail (printf "template value %q cannot be written in a Corefile: a backslash may not precede a quote or end the value" .) }}
+{{- end }}
+{{- printf "\"%s\"" (replace "\"" "\\\"" .) }}
+{{- end -}}
+
+{{/*
 Render the CoreDNS template directives. Call via include with a dict context:
   (dict "zone" $zone)
 $zone.template is a map of named template plugin instances, rendered in key order.
@@ -237,12 +249,12 @@ only double quotes escaped, since the Corefile lexer keeps every other backslash
 {{- range $name, $t := (.zone.template | default dict) }}
 {{- if $t }}
 {{- $lines := list }}
-{{- with $t.match }}{{ $q := list }}{{ range . }}{{ $q = append $q (printf "\"%s\"" (replace "\"" "\\\"" .)) }}{{ end }}{{ $lines = append $lines (printf "match %s" (join " " $q)) }}{{ end }}
+{{- with $t.match }}{{ $q := list }}{{ range . }}{{ $q = append $q (include "coredns.corefileQuote" .) }}{{ end }}{{ $lines = append $lines (printf "match %s" (join " " $q)) }}{{ end }}
 {{- range $section := list "answer" "additional" "authority" }}
-{{- range (get $t $section | default list) }}{{ $lines = append $lines (printf "%s \"%s\"" $section (replace "\"" "\\\"" .)) }}{{ end }}
+{{- range (get $t $section | default list) }}{{ $lines = append $lines (printf "%s %s" $section (include "coredns.corefileQuote" .)) }}{{ end }}
 {{- end }}
 {{- with $t.rcode }}{{ $lines = append $lines (printf "rcode %s" .) }}{{ end }}
-{{- if kindIs "slice" $t.fallthrough }}{{ $lines = append $lines (printf "fallthrough %s" (join " " $t.fallthrough)) }}
+{{- if kindIs "slice" $t.fallthrough }}{{ with $t.fallthrough }}{{ $lines = append $lines (printf "fallthrough %s" (join " " .)) }}{{ end }}
 {{- else if $t.fallthrough }}{{ $lines = append $lines "fallthrough" }}{{ end }}
 {{- $head := printf "template %s %s" ($t.class | default "IN") $t.type }}
 {{- with $t.zones }}{{ $head = printf "%s %s" $head (join " " .) }}{{ end }}

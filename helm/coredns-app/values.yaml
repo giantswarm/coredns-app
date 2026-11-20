@@ -274,7 +274,7 @@ coredns:
     # @schema additionalProperties: {type: [object, "null"], additionalProperties: false, required: [type], properties: {class: {type: string}, type: {type: string}, zones: {type: array, items: {type: string}}, match: {type: array, items: {type: string}}, answer: {type: array, items: {type: string}}, additional: {type: array, items: {type: string}}, authority: {type: array, items: {type: string}}, rcode: {type: string}, fallthrough: {oneOf: [{type: boolean}, {type: array, items: {type: string}}]}}}
     # -- Named template plugin instances (https://coredns.io/plugins/template/), rendered in key order. Set a name to null to remove it. Per-entry keys: class (default IN), type (required), zones, match, answer, additional, authority, rcode, fallthrough (true or a list of zones). answer/additional/authority are CoreDNS Go templates passed through verbatim; write {{ $var }}, not {{$var}}, which CoreDNS reads as an environment variable.
     template:
-      # @schema type: [object, "null"]; $ref: #/properties/coredns/properties/public/properties/template/additionalProperties
+      # @schema type: [object, "null"]; skipProperties: true; $ref: #/properties/coredns/properties/public/properties/template/additionalProperties
       # -- Answer AAAA queries with an empty NOERROR response.
       filterAAAA:
         class: ANY
@@ -296,7 +296,7 @@ coredns:
     # @schema additionalProperties: {$ref: "#/properties/coredns/properties/public/properties/template/additionalProperties"}
     # -- Named template plugin instances (https://coredns.io/plugins/template/), rendered in key order. Set a name to null to remove it. Per-entry keys: class (default IN), type (required), zones, match, answer, additional, authority, rcode, fallthrough (true or a list of zones). answer/additional/authority are CoreDNS Go templates passed through verbatim; write {{ $var }}, not {{$var}}, which CoreDNS reads as an environment variable.
     template:
-      # @schema type: [object, "null"]; $ref: #/properties/coredns/properties/public/properties/template/additionalProperties
+      # @schema type: [object, "null"]; skipProperties: true; $ref: #/properties/coredns/properties/public/properties/template/additionalProperties
       # -- Answer AAAA queries with an empty NOERROR response.
       filterAAAA:
         class: ANY
