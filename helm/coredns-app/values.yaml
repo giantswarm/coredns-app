@@ -7,13 +7,16 @@ serviceType: managed
 
 # -- Pod-level security context for the CoreDNS containers.
 securityContext:
+  # @schema minimum: 1
   # -- UID the CoreDNS process runs as.
   runAsUser: 33
+  # @schema minimum: 1
   # -- GID the CoreDNS process runs as.
   runAsGroup: 33
 
 # -- Configuration for the CoreDNS Service.
 service:
+  # @schema required: true; minLength: 1
   # -- Cluster IP of the DNS Service.
   clusterIP: 172.31.0.10
 
@@ -268,6 +271,7 @@ coredns:
 
   # -- The cluster.local zone — in-cluster DNS served by the kubernetes plugin.
   cluster:
+    # @schema required: true; minItems: 1
     # -- Zone names served by this block.
     domains:
       - cluster.local

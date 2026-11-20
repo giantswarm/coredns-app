@@ -50,10 +50,10 @@ coredns:
 
   # cluster.local zone — in-cluster DNS (kubernetes plugin)
   cluster:
-    domains:             # list of local domains — defaults to cluster.kubernetes.clusterDomain
+    domains:             # list of local domains, at least one required
       - cluster.local
-    serviceCIDR: 172.31.0.0/16   # k8s service IP range — defaults to cluster.kubernetes.API.clusterIPRange
-    podCIDR: 192.168.0.0/16      # pod network CIDR — defaults to cluster.calico.CIDR
+    serviceCIDR: 172.31.0.0/16   # k8s service IP range
+    podCIDR: 192.168.0.0/16      # pod network CIDR
     cache: {success: {...}, denial: {...}}   # per-zone cache
     kubernetes:          # structured kubernetes-plugin params (mirrors the CoreDNS kubernetes block)
       pods: verified       # disabled | insecure | verified
@@ -154,7 +154,7 @@ Parent keys whose children are all optional are declared as `{}` in `values.yaml
 | `values.yaml` | Canonical keys carry the defaults; the deprecated legacy keys were removed |
 | `values.schema.json` | Zone shapes (`cache`/`forward`/`kubernetes`/`log`/`loadbalance`) defined for public/cluster/additionalZones; `additionalLocalZones` (strings) replaced by `additionalZones` (objects); deprecated paths removed |
 | `templates/configmap.yaml` | Builds a canonical `$zone` dict per server block (public, each cluster domain, each additionalZones entry) and renders via the helpers; generic `additionalZones` loop |
-| `templates/_helpers.tpl` | `coredns.cacheBlock`, `coredns.forwardBlock`, `coredns.kubernetesBlock`, `coredns.logBlock`, `coredns.loadbalanceBlock` share the uniform signature `(dict "zone" $zone)` — each reads its slice of the zone (`cache`/`forward`/`kubernetes`/`log`/`loadbalance`, plus `names`/`cidrs`), falling back to built-in defaults |
+| `templates/_helpers.tpl` | `coredns.cacheBlock`, `coredns.forwardBlock`, `coredns.kubernetesBlock`, `coredns.logBlock`, `coredns.loadbalanceBlock` share the uniform signature `(dict "zone" $zone)`; each reads its slice of the zone (`cache`/`forward`/`kubernetes`/`log`/`loadbalance`, plus `names`/`cidrs`), falling back to built-in defaults |
 | `templates/deployment-masters.yaml` | `securityContext`, `controlPlane`, `ports.metrics.port` |
 | `templates/deployment-workers.yaml` | `securityContext`, `ports.metrics.port` |
 | `templates/service.yaml` | `service.clusterIP` |
@@ -164,6 +164,6 @@ Parent keys whose children are all optional are declared as `{}` in `values.yaml
 
 ## Known Behavior Change
 
-`configmap.cache: 30` was defined in the old `values.yaml` but was never referenced in the Corefile template — CoreDNS was effectively running with its built-in default of 3600s success TTL and 30s denial TTL. The per-zone `coredns.<zone>.cache` blocks are now correctly applied, bringing the effective TTLs to 30s (success) / 5s (denial). Existing installations will see a change in cache behavior on upgrade unless a higher `coredns.public.cache.success.ttl` / `coredns.cluster.cache.success.ttl` is set.
+`configmap.cache: 30` was defined in the old `values.yaml` but was never referenced in the Corefile template, so CoreDNS was effectively running with its built-in default of 3600s success TTL and 30s denial TTL. The per-zone `coredns.<zone>.cache` blocks are now correctly applied, bringing the effective TTLs to 30s (success) / 5s (denial). Existing installations will see a change in cache behavior on upgrade unless a higher `coredns.public.cache.success.ttl` / `coredns.cluster.cache.success.ttl` is set.
 
-The `health` plugin is process-wide and may be enabled in only one Server Block, so it is now rendered solely in the `.` (public) block instead of every zone block. The `ready` plugin is kept in every block — its readiness is aggregated across all blocks that enable it, per the [ready plugin docs](https://coredns.io/plugins/ready/).
+The `health` plugin is process-wide and may be enabled in only one Server Block, so it is now rendered solely in the `.` (public) block instead of every zone block. The `ready` plugin is kept in every block because its readiness is aggregated across all blocks that enable it, per the [ready plugin docs](https://coredns.io/plugins/ready/).
