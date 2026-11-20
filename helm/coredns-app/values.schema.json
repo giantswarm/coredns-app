@@ -183,6 +183,9 @@
                 "cluster": {
                     "type": "object",
                     "description": "The cluster.local zone — in-cluster DNS served by the kubernetes plugin.",
+                    "required": [
+                        "domains"
+                    ],
                     "additionalProperties": false,
                     "properties": {
                         "cache": {
@@ -373,7 +376,8 @@
                             "description": "Zone names served by this block.",
                             "items": {
                                 "type": "string"
-                            }
+                            },
+                            "minItems": 1
                         },
                         "kubernetes": {
                             "type": "object",
@@ -1159,22 +1163,28 @@
             "properties": {
                 "runAsGroup": {
                     "type": "integer",
-                    "description": "GID the CoreDNS process runs as."
+                    "description": "GID the CoreDNS process runs as.",
+                    "minimum": 1
                 },
                 "runAsUser": {
                     "type": "integer",
-                    "description": "UID the CoreDNS process runs as."
+                    "description": "UID the CoreDNS process runs as.",
+                    "minimum": 1
                 }
             }
         },
         "service": {
             "type": "object",
             "description": "Configuration for the CoreDNS Service.",
+            "required": [
+                "clusterIP"
+            ],
             "additionalProperties": false,
             "properties": {
                 "clusterIP": {
                     "type": "string",
-                    "description": "Cluster IP of the DNS Service."
+                    "description": "Cluster IP of the DNS Service.",
+                    "minLength": 1
                 }
             }
         },
