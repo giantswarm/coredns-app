@@ -13,6 +13,9 @@ coredns:
       rewrite:
         - from: crowd.example.com
           to: internal-lb.example.net
+        - match: suffix
+          from: .apps.example.com
+          to: .apps.example.net
     - names: [quiet.example.com]
       cache:
         enabled: false

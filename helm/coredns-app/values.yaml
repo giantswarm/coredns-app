@@ -269,7 +269,7 @@ coredns:
     # -- Load balancing policy.
     loadbalance: round_robin
     # @schema item: object; itemRequired: [from, to]; itemProperties: {match: {type: string, enum: [exact, prefix, suffix, substring, regex]}, from: {type: string}, to: {type: string}}
-    # -- rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as "rewrite name MATCH FROM TO". match defaults to exact.
+    # -- rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as "rewrite name MATCH FROM TO". match defaults to exact; other match types also get "answer auto". The rewritten name must be served by this same block.
     rewrite: []
     # -- autopath plugin args, e.g. "@kubernetes". Empty disables autopath.
     autopath: ""
@@ -431,11 +431,11 @@ coredns:
     # -- Load balancing policy.
     loadbalance: round_robin
     # @schema item: object; itemRequired: [from, to]; itemProperties: {match: {type: string, enum: [exact, prefix, suffix, substring, regex]}, from: {type: string}, to: {type: string}}
-    # -- rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as "rewrite name MATCH FROM TO". match defaults to exact.
+    # -- rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as "rewrite name MATCH FROM TO". match defaults to exact; other match types also get "answer auto". The rewritten name must be served by this same block.
     rewrite: []
 
   # @schema item: object; itemRequired: [names]; itemProperties: {names: {type: array, items: {type: string}}, cidrs: {type: array, items: {type: string}}, cache: {$ref: "#/properties/coredns/properties/cluster/properties/cache"}, forward: {$ref: "#/properties/coredns/properties/public/properties/forward"}, kubernetes: {$ref: "#/properties/coredns/properties/cluster/properties/kubernetes"}, loadbalance: {$ref: "#/properties/coredns/properties/cluster/properties/loadbalance"}, log: {$ref: "#/properties/coredns/properties/cluster/properties/log"}, rewrite: {$ref: "#/properties/coredns/properties/cluster/properties/rewrite"}}
-  # -- Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Unlike the public and cluster zones, AAAA queries are not filtered, and ready is only rendered when kubernetes is set. Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance, rewrite — same shapes as coredns.public/coredns.cluster.
+  # -- Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Unlike the public and cluster zones, AAAA queries are not filtered, and ready is only rendered when kubernetes is set. Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance, rewrite, with the same shapes as coredns.public/coredns.cluster.
   additionalZones: []
   # additionalZones:
   #   - names: [linkerd.local]
