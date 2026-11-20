@@ -142,7 +142,7 @@
             "properties": {
                 "additionalZones": {
                     "type": "array",
-                    "description": "Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance — same shapes as coredns.public/coredns.cluster.",
+                    "description": "Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Unlike the public and cluster zones, AAAA queries are not filtered, and ready is only rendered when kubernetes is set. Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance, rewrite, with the same shapes as coredns.public/coredns.cluster.",
                     "items": {
                         "type": "object",
                         "required": [
@@ -176,6 +176,9 @@
                                 "items": {
                                     "type": "string"
                                 }
+                            },
+                            "rewrite": {
+                                "$ref": "#/properties/coredns/properties/cluster/properties/rewrite"
                             }
                         }
                     }
@@ -249,6 +252,10 @@
                                             }
                                         }
                                     }
+                                },
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Render the cache plugin. Set to false to disable caching for this zone."
                                 },
                                 "keepttl": {
                                     "type": "boolean",
@@ -549,7 +556,7 @@
                         },
                         "log": {
                             "type": "array",
-                            "description": "CoreDNS log classes for this zone.",
+                            "description": "CoreDNS log classes for this zone. An empty list disables logging.",
                             "items": {
                                 "type": "string",
                                 "enum": [
@@ -563,6 +570,36 @@
                         "podCIDR": {
                             "type": "string",
                             "description": "Pod CIDR for the reverse zone."
+                        },
+                        "rewrite": {
+                            "type": "array",
+                            "description": "rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as \"rewrite name MATCH FROM TO\". match defaults to exact; other match types also get \"answer auto\". The rewritten name must be served by this same block.",
+                            "items": {
+                                "type": "object",
+                                "required": [
+                                    "from",
+                                    "to"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "from": {
+                                        "type": "string"
+                                    },
+                                    "match": {
+                                        "type": "string",
+                                        "enum": [
+                                            "exact",
+                                            "prefix",
+                                            "suffix",
+                                            "substring",
+                                            "regex"
+                                        ]
+                                    },
+                                    "to": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
                         },
                         "serviceCIDR": {
                             "type": "string",
@@ -644,6 +681,10 @@
                                             }
                                         }
                                     }
+                                },
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Render the cache plugin. Set to false to disable caching for this zone."
                                 },
                                 "keepttl": {
                                     "type": "boolean",
@@ -947,7 +988,7 @@
                         },
                         "log": {
                             "type": "array",
-                            "description": "CoreDNS log classes for this zone.",
+                            "description": "CoreDNS log classes for this zone. An empty list disables logging.",
                             "items": {
                                 "type": "string",
                                 "enum": [
@@ -956,6 +997,36 @@
                                     "error",
                                     "all"
                                 ]
+                            }
+                        },
+                        "rewrite": {
+                            "type": "array",
+                            "description": "rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as \"rewrite name MATCH FROM TO\". match defaults to exact; other match types also get \"answer auto\". The rewritten name must be served by this same block.",
+                            "items": {
+                                "type": "object",
+                                "required": [
+                                    "from",
+                                    "to"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "from": {
+                                        "type": "string"
+                                    },
+                                    "match": {
+                                        "type": "string",
+                                        "enum": [
+                                            "exact",
+                                            "prefix",
+                                            "suffix",
+                                            "substring",
+                                            "regex"
+                                        ]
+                                    },
+                                    "to": {
+                                        "type": "string"
+                                    }
+                                }
                             }
                         }
                     }

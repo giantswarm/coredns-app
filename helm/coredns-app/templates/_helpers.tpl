@@ -32,10 +32,11 @@ k8s-app: {{ .Values.name | quote }}
 Render the CoreDNS cache directive. Call via include with a dict context:
   (dict "zone" $zone)
 The zone's cache config is read from $zone.cache (may be absent — built-in defaults
-then apply).
+then apply). Renders nothing when cache.enabled is false.
 */}}
 {{- define "coredns.cacheBlock" -}}
 {{- $c := .zone.cache | default dict }}
+{{- if dig "enabled" true $c }}
 {{- $success := $c.success | default dict }}
 {{- $denial := $c.denial | default dict }}
 {{- $successCapacity := $success.capacity | default 9984 }}
@@ -64,6 +65,7 @@ cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }}{{- with $c.zones }} {{ join " " . }
   keepttl
   {{- end }}
 }
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -185,16 +187,18 @@ kubernetes {{ join " " .zone.names }}{{ with $cidrs }} {{ . }}{{ end }} {
 Render the CoreDNS log directive. Call via include with a dict context:
   (dict "zone" $zone)
 The zone's log classes are read from $zone.log (a list). When absent, the built-in
-default (denial, error) applies. The block is always emitted so every zone keeps logging.
+default (denial, error) applies. An empty list disables logging for the zone.
 */}}
 {{- define "coredns.logBlock" -}}
 {{- $classes := .zone.log }}
-{{- if not $classes }}{{ $classes = list "denial" "error" }}{{ end -}}
+{{- if kindIs "invalid" $classes }}{{ $classes = list "denial" "error" }}{{ end }}
+{{- if $classes -}}
 log . {
 {{- range $classes }}
   class {{ . }}
 {{- end }}
 }
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -206,4 +210,17 @@ round_robin applies.
 {{- define "coredns.loadbalanceBlock" -}}
 {{- $policy := .zone.loadbalance | default "round_robin" -}}
 loadbalance {{ $policy }}
+{{- end -}}
+
+{{/*
+Render the CoreDNS rewrite directives. Call via include with a dict context:
+  (dict "zone" $zone)
+Each $zone.rewrite entry renders as "rewrite name MATCH FROM TO" (match defaults to exact).
+*/}}
+{{- define "coredns.rewriteBlock" -}}
+{{- range $i, $r := (.zone.rewrite | default list) }}
+{{- if $i }}{{ "\n" }}{{ end -}}
+{{- $match := $r.match | default "exact" -}}
+rewrite name {{ $match }} {{ $r.from }} {{ $r.to }}{{ if ne $match "exact" }} answer auto{{ end }}
+{{- end }}
 {{- end -}}
