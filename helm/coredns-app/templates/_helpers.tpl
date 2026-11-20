@@ -224,3 +224,34 @@ Each $zone.rewrite entry renders as "rewrite name MATCH FROM TO" (match defaults
 rewrite name {{ $match }} {{ $r.from }} {{ $r.to }}{{ if ne $match "exact" }} answer auto{{ end }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Render the CoreDNS template directives. Call via include with a dict context:
+  (dict "zone" $zone)
+$zone.template is a map of named template plugin instances, rendered in key order.
+Null entries are skipped. match/answer/additional/authority values are quoted, with
+only double quotes escaped, since the Corefile lexer keeps every other backslash.
+*/}}
+{{- define "coredns.templateBlock" -}}
+{{- $blocks := list }}
+{{- range $name, $t := (.zone.template | default dict) }}
+{{- if $t }}
+{{- $lines := list }}
+{{- with $t.match }}{{ $q := list }}{{ range . }}{{ $q = append $q (printf "\"%s\"" (replace "\"" "\\\"" .)) }}{{ end }}{{ $lines = append $lines (printf "match %s" (join " " $q)) }}{{ end }}
+{{- range $section := list "answer" "additional" "authority" }}
+{{- range (get $t $section | default list) }}{{ $lines = append $lines (printf "%s \"%s\"" $section (replace "\"" "\\\"" .)) }}{{ end }}
+{{- end }}
+{{- with $t.rcode }}{{ $lines = append $lines (printf "rcode %s" .) }}{{ end }}
+{{- if kindIs "slice" $t.fallthrough }}{{ $lines = append $lines (printf "fallthrough %s" (join " " $t.fallthrough)) }}
+{{- else if $t.fallthrough }}{{ $lines = append $lines "fallthrough" }}{{ end }}
+{{- $head := printf "template %s %s" ($t.class | default "IN") $t.type }}
+{{- with $t.zones }}{{ $head = printf "%s %s" $head (join " " .) }}{{ end }}
+{{- if $lines }}
+{{- $blocks = append $blocks (printf "%s {\n  %s\n}" $head (join "\n  " $lines)) }}
+{{- else }}
+{{- $blocks = append $blocks $head }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- join "\n" $blocks }}
+{{- end -}}
