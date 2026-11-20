@@ -18,6 +18,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Per-zone option to disable the cache.
 - Per-zone name rewrite rules.
+- Per-zone named templates, with a removable default AAAA filter.
 
 ### Removed
 

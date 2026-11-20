@@ -271,6 +271,15 @@ coredns:
     # @schema item: object; itemRequired: [from, to]; itemProperties: {match: {type: string, enum: [exact, prefix, suffix, substring, regex]}, from: {type: string}, to: {type: string}}
     # -- rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as "rewrite name MATCH FROM TO". match defaults to exact; other match types also get "answer auto". The rewritten name must be served by this same block.
     rewrite: []
+    # @schema additionalProperties: {type: [object, "null"], additionalProperties: false, required: [type], properties: {class: {type: string}, type: {type: string}, zones: {type: array, items: {type: string}}, match: {type: array, items: {type: string}}, answer: {type: array, items: {type: string}}, additional: {type: array, items: {type: string}}, authority: {type: array, items: {type: string}}, rcode: {type: string}, fallthrough: {oneOf: [{type: boolean}, {type: array, items: {type: string}}]}}}
+    # -- Named template plugin instances (https://coredns.io/plugins/template/), rendered in key order. Set a name to null to remove it. Per-entry keys: class (default IN), type (required), zones, match, answer, additional, authority, rcode, fallthrough (true or a list of zones). answer/additional/authority are CoreDNS Go templates passed through verbatim; write {{ $var }}, not {{$var}}, which CoreDNS reads as an environment variable.
+    template:
+      # @schema type: [object, "null"]; skipProperties: true; $ref: #/properties/coredns/properties/public/properties/template/additionalProperties
+      # -- Answer AAAA queries with an empty NOERROR response.
+      filterAAAA:
+        class: ANY
+        type: AAAA
+        rcode: NOERROR
     # -- autopath plugin args, e.g. "@kubernetes". Empty disables autopath.
     autopath: ""
 
@@ -284,6 +293,15 @@ coredns:
     serviceCIDR: 172.31.0.0/16
     # -- Pod CIDR for the reverse zone.
     podCIDR: 192.168.0.0/16
+    # @schema additionalProperties: {$ref: "#/properties/coredns/properties/public/properties/template/additionalProperties"}
+    # -- Named template plugin instances (https://coredns.io/plugins/template/), rendered in key order. Set a name to null to remove it. Per-entry keys: class (default IN), type (required), zones, match, answer, additional, authority, rcode, fallthrough (true or a list of zones). answer/additional/authority are CoreDNS Go templates passed through verbatim; write {{ $var }}, not {{$var}}, which CoreDNS reads as an environment variable.
+    template:
+      # @schema type: [object, "null"]; skipProperties: true; $ref: #/properties/coredns/properties/public/properties/template/additionalProperties
+      # -- Answer AAAA queries with an empty NOERROR response.
+      filterAAAA:
+        class: ANY
+        type: AAAA
+        rcode: NOERROR
     # -- Cache plugin configuration for this zone (https://coredns.io/plugins/cache/).
     cache:
       # -- Render the cache plugin. Set to false to disable caching for this zone.
@@ -434,8 +452,8 @@ coredns:
     # -- rewrite plugin name rules (https://coredns.io/plugins/rewrite/), each rendered as "rewrite name MATCH FROM TO". match defaults to exact; other match types also get "answer auto". The rewritten name must be served by this same block.
     rewrite: []
 
-  # @schema item: object; itemRequired: [names]; itemProperties: {names: {type: array, items: {type: string}}, cidrs: {type: array, items: {type: string}}, cache: {$ref: "#/properties/coredns/properties/cluster/properties/cache"}, forward: {$ref: "#/properties/coredns/properties/public/properties/forward"}, kubernetes: {$ref: "#/properties/coredns/properties/cluster/properties/kubernetes"}, loadbalance: {$ref: "#/properties/coredns/properties/cluster/properties/loadbalance"}, log: {$ref: "#/properties/coredns/properties/cluster/properties/log"}, rewrite: {$ref: "#/properties/coredns/properties/cluster/properties/rewrite"}}
-  # -- Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Unlike the public and cluster zones, AAAA queries are not filtered, and ready is only rendered when kubernetes is set. Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance, rewrite, with the same shapes as coredns.public/coredns.cluster.
+  # @schema item: object; itemRequired: [names]; itemProperties: {names: {type: array, items: {type: string}}, cidrs: {type: array, items: {type: string}}, cache: {$ref: "#/properties/coredns/properties/cluster/properties/cache"}, forward: {$ref: "#/properties/coredns/properties/public/properties/forward"}, kubernetes: {$ref: "#/properties/coredns/properties/cluster/properties/kubernetes"}, loadbalance: {$ref: "#/properties/coredns/properties/cluster/properties/loadbalance"}, log: {$ref: "#/properties/coredns/properties/cluster/properties/log"}, rewrite: {$ref: "#/properties/coredns/properties/cluster/properties/rewrite"}, template: {type: object, additionalProperties: {$ref: "#/properties/coredns/properties/public/properties/template/additionalProperties"}}}
+  # -- Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Unlike the public and cluster zones, no template (AAAA filter) is set by default, and ready is only rendered when kubernetes is set. Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance, rewrite, template, with the same shapes as coredns.public/coredns.cluster.
   additionalZones: []
   # additionalZones:
   #   - names: [linkerd.local]
