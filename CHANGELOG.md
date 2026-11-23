@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
+- Prepare for generated CI, which publishes only to `default-catalog` and drops `giantswarm-catalog`: move the ATS kind config to `.ats/kind-config.yaml` and make the values schema strict.
 - Set the default `updateStrategy.rollingUpdate.maxUnavailable` to `0`, so a rollout starts a new CoreDNS pod and waits for it to be ready before it removes an old one. This keeps the single-replica `coredns-controlplane` Deployment available during upgrades.
 
 ## [1.35.0] - 2026-10-26

@@ -1,120 +1,212 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "type": "object",
-    "properties": {
-        "adopter": {
-            "description": "Adopter job that takes ownership of pre-existing CoreDNS resources.",
+    "$defs": {
+        "toleration.json": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
             "type": "object",
+            "description": "The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.",
+            "additionalProperties": false,
+            "properties": {
+                "effect": {
+                    "type": "string",
+                    "description": "Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute."
+                },
+                "key": {
+                    "type": "string",
+                    "description": "Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys."
+                },
+                "operator": {
+                    "type": "string",
+                    "description": "Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category."
+                },
+                "tolerationSeconds": {
+                    "type": "integer",
+                    "description": "TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.",
+                    "format": "int64"
+                },
+                "value": {
+                    "type": "string",
+                    "description": "Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string."
+                }
+            }
+        }
+    },
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "additionalLocalZones": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "description": "DEPRECATED: use coredns.additionalZones. Additional local zone names, used when coredns.additionalLocalZones is unset.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "adopter": {
+            "type": "object",
+            "description": "Adopter job that takes ownership of pre-existing CoreDNS resources.",
+            "additionalProperties": false,
             "properties": {
                 "enabled": {
-                    "description": "Enable the adopter job.",
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "Enable the adopter job."
                 },
                 "image": {
-                    "description": "Image used by the adopter job.",
-                    "type": "string"
+                    "type": "string",
+                    "description": "Image used by the adopter job."
                 },
                 "tolerations": {
-                    "description": "Tolerations for the adopter job.",
                     "type": "array",
+                    "description": "Tolerations for the adopter job.",
                     "items": {
-                        "type": "object"
+                        "$ref": "#/$defs/toleration.json",
+                        "type": "object",
+                        "properties": {
+                            "operator": {
+                                "type": "string"
+                            }
+                        },
+                        "unevaluatedProperties": false
                     }
                 }
             }
         },
-        "cluster": {
-            "description": "DEPRECATED: use coredns.cluster.* for Corefile config and service.clusterIP for the DNS service IP.",
+        "baseDomain": {
+            "type": "string"
+        },
+        "bootstrapMode": {
             "type": "object",
+            "additionalProperties": true
+        },
+        "chartOperator": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "ciliumNetworkPolicy": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "cluster": {
+            "type": "object",
+            "description": "DEPRECATED: use coredns.cluster.* for Corefile config and service.clusterIP for the DNS service IP.",
+            "additionalProperties": true,
             "properties": {
                 "calico": {
-                    "description": "Calico configuration.",
                     "type": "object",
+                    "description": "Calico configuration.",
+                    "additionalProperties": true,
                     "properties": {
                         "CIDR": {
-                            "description": "Pod CIDR.",
-                            "type": "string"
+                            "type": "string",
+                            "description": "Pod CIDR."
                         }
                     }
                 },
                 "kubernetes": {
-                    "description": "Kubernetes cluster configuration.",
                     "type": "object",
+                    "description": "Kubernetes cluster configuration.",
+                    "additionalProperties": true,
                     "properties": {
                         "API": {
-                            "description": "API server configuration.",
                             "type": "object",
+                            "description": "API server configuration.",
+                            "additionalProperties": true,
                             "properties": {
                                 "clusterIPRange": {
-                                    "description": "Service IP range.",
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Service IP range."
                                 }
                             }
                         },
                         "DNS": {
-                            "description": "Cluster DNS configuration.",
                             "type": "object",
+                            "description": "Cluster DNS configuration.",
+                            "additionalProperties": true,
                             "properties": {
                                 "IP": {
-                                    "description": "Cluster DNS service IP.",
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Cluster DNS service IP."
                                 }
                             }
                         },
                         "clusterDomain": {
-                            "description": "Cluster DNS domain.",
-                            "type": "string"
+                            "type": "string",
+                            "description": "Cluster DNS domain."
                         }
                     }
                 }
             }
         },
+        "clusterCA": {
+            "type": "string"
+        },
+        "clusterCIDR": {
+            "type": "string"
+        },
+        "clusterDNSIP": {
+            "type": "string"
+        },
+        "clusterID": {
+            "type": "string"
+        },
         "configmap": {
-            "description": "DEPRECATED: use coredns.* instead. coredns.public.cache.success.ttl / coredns.cluster.cache.success.ttl replace configmap.cache; coredns.\u003czone\u003e.log replaces configmap.log; coredns.public.forward.to replaces configmap.forward; coredns.public.forward.* replaces configmap.forwardOptions; coredns.public.autopath replaces configmap.autopath; coredns.custom replaces configmap.custom.",
             "type": "object",
+            "description": "DEPRECATED: use coredns.* instead. coredns.public.cache.success.ttl / coredns.cluster.cache.success.ttl replace configmap.cache; coredns.<zone>.log replaces configmap.log; coredns.public.forward.to replaces configmap.forward; coredns.public.forward.* replaces configmap.forwardOptions; coredns.public.autopath replaces configmap.autopath; coredns.custom replaces configmap.custom.",
+            "additionalProperties": false,
             "properties": {
+                "autopath": {
+                    "type": [
+                        "null",
+                        "string"
+                    ],
+                    "description": "DEPRECATED: use coredns.public.autopath. autopath plugin args, e.g. \"@kubernetes\"."
+                },
                 "cache": {
-                    "description": "DEPRECATED: use coredns.\u003czone\u003e.cache.success.ttl. Success cache TTL (seconds), applied to every zone that leaves its own success TTL unset.",
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "DEPRECATED: use coredns.<zone>.cache.success.ttl. Success cache TTL (seconds), applied to every zone that leaves its own success TTL unset."
                 },
                 "custom": {
-                    "description": "DEPRECATED: use coredns.custom. Raw Corefile snippet.",
-                    "type": "string"
+                    "type": "string",
+                    "description": "DEPRECATED: use coredns.custom. Raw Corefile snippet."
                 },
                 "forward": {
-                    "description": "DEPRECATED: use coredns.public.forward.to. Forward directive (see https://coredns.io/plugins/forward/), e.g. \". 192.168.1.1 /etc/resolv.conf\".",
                     "type": [
                         "null",
                         "string"
-                    ]
+                    ],
+                    "description": "DEPRECATED: use coredns.public.forward.to. Forward directive (see https://coredns.io/plugins/forward/), e.g. \". 192.168.1.1 /etc/resolv.conf\"."
                 },
                 "forwardOptions": {
-                    "description": "DEPRECATED: use coredns.public.forward. Newline-separated forward plugin options.",
                     "type": [
                         "null",
                         "string"
-                    ]
+                    ],
+                    "description": "DEPRECATED: use coredns.public.forward. Newline-separated forward plugin options."
                 },
                 "log": {
-                    "description": "DEPRECATED: use coredns.\u003czone\u003e.log. Newline-separated log classes.",
-                    "type": "string"
+                    "type": "string",
+                    "description": "DEPRECATED: use coredns.<zone>.log. Newline-separated log classes."
                 }
             }
         },
         "controlPlane": {
-            "description": "Control-plane CoreDNS instance configuration.",
             "type": "object",
+            "description": "Control-plane CoreDNS instance configuration.",
+            "additionalProperties": false,
             "properties": {
                 "enabled": {
-                    "description": "Whether to deploy the control-plane CoreDNS instance. Defaults to mastersInstance.enabled for backward compatibility.",
                     "type": [
                         "null",
                         "boolean"
-                    ]
+                    ],
+                    "description": "Whether to deploy the control-plane CoreDNS instance. Defaults to mastersInstance.enabled for backward compatibility."
                 },
                 "nodeSelector": {
-                    "description": "Node selector for the control-plane CoreDNS instance.",
                     "type": "object",
+                    "description": "Node selector for the control-plane CoreDNS instance.",
+                    "additionalProperties": true,
                     "properties": {
                         "node-role.kubernetes.io/control-plane": {
                             "type": "string"
@@ -122,105 +214,143 @@
                     }
                 },
                 "tolerations": {
-                    "description": "Tolerations for the control-plane CoreDNS instance.",
                     "type": "array",
+                    "description": "Tolerations for the control-plane CoreDNS instance.",
                     "items": {
-                        "type": "object"
+                        "$ref": "#/$defs/toleration.json",
+                        "type": "object",
+                        "properties": {
+                            "effect": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "operator": {
+                                "type": "string"
+                            }
+                        },
+                        "unevaluatedProperties": false
                     }
                 }
             }
         },
         "coredns": {
-            "description": "CoreDNS Corefile configuration. Cache, log and loadbalance are configured per zone, so different zones can behave differently. A zone that omits cache falls back to the built-in defaults (success 9984 30 / denial 9984 5), with the success TTL falling back to the deprecated configmap.cache first; a zone that omits log/loadbalance falls back to the deprecated configmap.log / loadbalancePolicy, then to denial+error / round_robin.",
             "type": "object",
+            "description": "CoreDNS Corefile configuration. Cache, log and loadbalance are configured per zone, so different zones can behave differently. A zone that omits cache falls back to the built-in defaults (success 9984 30 / denial 9984 5), with the success TTL falling back to the deprecated configmap.cache first; a zone that omits log/loadbalance falls back to the deprecated configmap.log / loadbalancePolicy, then to denial+error / round_robin.",
+            "additionalProperties": false,
             "properties": {
+                "additionalLocalZones": {
+                    "type": [
+                        "null",
+                        "array"
+                    ],
+                    "description": "DEPRECATED: use coredns.additionalZones. Additional local zone names served by the kubernetes plugin with the coredns.cluster settings.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "additionalZones": {
+                    "type": "array",
                     "description": "Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance — same shapes as coredns.public/coredns.cluster.",
-                    "allOf": [
-                        {
-                            "type": "array",
-                            "items": {
-                                "properties": {
-                                    "cache": {
-                                        "$ref": "#/properties/coredns/properties/cluster/properties/cache"
-                                    },
-                                    "forward": {
-                                        "$ref": "#/properties/coredns/properties/public/properties/forward"
-                                    },
-                                    "kubernetes": {
-                                        "$ref": "#/properties/coredns/properties/cluster/properties/kubernetes"
-                                    },
-                                    "loadbalance": {
-                                        "$ref": "#/properties/coredns/properties/cluster/properties/loadbalance"
-                                    },
-                                    "log": {
-                                        "$ref": "#/properties/coredns/properties/cluster/properties/log"
-                                    }
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "names"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                            "cache": {
+                                "$ref": "#/properties/coredns/properties/cluster/properties/cache"
+                            },
+                            "cidrs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "forward": {
+                                "$ref": "#/properties/coredns/properties/public/properties/forward"
+                            },
+                            "kubernetes": {
+                                "$ref": "#/properties/coredns/properties/cluster/properties/kubernetes"
+                            },
+                            "loadbalance": {
+                                "$ref": "#/properties/coredns/properties/cluster/properties/loadbalance"
+                            },
+                            "log": {
+                                "$ref": "#/properties/coredns/properties/cluster/properties/log"
+                            },
+                            "names": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
                                 }
                             }
                         }
-                    ],
-                    "items": {
-                        "type": "object"
                     }
                 },
                 "cluster": {
-                    "description": "The cluster.local zone — in-cluster DNS served by the kubernetes plugin.",
                     "type": "object",
+                    "description": "The cluster.local zone — in-cluster DNS served by the kubernetes plugin.",
+                    "additionalProperties": false,
                     "properties": {
                         "cache": {
-                            "description": "Cache plugin configuration for this zone (https://coredns.io/plugins/cache/).",
                             "type": "object",
+                            "description": "Cache plugin configuration for this zone (https://coredns.io/plugins/cache/).",
+                            "additionalProperties": false,
                             "properties": {
                                 "denial": {
-                                    "description": "Caching of negative (NXDOMAIN/NODATA) responses.",
                                     "type": "object",
+                                    "description": "Caching of negative (NXDOMAIN/NODATA) responses.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "capacity": {
-                                            "description": "Maximum number of cached negative responses.",
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "description": "Maximum number of cached negative responses."
                                         },
                                         "minTTL": {
-                                            "description": "Min TTL for negative responses (seconds).",
                                             "type": [
                                                 "null",
                                                 "integer"
-                                            ]
+                                            ],
+                                            "description": "Min TTL for negative responses (seconds)."
                                         },
                                         "ttl": {
-                                            "description": "Max TTL for negative responses (seconds).",
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "description": "Max TTL for negative responses (seconds)."
                                         }
                                     }
                                 },
                                 "disable": {
-                                    "description": "Selectively disable caching.",
                                     "type": "object",
+                                    "description": "Selectively disable caching.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "denial": {
-                                            "description": "Disable caching of negative responses.",
                                             "type": [
                                                 "null",
                                                 "boolean"
-                                            ]
+                                            ],
+                                            "description": "Disable caching of negative responses."
                                         },
                                         "denialZones": {
-                                            "description": "Limit the denial disable to these zones.",
                                             "type": "array",
+                                            "description": "Limit the denial disable to these zones.",
                                             "items": {
                                                 "type": "string"
                                             }
                                         },
                                         "success": {
-                                            "description": "Disable caching of positive responses.",
                                             "type": [
                                                 "null",
                                                 "boolean"
-                                            ]
+                                            ],
+                                            "description": "Disable caching of positive responses."
                                         },
                                         "successZones": {
-                                            "description": "Limit the success disable to these zones.",
                                             "type": "array",
+                                            "description": "Limit the success disable to these zones.",
                                             "items": {
                                                 "type": "string"
                                             }
@@ -228,57 +358,59 @@
                                     }
                                 },
                                 "keepttl": {
-                                    "description": "Preserve original TTLs instead of counting them down.",
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description": "Preserve original TTLs instead of counting them down."
                                 },
                                 "prefetch": {
-                                    "description": "Prefetch popular entries before they expire.",
                                     "type": "object",
+                                    "description": "Prefetch popular entries before they expire.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "amount": {
-                                            "description": "Prefetch when at least this many requests are received (enables prefetch).",
                                             "type": [
                                                 "null",
                                                 "integer"
-                                            ]
+                                            ],
+                                            "description": "Prefetch when at least this many requests are received (enables prefetch)."
                                         },
                                         "duration": {
-                                            "description": "Only prefetch if the item was requested within this duration.",
-                                            "type": [
-                                                "null",
-                                                "string"
-                                            ]
-                                        },
-                                        "percentage": {
-                                            "description": "Only prefetch if this percentage of the TTL remains (requires duration).",
-                                            "type": [
-                                                "null",
-                                                "integer"
-                                            ]
-                                        }
-                                    }
-                                },
-                                "serveStale": {
-                                    "description": "Serve stale answers while refreshing in the background.",
-                                    "type": "object",
-                                    "properties": {
-                                        "duration": {
-                                            "description": "How long stale answers may be served.",
-                                            "type": [
-                                                "null",
-                                                "string"
-                                            ]
-                                        },
-                                        "enabled": {
-                                            "description": "Enable serving stale answers.",
-                                            "type": "boolean"
-                                        },
-                                        "refreshMode": {
-                                            "description": "Refresh mode.",
                                             "type": [
                                                 "null",
                                                 "string"
                                             ],
+                                            "description": "Only prefetch if the item was requested within this duration."
+                                        },
+                                        "percentage": {
+                                            "type": [
+                                                "null",
+                                                "integer"
+                                            ],
+                                            "description": "Only prefetch if this percentage of the TTL remains (requires duration)."
+                                        }
+                                    }
+                                },
+                                "serveStale": {
+                                    "type": "object",
+                                    "description": "Serve stale answers while refreshing in the background.",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "duration": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ],
+                                            "description": "How long stale answers may be served."
+                                        },
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "description": "Enable serving stale answers."
+                                        },
+                                        "refreshMode": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ],
+                                            "description": "Refresh mode.",
                                             "enum": [
                                                 "immediate",
                                                 "verify",
@@ -286,61 +418,63 @@
                                             ]
                                         },
                                         "verifyTimeout": {
-                                            "description": "With refreshMode verify — max wait for upstream verify before serving stale.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "With refreshMode verify — max wait for upstream verify before serving stale."
                                         }
                                     }
                                 },
                                 "servfail": {
-                                    "description": "SERVFAIL caching.",
                                     "type": "object",
+                                    "description": "SERVFAIL caching.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "duration": {
-                                            "description": "How long to cache SERVFAIL responses.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "How long to cache SERVFAIL responses."
                                         }
                                     }
                                 },
                                 "success": {
-                                    "description": "Caching of positive (success) responses.",
                                     "type": "object",
+                                    "description": "Caching of positive (success) responses.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "capacity": {
-                                            "description": "Maximum number of cached positive responses.",
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "description": "Maximum number of cached positive responses."
                                         },
                                         "minTTL": {
-                                            "description": "Min TTL for positive responses (seconds).",
                                             "type": [
                                                 "null",
                                                 "integer"
-                                            ]
+                                            ],
+                                            "description": "Min TTL for positive responses (seconds)."
                                         },
                                         "ttl": {
-                                            "description": "Max TTL for positive responses (seconds). Omit to fall back to the deprecated configmap.cache, then to 30.",
                                             "type": [
                                                 "null",
                                                 "integer"
-                                            ]
+                                            ],
+                                            "description": "Max TTL for positive responses (seconds). Omit to fall back to the deprecated configmap.cache, then to 30."
                                         }
                                     }
                                 },
                                 "ttl": {
-                                    "description": "Top-level TTL cap applied before the success/denial checks (seconds).",
                                     "type": [
                                         "null",
                                         "integer"
-                                    ]
+                                    ],
+                                    "description": "Top-level TTL cap applied before the success/denial checks (seconds)."
                                 },
                                 "zones": {
-                                    "description": "Cache ZONES — limit caching to these zones. Empty means the server-block zones.",
                                     "type": "array",
+                                    "description": "Cache ZONES — limit caching to these zones. Empty means the server-block zones.",
                                     "items": {
                                         "type": "string"
                                     }
@@ -348,118 +482,120 @@
                             }
                         },
                         "domains": {
-                            "description": "Zone names served by this block. Defaults to cluster.kubernetes.clusterDomain when unset.",
                             "type": [
                                 "null",
                                 "array"
-                            ]
+                            ],
+                            "description": "Zone names served by this block. Defaults to cluster.kubernetes.clusterDomain when unset."
                         },
                         "kubernetes": {
-                            "description": "Kubernetes plugin configuration (https://coredns.io/plugins/kubernetes/). Leave a key unset to keep the CoreDNS default.",
                             "type": "object",
+                            "description": "Kubernetes plugin configuration (https://coredns.io/plugins/kubernetes/). Leave a key unset to keep the CoreDNS default.",
+                            "additionalProperties": false,
                             "properties": {
                                 "apiserverBurst": {
-                                    "description": "apiserver_burst — max burst size for API server requests.",
                                     "type": [
                                         "null",
                                         "integer"
-                                    ]
+                                    ],
+                                    "description": "apiserver_burst — max burst size for API server requests."
                                 },
                                 "apiserverMaxInflight": {
-                                    "description": "apiserver_max_inflight — max concurrent in-flight API server requests.",
                                     "type": [
                                         "null",
                                         "integer"
-                                    ]
+                                    ],
+                                    "description": "apiserver_max_inflight — max concurrent in-flight API server requests."
                                 },
                                 "apiserverQPS": {
-                                    "description": "apiserver_qps — max queries-per-second to the API server.",
                                     "type": [
                                         "null",
                                         "integer"
-                                    ]
+                                    ],
+                                    "description": "apiserver_qps — max queries-per-second to the API server."
                                 },
                                 "endpoint": {
-                                    "description": "endpoint URL — remote k8s API endpoint (omit for in-cluster).",
                                     "type": [
                                         "null",
                                         "string"
-                                    ]
+                                    ],
+                                    "description": "endpoint URL — remote k8s API endpoint (omit for in-cluster)."
                                 },
                                 "endpointPodNames": {
-                                    "description": "endpoint_pod_names — use the pod name instead of the dashed IP.",
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description": "endpoint_pod_names — use the pod name instead of the dashed IP."
                                 },
                                 "fallthrough": {
-                                    "description": "fallthrough — pass unresolved queries to the next plugin (all zones).",
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description": "fallthrough — pass unresolved queries to the next plugin (all zones)."
                                 },
                                 "fallthroughZones": {
-                                    "description": "fallthrough ZONES... — limit fallthrough to these zones.",
                                     "type": "array",
+                                    "description": "fallthrough ZONES... — limit fallthrough to these zones.",
                                     "items": {
                                         "type": "string"
                                     }
                                 },
                                 "ignoreEmptyService": {
-                                    "description": "ignore empty_service — NXDOMAIN for services without ready endpoints.",
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description": "ignore empty_service — NXDOMAIN for services without ready endpoints."
                                 },
                                 "kubeconfig": {
-                                    "description": "kubeconfig KUBECONFIG [CONTEXT] — authenticate via a kubeconfig file.",
                                     "type": "object",
+                                    "description": "kubeconfig KUBECONFIG [CONTEXT] — authenticate via a kubeconfig file.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "context": {
-                                            "description": "Context within the kubeconfig file.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "Context within the kubeconfig file."
                                         },
                                         "path": {
-                                            "description": "Path to the kubeconfig file.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "Path to the kubeconfig file."
                                         }
                                     }
                                 },
                                 "labels": {
-                                    "description": "labels EXPRESSION — expose only objects matching the selector.",
                                     "type": [
                                         "null",
                                         "string"
-                                    ]
+                                    ],
+                                    "description": "labels EXPRESSION — expose only objects matching the selector."
                                 },
                                 "multicluster": {
-                                    "description": "multicluster ZONES... — MCS-API multicluster zones.",
                                     "type": "array",
+                                    "description": "multicluster ZONES... — MCS-API multicluster zones.",
                                     "items": {
                                         "type": "string"
                                     }
                                 },
                                 "namespaceLabels": {
-                                    "description": "namespace_labels EXPRESSION — expose only namespaces matching the selector.",
                                     "type": [
                                         "null",
                                         "string"
-                                    ]
+                                    ],
+                                    "description": "namespace_labels EXPRESSION — expose only namespaces matching the selector."
                                 },
                                 "namespaces": {
-                                    "description": "namespaces NAMESPACE... — expose only these namespaces.",
                                     "type": "array",
+                                    "description": "namespaces NAMESPACE... — expose only these namespaces.",
                                     "items": {
                                         "type": "string"
                                     }
                                 },
                                 "noendpoints": {
-                                    "description": "noendpoints — disable endpoint record serving.",
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description": "noendpoints — disable endpoint record serving."
                                 },
                                 "pods": {
-                                    "description": "pods — pod record mode.",
                                     "type": "string",
+                                    "description": "pods — pod record mode.",
                                     "enum": [
                                         "disabled",
                                         "insecure",
@@ -467,56 +603,57 @@
                                     ]
                                 },
                                 "startupTimeout": {
-                                    "description": "startup_timeout — wait for informer cache sync at startup.",
                                     "type": [
                                         "null",
                                         "string"
-                                    ]
+                                    ],
+                                    "description": "startup_timeout — wait for informer cache sync at startup."
                                 },
                                 "tls": {
-                                    "description": "tls CERT KEY CACERT — for a remote k8s connection.",
                                     "type": "object",
+                                    "description": "tls CERT KEY CACERT — for a remote k8s connection.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "ca": {
-                                            "description": "CA cert file path.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "CA cert file path."
                                         },
                                         "cert": {
-                                            "description": "Client cert file path.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "Client cert file path."
                                         },
                                         "key": {
-                                            "description": "Client key file path.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "Client key file path."
                                         }
                                     }
                                 },
                                 "ttl": {
-                                    "description": "ttl SECONDS (0–3600).",
                                     "type": [
                                         "null",
                                         "integer"
                                     ],
+                                    "description": "ttl SECONDS (0–3600).",
                                     "maximum": 3600,
                                     "minimum": 0
                                 }
                             }
                         },
                         "loadbalance": {
-                            "description": "Load balancing policy. Omit to fall back to the deprecated loadbalancePolicy, then to round_robin.",
                             "type": [
                                 "null",
                                 "string"
                             ],
+                            "description": "Load balancing policy. Omit to fall back to the deprecated loadbalancePolicy, then to round_robin.",
                             "enum": [
                                 "round_robin",
                                 "random",
@@ -524,13 +661,12 @@
                             ]
                         },
                         "log": {
-                            "description": "CoreDNS log classes for this zone. Omit to fall back to the deprecated configmap.log, then to denial+error.",
                             "type": [
                                 "null",
                                 "array"
                             ],
+                            "description": "CoreDNS log classes for this zone. Omit to fall back to the deprecated configmap.log, then to denial+error.",
                             "items": {
-                                "type": "string",
                                 "enum": [
                                     "success",
                                     "denial",
@@ -540,86 +676,90 @@
                             }
                         },
                         "podCIDR": {
-                            "description": "Pod CIDR for the reverse zone. Defaults to cluster.calico.CIDR when unset.",
                             "type": [
                                 "null",
                                 "string"
-                            ]
+                            ],
+                            "description": "Pod CIDR for the reverse zone. Defaults to cluster.calico.CIDR when unset."
                         },
                         "serviceCIDR": {
-                            "description": "Service CIDR for the reverse zone. Defaults to cluster.kubernetes.API.clusterIPRange when unset.",
                             "type": [
                                 "null",
                                 "string"
-                            ]
+                            ],
+                            "description": "Service CIDR for the reverse zone. Defaults to cluster.kubernetes.API.clusterIPRange when unset."
                         }
                     }
                 },
                 "custom": {
-                    "description": "Raw Corefile snippet appended verbatim at the end of the configuration.",
-                    "type": "string"
+                    "type": "string",
+                    "description": "Raw Corefile snippet appended verbatim at the end of the configuration."
                 },
                 "public": {
-                    "description": "The \".\" zone — external/public DNS served by the forward plugin.",
                     "type": "object",
+                    "description": "The \".\" zone — external/public DNS served by the forward plugin.",
+                    "additionalProperties": false,
                     "properties": {
                         "autopath": {
-                            "description": "autopath plugin args, e.g. \"@kubernetes\". Empty disables autopath.",
-                            "type": "string"
+                            "type": "string",
+                            "description": "autopath plugin args, e.g. \"@kubernetes\". Empty disables autopath."
                         },
                         "cache": {
-                            "description": "Cache plugin configuration for this zone (https://coredns.io/plugins/cache/).",
                             "type": "object",
+                            "description": "Cache plugin configuration for this zone (https://coredns.io/plugins/cache/).",
+                            "additionalProperties": false,
                             "properties": {
                                 "denial": {
-                                    "description": "Caching of negative (NXDOMAIN/NODATA) responses.",
                                     "type": "object",
+                                    "description": "Caching of negative (NXDOMAIN/NODATA) responses.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "capacity": {
-                                            "description": "Maximum number of cached negative responses.",
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "description": "Maximum number of cached negative responses."
                                         },
                                         "minTTL": {
-                                            "description": "Min TTL for negative responses (seconds).",
                                             "type": [
                                                 "null",
                                                 "integer"
-                                            ]
+                                            ],
+                                            "description": "Min TTL for negative responses (seconds)."
                                         },
                                         "ttl": {
-                                            "description": "Max TTL for negative responses (seconds).",
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "description": "Max TTL for negative responses (seconds)."
                                         }
                                     }
                                 },
                                 "disable": {
-                                    "description": "Selectively disable caching.",
                                     "type": "object",
+                                    "description": "Selectively disable caching.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "denial": {
-                                            "description": "Disable caching of negative responses.",
                                             "type": [
                                                 "null",
                                                 "boolean"
-                                            ]
+                                            ],
+                                            "description": "Disable caching of negative responses."
                                         },
                                         "denialZones": {
-                                            "description": "Limit the denial disable to these zones.",
                                             "type": "array",
+                                            "description": "Limit the denial disable to these zones.",
                                             "items": {
                                                 "type": "string"
                                             }
                                         },
                                         "success": {
-                                            "description": "Disable caching of positive responses.",
                                             "type": [
                                                 "null",
                                                 "boolean"
-                                            ]
+                                            ],
+                                            "description": "Disable caching of positive responses."
                                         },
                                         "successZones": {
-                                            "description": "Limit the success disable to these zones.",
                                             "type": "array",
+                                            "description": "Limit the success disable to these zones.",
                                             "items": {
                                                 "type": "string"
                                             }
@@ -627,57 +767,59 @@
                                     }
                                 },
                                 "keepttl": {
-                                    "description": "Preserve original TTLs instead of counting them down.",
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description": "Preserve original TTLs instead of counting them down."
                                 },
                                 "prefetch": {
-                                    "description": "Prefetch popular entries before they expire.",
                                     "type": "object",
+                                    "description": "Prefetch popular entries before they expire.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "amount": {
-                                            "description": "Prefetch when at least this many requests are received (enables prefetch).",
                                             "type": [
                                                 "null",
                                                 "integer"
-                                            ]
+                                            ],
+                                            "description": "Prefetch when at least this many requests are received (enables prefetch)."
                                         },
                                         "duration": {
-                                            "description": "Only prefetch if the item was requested within this duration.",
-                                            "type": [
-                                                "null",
-                                                "string"
-                                            ]
-                                        },
-                                        "percentage": {
-                                            "description": "Only prefetch if this percentage of the TTL remains (requires duration).",
-                                            "type": [
-                                                "null",
-                                                "integer"
-                                            ]
-                                        }
-                                    }
-                                },
-                                "serveStale": {
-                                    "description": "Serve stale answers while refreshing in the background.",
-                                    "type": "object",
-                                    "properties": {
-                                        "duration": {
-                                            "description": "How long stale answers may be served.",
-                                            "type": [
-                                                "null",
-                                                "string"
-                                            ]
-                                        },
-                                        "enabled": {
-                                            "description": "Enable serving stale answers.",
-                                            "type": "boolean"
-                                        },
-                                        "refreshMode": {
-                                            "description": "Refresh mode.",
                                             "type": [
                                                 "null",
                                                 "string"
                                             ],
+                                            "description": "Only prefetch if the item was requested within this duration."
+                                        },
+                                        "percentage": {
+                                            "type": [
+                                                "null",
+                                                "integer"
+                                            ],
+                                            "description": "Only prefetch if this percentage of the TTL remains (requires duration)."
+                                        }
+                                    }
+                                },
+                                "serveStale": {
+                                    "type": "object",
+                                    "description": "Serve stale answers while refreshing in the background.",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "duration": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ],
+                                            "description": "How long stale answers may be served."
+                                        },
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "description": "Enable serving stale answers."
+                                        },
+                                        "refreshMode": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ],
+                                            "description": "Refresh mode.",
                                             "enum": [
                                                 "immediate",
                                                 "verify",
@@ -685,61 +827,63 @@
                                             ]
                                         },
                                         "verifyTimeout": {
-                                            "description": "With refreshMode verify — max wait for upstream verify before serving stale.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "With refreshMode verify — max wait for upstream verify before serving stale."
                                         }
                                     }
                                 },
                                 "servfail": {
-                                    "description": "SERVFAIL caching.",
                                     "type": "object",
+                                    "description": "SERVFAIL caching.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "duration": {
-                                            "description": "How long to cache SERVFAIL responses.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "How long to cache SERVFAIL responses."
                                         }
                                     }
                                 },
                                 "success": {
-                                    "description": "Caching of positive (success) responses.",
                                     "type": "object",
+                                    "description": "Caching of positive (success) responses.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "capacity": {
-                                            "description": "Maximum number of cached positive responses.",
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "description": "Maximum number of cached positive responses."
                                         },
                                         "minTTL": {
-                                            "description": "Min TTL for positive responses (seconds).",
                                             "type": [
                                                 "null",
                                                 "integer"
-                                            ]
+                                            ],
+                                            "description": "Min TTL for positive responses (seconds)."
                                         },
                                         "ttl": {
-                                            "description": "Max TTL for positive responses (seconds). Omit to fall back to the deprecated configmap.cache, then to 30.",
                                             "type": [
                                                 "null",
                                                 "integer"
-                                            ]
+                                            ],
+                                            "description": "Max TTL for positive responses (seconds). Omit to fall back to the deprecated configmap.cache, then to 30."
                                         }
                                     }
                                 },
                                 "ttl": {
-                                    "description": "Top-level TTL cap applied before the success/denial checks (seconds).",
                                     "type": [
                                         "null",
                                         "integer"
-                                    ]
+                                    ],
+                                    "description": "Top-level TTL cap applied before the success/denial checks (seconds)."
                                 },
                                 "zones": {
-                                    "description": "Cache ZONES — limit caching to these zones. Empty means the server-block zones.",
                                     "type": "array",
+                                    "description": "Cache ZONES — limit caching to these zones. Empty means the server-block zones.",
                                     "items": {
                                         "type": "string"
                                     }
@@ -747,15 +891,16 @@
                             }
                         },
                         "forward": {
-                            "description": "Forward plugin configuration (https://coredns.io/plugins/forward/). The FROM is always \".\". Only a representative subset of parameters is wired up today; leave a key unset to keep the CoreDNS default.",
                             "type": "object",
+                            "description": "Forward plugin configuration (https://coredns.io/plugins/forward/). The FROM is always \".\". Only a representative subset of parameters is wired up today; leave a key unset to keep the CoreDNS default.",
+                            "additionalProperties": false,
                             "properties": {
                                 "dohMethod": {
-                                    "description": "doh_method — HTTP method for DoH requests.",
                                     "type": [
                                         "null",
                                         "string"
                                     ],
+                                    "description": "doh_method — HTTP method for DoH requests.",
                                     "enum": [
                                         "GET",
                                         "POST",
@@ -763,93 +908,93 @@
                                     ]
                                 },
                                 "except": {
-                                    "description": "except NAMES — domains to pass through unforwarded.",
                                     "type": "array",
+                                    "description": "except NAMES — domains to pass through unforwarded.",
                                     "items": {
                                         "type": "string"
                                     }
                                 },
                                 "expire": {
-                                    "description": "expire — close idle upstream connections after this duration.",
                                     "type": [
                                         "null",
                                         "string"
-                                    ]
+                                    ],
+                                    "description": "expire — close idle upstream connections after this duration."
                                 },
                                 "failfastAllUnhealthyUpstreams": {
-                                    "description": "failfast_all_unhealthy_upstreams — SERVFAIL when all upstreams are down.",
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description": "failfast_all_unhealthy_upstreams — SERVFAIL when all upstreams are down."
                                 },
                                 "failover": {
-                                    "description": "failover RCODE... — retry the next upstream on these rcodes (e.g. [SERVFAIL, REFUSED]).",
                                     "type": "array",
+                                    "description": "failover RCODE... — retry the next upstream on these rcodes (e.g. [SERVFAIL, REFUSED]).",
                                     "items": {
                                         "type": "string"
                                     }
                                 },
                                 "forceTCP": {
-                                    "description": "force_tcp — always use TCP to the upstream.",
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description": "force_tcp — always use TCP to the upstream."
                                 },
                                 "healthCheck": {
-                                    "description": "health_check DURATION [no_rec] [domain FQDN].",
                                     "type": [
                                         "null",
                                         "string"
-                                    ]
+                                    ],
+                                    "description": "health_check DURATION [no_rec] [domain FQDN]."
                                 },
                                 "maxAge": {
-                                    "description": "max_age — replace connections after this total lifetime. Must not be less than expire.",
                                     "type": [
                                         "null",
                                         "string"
-                                    ]
+                                    ],
+                                    "description": "max_age — replace connections after this total lifetime. Must not be less than expire."
                                 },
                                 "maxConcurrent": {
-                                    "description": "max_concurrent — maximum number of concurrent queries to forward.",
                                     "type": [
                                         "null",
                                         "integer"
-                                    ]
+                                    ],
+                                    "description": "max_concurrent — maximum number of concurrent queries to forward."
                                 },
                                 "maxConnectAttempts": {
-                                    "description": "max_connect_attempts — cap on connect attempts per request (0 = no cap).",
                                     "type": [
                                         "null",
                                         "integer"
-                                    ]
+                                    ],
+                                    "description": "max_connect_attempts — cap on connect attempts per request (0 = no cap)."
                                 },
                                 "maxFails": {
-                                    "description": "max_fails — consecutive failed health checks before marking an upstream down.",
                                     "type": [
                                         "null",
                                         "integer"
-                                    ]
+                                    ],
+                                    "description": "max_fails — consecutive failed health checks before marking an upstream down."
                                 },
                                 "maxIdleConns": {
-                                    "description": "max_idle_conns — idle connections cached per upstream (0 = unlimited).",
                                     "type": [
                                         "null",
                                         "integer"
-                                    ]
+                                    ],
+                                    "description": "max_idle_conns — idle connections cached per upstream (0 = unlimited)."
                                 },
                                 "next": {
-                                    "description": "next RCODE... — run the next forward plugin on these rcodes (e.g. [NXDOMAIN]).",
                                     "type": "array",
+                                    "description": "next RCODE... — run the next forward plugin on these rcodes (e.g. [NXDOMAIN]).",
                                     "items": {
                                         "type": "string"
                                     }
                                 },
                                 "nextOnNodata": {
-                                    "description": "next_on_nodata — run the next forward plugin on empty NOERROR answers.",
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description": "next_on_nodata — run the next forward plugin on empty NOERROR answers."
                                 },
                                 "policy": {
-                                    "description": "policy — upstream selection policy.",
                                     "type": [
                                         "null",
                                         "string"
                                     ],
+                                    "description": "policy — upstream selection policy.",
                                     "enum": [
                                         "random",
                                         "round_robin",
@@ -858,57 +1003,58 @@
                                     ]
                                 },
                                 "preferUDP": {
-                                    "description": "prefer_udp — try UDP first even for queries received over TCP.",
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description": "prefer_udp — try UDP first even for queries received over TCP."
                                 },
                                 "resolver": {
-                                    "description": "resolver IP[:PORT]... — resolvers for hostname-based \"to\" endpoints.",
                                     "type": "array",
+                                    "description": "resolver IP[:PORT]... — resolvers for hostname-based \"to\" endpoints.",
                                     "items": {
                                         "type": "string"
                                     }
                                 },
                                 "tls": {
-                                    "description": "tls CERT KEY CA — set cert+key, ca, all three, or enabled for bare tls.",
                                     "type": "object",
+                                    "description": "tls CERT KEY CA — set cert+key, ca, all three, or enabled for bare tls.",
+                                    "additionalProperties": false,
                                     "properties": {
                                         "ca": {
-                                            "description": "CA cert file path.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "CA cert file path."
                                         },
                                         "cert": {
-                                            "description": "Client cert file path.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "Client cert file path."
                                         },
                                         "enabled": {
-                                            "description": "Emit bare \"tls\" (system CAs, no client auth).",
-                                            "type": "boolean"
+                                            "type": "boolean",
+                                            "description": "Emit bare \"tls\" (system CAs, no client auth)."
                                         },
                                         "key": {
-                                            "description": "Client key file path.",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ]
+                                            ],
+                                            "description": "Client key file path."
                                         }
                                     }
                                 },
                                 "tlsServername": {
-                                    "description": "tls_servername NAME — expected server cert name (e.g. dns.quad9.net).",
                                     "type": [
                                         "null",
                                         "string"
-                                    ]
+                                    ],
+                                    "description": "tls_servername NAME — expected server cert name (e.g. dns.quad9.net)."
                                 },
                                 "to": {
-                                    "description": "Upstream DNS servers (the forward TO targets). Empty means use /etc/resolv.conf.",
                                     "type": "array",
+                                    "description": "Upstream DNS servers (the forward TO targets). Empty means use /etc/resolv.conf.",
                                     "items": {
                                         "type": "string"
                                     }
@@ -916,11 +1062,11 @@
                             }
                         },
                         "loadbalance": {
-                            "description": "Load balancing policy. Omit to fall back to the deprecated loadbalancePolicy, then to round_robin.",
                             "type": [
                                 "null",
                                 "string"
                             ],
+                            "description": "Load balancing policy. Omit to fall back to the deprecated loadbalancePolicy, then to round_robin.",
                             "enum": [
                                 "round_robin",
                                 "random",
@@ -928,13 +1074,12 @@
                             ]
                         },
                         "log": {
-                            "description": "CoreDNS log classes for this zone. Omit to fall back to the deprecated configmap.log, then to denial+error.",
                             "type": [
                                 "null",
                                 "array"
                             ],
+                            "description": "CoreDNS log classes for this zone. Omit to fall back to the deprecated configmap.log, then to denial+error.",
                             "items": {
-                                "type": "string",
                                 "enum": [
                                     "success",
                                     "denial",
@@ -947,96 +1092,130 @@
                 }
             }
         },
+        "externalDNSIP": {
+            "type": "string"
+        },
+        "gcpProject": {
+            "type": "string"
+        },
+        "global": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "description": "Global values shared between all subcharts and the platform.",
+            "additionalProperties": true,
+            "properties": {
+                "podSecurityStandards": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            }
+        },
         "groupID": {
-            "description": "DEPRECATED: use securityContext.runAsGroup. GID the CoreDNS process runs as.",
-            "type": "integer"
+            "type": "integer",
+            "description": "DEPRECATED: use securityContext.runAsGroup. GID the CoreDNS process runs as."
+        },
+        "helm": {
+            "type": "object",
+            "additionalProperties": true
         },
         "hpa": {
-            "description": "Horizontal Pod Autoscaler configuration.",
             "type": "object",
+            "description": "Horizontal Pod Autoscaler configuration.",
+            "additionalProperties": false,
             "properties": {
                 "behavior": {
-                    "description": "Scaling behavior. The stabilization window restricts replica-count flapping when the scaling metrics keep fluctuating.",
                     "type": "object",
+                    "description": "Scaling behavior. The stabilization window restricts replica-count flapping when the scaling metrics keep fluctuating.",
+                    "additionalProperties": true,
                     "properties": {
                         "scaleDown": {
-                            "description": "Scale-down behavior.",
                             "type": "object",
+                            "description": "Scale-down behavior.",
+                            "additionalProperties": true,
                             "properties": {
                                 "stabilizationWindowSeconds": {
-                                    "description": "Seconds to consider while scaling down to prevent flapping.",
-                                    "type": "integer"
+                                    "type": "integer",
+                                    "description": "Seconds to consider while scaling down to prevent flapping."
                                 }
                             }
                         }
                     }
                 },
                 "enabled": {
-                    "description": "Enable the HorizontalPodAutoscaler.",
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "Enable the HorizontalPodAutoscaler."
                 },
                 "maxReplicas": {
-                    "description": "Maximum number of replicas.",
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Maximum number of replicas."
                 },
                 "metrics": {
-                    "description": "Additional custom metrics for the HPA (autoscaling/v2 metric objects).",
                     "type": "array",
+                    "description": "Additional custom metrics for the HPA (autoscaling/v2 metric objects).",
                     "items": {
-                        "type": "object"
+                        "type": "object",
+                        "additionalProperties": true
                     }
                 },
                 "minReplicas": {
-                    "description": "Minimum number of replicas.",
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Minimum number of replicas."
                 },
                 "targetCPUUtilizationPercentage": {
-                    "description": "Target average CPU utilization percentage.",
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Target average CPU utilization percentage."
                 },
                 "targetMemoryUtilizationPercentage": {
-                    "description": "Target average memory utilization percentage. Set to 0 to disable the memory metric.",
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Target average memory utilization percentage. Set to 0 to disable the memory metric."
                 }
             }
         },
         "image": {
-            "description": "Container image for CoreDNS.",
             "type": "object",
+            "description": "Container image for CoreDNS.",
+            "additionalProperties": false,
             "properties": {
                 "name": {
-                    "description": "Image repository.",
-                    "type": "string"
+                    "type": "string",
+                    "description": "Image repository."
                 },
                 "registry": {
-                    "description": "Image registry.",
-                    "type": "string"
+                    "type": "string",
+                    "description": "Image registry."
                 },
                 "tag": {
-                    "description": "Image tag.",
-                    "type": "string"
+                    "type": "string",
+                    "description": "Image tag."
                 }
             }
         },
         "loadbalancePolicy": {
-            "description": "DEPRECATED: use coredns.\u003czone\u003e.loadbalance (per-zone). Load balancing policy.",
             "type": "string",
+            "description": "DEPRECATED: use coredns.<zone>.loadbalance (per-zone). Load balancing policy.",
             "enum": [
                 "round_robin",
                 "random"
             ]
         },
+        "managementCluster": {
+            "type": "string"
+        },
         "mastersInstance": {
-            "description": "DEPRECATED: use controlPlane. mastersInstance.enabled stays backward compatible — controlPlane.enabled takes precedence only when explicitly set.",
             "type": "object",
+            "description": "DEPRECATED: use controlPlane. mastersInstance.enabled stays backward compatible — controlPlane.enabled takes precedence only when explicitly set.",
+            "additionalProperties": false,
             "properties": {
                 "enabled": {
-                    "description": "Whether to deploy the control-plane CoreDNS instance.",
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "Whether to deploy the control-plane CoreDNS instance."
                 },
                 "nodeSelector": {
-                    "description": "Node selector for the control-plane CoreDNS instance.",
                     "type": "object",
+                    "description": "Node selector for the control-plane CoreDNS instance.",
+                    "additionalProperties": true,
                     "properties": {
                         "node-role.kubernetes.io/control-plane": {
                             "type": "string"
@@ -1046,167 +1225,201 @@
             }
         },
         "name": {
-            "description": "Name used for the CoreDNS workload and its resources.",
-            "type": "string"
+            "type": "string",
+            "description": "Name used for the CoreDNS workload and its resources."
         },
         "namespace": {
-            "description": "Namespace the CoreDNS resources are deployed into.",
-            "type": "string"
+            "type": "string",
+            "description": "Namespace the CoreDNS resources are deployed into."
         },
         "podDisruptionBudget": {
-            "description": "Pod disruption budget for the CoreDNS workloads.",
             "type": "object",
+            "description": "Pod disruption budget for the CoreDNS workloads.",
+            "additionalProperties": true,
             "properties": {
                 "maxUnavailable": {
-                    "description": "Maximum number of pods that can be unavailable to voluntary disruptions.",
                     "type": [
                         "integer",
                         "string"
-                    ]
+                    ],
+                    "description": "Maximum number of pods that can be unavailable to voluntary disruptions."
                 }
             }
         },
         "ports": {
-            "description": "Ports exposed by CoreDNS.",
             "type": "object",
+            "description": "Ports exposed by CoreDNS.",
+            "additionalProperties": false,
             "properties": {
                 "dns": {
-                    "description": "DNS port configuration.",
                     "type": "object",
+                    "description": "DNS port configuration.",
+                    "additionalProperties": false,
                     "properties": {
                         "name": {
-                            "description": "Port name.",
-                            "type": "string"
+                            "type": "string",
+                            "description": "Port name."
                         },
                         "port": {
-                            "description": "Service port exposed for DNS.",
-                            "type": "integer"
+                            "type": "integer",
+                            "description": "Service port exposed for DNS."
                         },
                         "targetPort": {
-                            "description": "Container port CoreDNS listens on.",
-                            "type": "integer"
+                            "type": "integer",
+                            "description": "Container port CoreDNS listens on."
                         }
                     }
                 },
                 "metrics": {
-                    "description": "Prometheus metrics port configuration.",
                     "type": "object",
+                    "description": "Prometheus metrics port configuration.",
+                    "additionalProperties": false,
                     "properties": {
                         "port": {
-                            "description": "Port for the Prometheus metrics endpoint. Defaults to 9153 when unset.",
                             "type": [
                                 "null",
                                 "integer"
-                            ]
+                            ],
+                            "description": "Port for the Prometheus metrics endpoint. Defaults to 9153 when unset."
                         }
                     }
+                },
+                "prometheus": {
+                    "type": [
+                        "null",
+                        "integer"
+                    ],
+                    "description": "DEPRECATED: use ports.metrics.port. Port for the Prometheus metrics endpoint."
                 }
             }
         },
+        "provider": {
+            "type": "string"
+        },
         "resources": {
-            "description": "Resource requests and limits for the CoreDNS containers.",
             "type": "object",
+            "description": "Resource requests and limits for the CoreDNS containers.",
+            "additionalProperties": true,
             "properties": {
                 "limits": {
-                    "description": "Resource limits.",
                     "type": "object",
+                    "description": "Resource limits.",
+                    "additionalProperties": true,
                     "properties": {
                         "memory": {
-                            "description": "Memory limit.",
-                            "type": "string"
+                            "type": "string",
+                            "description": "Memory limit."
                         }
                     }
                 },
                 "requests": {
-                    "description": "Resource requests.",
                     "type": "object",
+                    "description": "Resource requests.",
+                    "additionalProperties": true,
                     "properties": {
                         "cpu": {
-                            "description": "CPU request.",
-                            "type": "string"
+                            "type": "string",
+                            "description": "CPU request."
                         },
                         "memory": {
-                            "description": "Memory request.",
-                            "type": "string"
+                            "type": "string",
+                            "description": "Memory request."
                         }
                     }
                 }
             }
         },
         "securityContext": {
-            "description": "Pod-level security context for the CoreDNS containers.",
             "type": "object",
+            "description": "Pod-level security context for the CoreDNS containers.",
+            "additionalProperties": false,
             "properties": {
                 "runAsGroup": {
-                    "description": "GID the CoreDNS process runs as. Defaults to groupID when unset.",
                     "type": [
                         "null",
                         "integer"
-                    ]
+                    ],
+                    "description": "GID the CoreDNS process runs as. Defaults to groupID when unset."
                 },
                 "runAsUser": {
-                    "description": "UID the CoreDNS process runs as. Defaults to userID when unset.",
                     "type": [
                         "null",
                         "integer"
-                    ]
+                    ],
+                    "description": "UID the CoreDNS process runs as. Defaults to userID when unset."
                 }
             }
         },
         "service": {
-            "description": "Configuration for the CoreDNS Service.",
             "type": "object",
+            "description": "Configuration for the CoreDNS Service.",
+            "additionalProperties": false,
             "properties": {
                 "clusterIP": {
-                    "description": "Cluster IP of the DNS Service. Defaults to cluster.kubernetes.DNS.IP when unset.",
                     "type": [
                         "null",
                         "string"
-                    ]
+                    ],
+                    "description": "Cluster IP of the DNS Service. Defaults to cluster.kubernetes.DNS.IP when unset."
                 }
             }
         },
         "serviceType": {
-            "description": "Giant Swarm service type label applied to the resources.",
+            "type": "string",
+            "description": "Giant Swarm service type label applied to the resources."
+        },
+        "subscriptionID": {
             "type": "string"
         },
         "tolerations": {
-            "description": "Tolerations for the CoreDNS workers.",
             "type": "array",
+            "description": "Tolerations for the CoreDNS workers.",
             "items": {
-                "type": "object"
+                "$ref": "#/$defs/toleration.json",
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "operator": {
+                        "type": "string"
+                    }
+                },
+                "unevaluatedProperties": false
             }
         },
         "updateStrategy": {
-            "description": "Update strategy for the CoreDNS workloads.",
             "type": "object",
+            "description": "Update strategy for the CoreDNS workloads.",
+            "additionalProperties": true,
             "properties": {
-                "rollingUpdate": {
-                    "description": "Rolling update parameters.",
-                    "type": "object",
-                    "properties": {
-                        "maxUnavailable": {
-                            "description": "Maximum number of pods that can be unavailable during the update.",
-                            "type": [
-                                "integer",
-                                "string"
-                            ]
-                        }
-                    }
-                },
                 "type": {
-                    "description": "Update strategy type.",
                     "type": "string",
+                    "description": "Update strategy type.",
                     "enum": [
                         "RollingUpdate",
                         "OnDelete"
                     ]
+                },
+                "rollingUpdate": {
+                    "type": "object",
+                    "description": "Rolling update parameters.",
+                    "additionalProperties": true,
+                    "properties": {
+                        "maxUnavailable": {
+                            "type": [
+                                "integer",
+                                "string"
+                            ],
+                            "description": "Maximum number of pods that can be unavailable during the update."
+                        }
+                    }
                 }
             }
         },
         "userID": {
-            "description": "DEPRECATED: use securityContext.runAsUser. UID the CoreDNS process runs as.",
-            "type": "integer"
+            "type": "integer",
+            "description": "DEPRECATED: use securityContext.runAsUser. UID the CoreDNS process runs as."
         }
     }
 }

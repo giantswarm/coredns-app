@@ -44,33 +44,36 @@ ports:
     # @schema type: [null, integer]
     # -- Port for the Prometheus metrics endpoint. Defaults to 9153 when unset.
     port:
+  # @schema type: [null, integer]
+  # -- DEPRECATED: use ports.metrics.port. Port for the Prometheus metrics endpoint.
+  prometheus:
 
 # -- Resource requests and limits for the CoreDNS containers.
-resources:
+resources:  # @schema additionalProperties: true
   # -- Resource limits.
-  limits:
+  limits:  # @schema additionalProperties: true
     # -- Memory limit.
     memory: 1Gi
   # -- Resource requests.
-  requests:
+  requests:  # @schema additionalProperties: true
     # -- CPU request.
     cpu: 250m
     # -- Memory request.
     memory: 512Mi
 
 # -- Update strategy for the CoreDNS workloads.
-updateStrategy:
+updateStrategy:  # @schema additionalProperties: true
   # @schema enum: [RollingUpdate, OnDelete]
   # -- Update strategy type.
   type: RollingUpdate
   # -- Rolling update parameters.
-  rollingUpdate:
+  rollingUpdate:  # @schema additionalProperties: true
     # @schema type: [integer, string]
     # -- Maximum number of pods that can be unavailable during the update.
     maxUnavailable: 0
 
 # -- Pod disruption budget for the CoreDNS workloads.
-podDisruptionBudget:
+podDisruptionBudget:  # @schema additionalProperties: true
   # @schema type: [integer, string]
   # -- Maximum number of pods that can be unavailable to voluntary disruptions.
   maxUnavailable: 25%
@@ -87,13 +90,13 @@ hpa:
   targetCPUUtilizationPercentage: 80
   # -- Target average memory utilization percentage. Set to 0 to disable the memory metric.
   targetMemoryUtilizationPercentage: 0
-  # @schema item: object
+  # @schema item: object; itemAdditionalProperties: true
   # -- Additional custom metrics for the HPA (autoscaling/v2 metric objects).
   metrics: []
   # -- Scaling behavior. The stabilization window restricts replica-count flapping when the scaling metrics keep fluctuating.
-  behavior:
+  behavior:  # @schema additionalProperties: true
     # -- Scale-down behavior.
-    scaleDown:
+    scaleDown:  # @schema additionalProperties: true
       # -- Seconds to consider while scaling down to prevent flapping.
       stabilizationWindowSeconds: 1800
 
@@ -103,9 +106,9 @@ controlPlane:
   # -- Whether to deploy the control-plane CoreDNS instance. Defaults to mastersInstance.enabled for backward compatibility.
   enabled:
   # -- Node selector for the control-plane CoreDNS instance.
-  nodeSelector:
+  nodeSelector:  # @schema additionalProperties: true
     node-role.kubernetes.io/control-plane: ""
-  # @schema itemProperties: {}
+  # @schema itemRef: schemas/toleration.json
   # -- Tolerations for the control-plane CoreDNS instance.
   tolerations:
   - key: node-role.kubernetes.io/master
@@ -425,8 +428,7 @@ coredns:
     # -- Load balancing policy. Omit to fall back to the deprecated loadbalancePolicy, then to round_robin.
     loadbalance:
 
-  # @schema item: object
-  # @schema allOf: [{type: array, items: {properties: {cache: {$ref: "#/properties/coredns/properties/cluster/properties/cache"}, forward: {$ref: "#/properties/coredns/properties/public/properties/forward"}, kubernetes: {$ref: "#/properties/coredns/properties/cluster/properties/kubernetes"}, loadbalance: {$ref: "#/properties/coredns/properties/cluster/properties/loadbalance"}, log: {$ref: "#/properties/coredns/properties/cluster/properties/log"}}}}]
+  # @schema item: object; itemRequired: [names]; itemProperties: {names: {type: array, items: {type: string}}, cidrs: {type: array, items: {type: string}}, cache: {$ref: "#/properties/coredns/properties/cluster/properties/cache"}, forward: {$ref: "#/properties/coredns/properties/public/properties/forward"}, kubernetes: {$ref: "#/properties/coredns/properties/cluster/properties/kubernetes"}, loadbalance: {$ref: "#/properties/coredns/properties/cluster/properties/loadbalance"}, log: {$ref: "#/properties/coredns/properties/cluster/properties/log"}}
   # -- Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance — same shapes as coredns.public/coredns.cluster.
   additionalZones: []
   # additionalZones:
@@ -446,13 +448,17 @@ coredns:
   # -- Raw Corefile snippet appended verbatim at the end of the configuration.
   custom: ""
 
+  # @schema type: [null, array]; item: string
+  # -- DEPRECATED: use coredns.additionalZones. Additional local zone names served by the kubernetes plugin with the coredns.cluster settings.
+  additionalLocalZones:
+
 # -- Adopter job that takes ownership of pre-existing CoreDNS resources.
 adopter:
   # -- Enable the adopter job.
   enabled: false
   # -- Image used by the adopter job.
   image: gsoci.azurecr.io/giantswarm/docker-kubectl:1.37.1
-  # @schema itemProperties: {}
+  # @schema itemRef: schemas/toleration.json
   # -- Tolerations for the adopter job.
   tolerations:
   - operator: Exists
@@ -471,14 +477,14 @@ mastersInstance:
   # -- Whether to deploy the control-plane CoreDNS instance.
   enabled: true
   # -- Node selector for the control-plane CoreDNS instance.
-  nodeSelector:
+  nodeSelector:  # @schema additionalProperties: true
     node-role.kubernetes.io/control-plane: ""
 
 # @schema enum: [round_robin, random]
 # -- DEPRECATED: use coredns.<zone>.loadbalance (per-zone). Load balancing policy.
 loadbalancePolicy: round_robin
 
-# @schema itemProperties: {}
+# @schema itemRef: schemas/toleration.json
 # -- Tolerations for the CoreDNS workers.
 tolerations:
 - key: node.cloudprovider.kubernetes.io/uninitialized
@@ -486,20 +492,24 @@ tolerations:
 - key: node.cluster.x-k8s.io/uninitialized
   operator: Exists
 
+# @schema type: [null, array]; item: string
+# -- DEPRECATED: use coredns.additionalZones. Additional local zone names, used when coredns.additionalLocalZones is unset.
+additionalLocalZones:
+
 # -- DEPRECATED: use coredns.cluster.* for Corefile config and service.clusterIP for the DNS service IP.
-cluster:
+cluster:  # @schema additionalProperties: true
   # -- Calico configuration.
-  calico:
+  calico:  # @schema additionalProperties: true
     # -- Pod CIDR.
     CIDR: 192.168.0.0/16
   # -- Kubernetes cluster configuration.
-  kubernetes:
+  kubernetes:  # @schema additionalProperties: true
     # -- API server configuration.
-    API:
+    API:  # @schema additionalProperties: true
       # -- Service IP range.
       clusterIPRange: 172.31.0.0/16
     # -- Cluster DNS configuration.
-    DNS:
+    DNS:  # @schema additionalProperties: true
       # -- Cluster DNS service IP.
       IP: 172.31.0.10
     # -- Cluster DNS domain.
@@ -521,3 +531,6 @@ configmap:
   # @schema type: [null, string]
   # -- DEPRECATED: use coredns.public.forward. Newline-separated forward plugin options.
   forwardOptions:
+  # @schema type: [null, string]
+  # -- DEPRECATED: use coredns.public.autopath. autopath plugin args, e.g. "@kubernetes".
+  autopath:
