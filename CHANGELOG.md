@@ -10,7 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Prepare for generated CI, which publishes only to `default-catalog` and drops `giantswarm-catalog`: move the ATS kind config to `.ats/kind-config.yaml` and make the values schema strict.
-- Replace the allow-all egress NetworkPolicy with a least-privilege CiliumNetworkPolicy, with rules overridable from values. A narrowed NetworkPolicy is rendered when `ciliumNetworkPolicy.enabled` is false.
+- Replace the allow-all egress NetworkPolicy with a least-privilege CiliumNetworkPolicy, with rules overridable through `ciliumNetworkPolicy.egress` and `ciliumNetworkPolicy.ingress`. A narrowed NetworkPolicy is rendered when `ciliumNetworkPolicy.enabled` is false.
 
 ## [1.35.0] - 2026-10-26
 

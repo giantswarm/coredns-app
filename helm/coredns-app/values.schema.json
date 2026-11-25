@@ -89,9 +89,25 @@
             "description": "CiliumNetworkPolicy settings.",
             "additionalProperties": true,
             "properties": {
+                "egress": {
+                    "type": "array",
+                    "description": "Replaces the default CiliumNetworkPolicy egress rules when set.",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
                 "enabled": {
                     "type": "boolean",
                     "description": "Render a CiliumNetworkPolicy. When false, a plain NetworkPolicy is rendered instead."
+                },
+                "ingress": {
+                    "type": "array",
+                    "description": "Replaces the default CiliumNetworkPolicy ingress rules when set.",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
                 }
             }
         },
@@ -1238,36 +1254,6 @@
         "namespace": {
             "type": "string",
             "description": "Namespace the CoreDNS resources are deployed into."
-        },
-        "networkPolicy": {
-            "type": "object",
-            "description": "Network policy rules.",
-            "additionalProperties": false,
-            "properties": {
-                "cilium": {
-                    "type": "object",
-                    "description": "CiliumNetworkPolicy rule overrides.",
-                    "additionalProperties": false,
-                    "properties": {
-                        "egress": {
-                            "type": "array",
-                            "description": "Replaces the default CiliumNetworkPolicy egress rules when set.",
-                            "items": {
-                                "type": "object",
-                                "additionalProperties": true
-                            }
-                        },
-                        "ingress": {
-                            "type": "array",
-                            "description": "Replaces the default CiliumNetworkPolicy ingress rules when set.",
-                            "items": {
-                                "type": "object",
-                                "additionalProperties": true
-                            }
-                        }
-                    }
-                }
-            }
         },
         "podDisruptionBudget": {
             "type": "object",

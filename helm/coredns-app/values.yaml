@@ -65,17 +65,12 @@ resources:  # @schema additionalProperties: true
 ciliumNetworkPolicy:
   # -- Render a CiliumNetworkPolicy. When false, a plain NetworkPolicy is rendered instead.
   enabled: true
-
-# -- Network policy rules.
-networkPolicy:
-  # -- CiliumNetworkPolicy rule overrides.
-  cilium:
-    # @schema item: object; itemAdditionalProperties: true
-    # -- Replaces the default CiliumNetworkPolicy egress rules when set.
-    egress: []
-    # @schema item: object; itemAdditionalProperties: true
-    # -- Replaces the default CiliumNetworkPolicy ingress rules when set.
-    ingress: []
+  # @schema item: object; itemAdditionalProperties: true
+  # -- Replaces the default CiliumNetworkPolicy egress rules when set.
+  egress: []
+  # @schema item: object; itemAdditionalProperties: true
+  # -- Replaces the default CiliumNetworkPolicy ingress rules when set.
+  ingress: []
 
 # -- Update strategy for the CoreDNS workloads.
 updateStrategy:  # @schema additionalProperties: true

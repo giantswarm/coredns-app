@@ -12,7 +12,7 @@ spec:
     matchLabels:
       {{- include "labels.selector" . | nindent 6 }}
   egress:
-  {{- with .Values.networkPolicy.cilium.egress }}
+  {{- with .Values.ciliumNetworkPolicy.egress }}
     {{- toYaml . | nindent 4 }}
   {{- else }}
     # Watches Services, EndpointSlices, Namespaces and Pods for the kubernetes plugin.
@@ -29,7 +29,7 @@ spec:
               protocol: TCP
   {{- end }}
   ingress:
-  {{- with .Values.networkPolicy.cilium.ingress }}
+  {{- with .Values.ciliumNetworkPolicy.ingress }}
     {{- toYaml . | nindent 4 }}
   {{- else }}
     # Every pod and node in the cluster resolves names through CoreDNS.
