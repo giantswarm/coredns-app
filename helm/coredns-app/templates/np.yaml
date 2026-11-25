@@ -1,3 +1,57 @@
+{{- $metricsPort := coalesce .Values.ports.metrics.port .Values.ports.prometheus | default 9153 }}
+{{- if .Values.ciliumNetworkPolicy.enabled }}
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  endpointSelector:
+    matchLabels:
+      {{- include "labels.selector" . | nindent 6 }}
+  egress:
+  {{- with .Values.networkPolicy.cilium.egress }}
+    {{- toYaml . | nindent 4 }}
+  {{- else }}
+    # Watches Services, EndpointSlices, Namespaces and Pods for the kubernetes plugin.
+    - toEntities:
+        - kube-apiserver
+    # Upstream resolvers for forwarded zones.
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+  {{- end }}
+  ingress:
+  {{- with .Values.networkPolicy.cilium.ingress }}
+    {{- toYaml . | nindent 4 }}
+  {{- else }}
+    # Every pod and node in the cluster resolves names through CoreDNS.
+    - fromEntities:
+        - all
+      toPorts:
+        - ports:
+            - port: {{ .Values.ports.dns.targetPort | quote }}
+              protocol: UDP
+            - port: {{ .Values.ports.dns.targetPort | quote }}
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            app.kubernetes.io/name: alloy
+            app.kubernetes.io/instance: alloy-metrics
+      toPorts:
+        - ports:
+            - port: {{ $metricsPort | quote }}
+              protocol: TCP
+  {{- end }}
+{{- else }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -8,22 +62,36 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      k8s-app: {{ .Values.name }}
+      {{- include "labels.selector" . | nindent 6 }}
   ingress:
   - ports:
     - port: {{ .Values.ports.dns.targetPort }}
       protocol: UDP
     - port: {{ .Values.ports.dns.targetPort }}
       protocol: TCP
-    - port: {{ .Values.ports.dns.port }}
-      protocol: UDP
-    - port: {{ .Values.ports.dns.port }}
-      protocol: TCP
-  - ports:
-    - port: {{ coalesce .Values.ports.metrics.port .Values.ports.prometheus | default 9153 }}
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: alloy
+          app.kubernetes.io/instance: alloy-metrics
+    ports:
+    - port: {{ $metricsPort }}
       protocol: TCP
   egress:
-  - {}
+  - ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+  - ports:
+    - port: 443
+      protocol: TCP
+    - port: 6443
+      protocol: TCP
   policyTypes:
   - Egress
   - Ingress
+{{- end }}

@@ -34,6 +34,12 @@ A Helm chart for CoreDNS
 | resources.requests | object | `{"cpu":"250m","memory":"512Mi"}` | Resource requests. |
 | resources.requests.cpu | string | `"250m"` | CPU request. |
 | resources.requests.memory | string | `"512Mi"` | Memory request. |
+| ciliumNetworkPolicy | object | `{"enabled":true}` | CiliumNetworkPolicy settings. |
+| ciliumNetworkPolicy.enabled | bool | `true` | Render a CiliumNetworkPolicy. When false, a plain NetworkPolicy is rendered instead. |
+| networkPolicy | object | `{"cilium":{"egress":[],"ingress":[]}}` | Network policy rules. |
+| networkPolicy.cilium | object | `{"egress":[],"ingress":[]}` | CiliumNetworkPolicy rule overrides. |
+| networkPolicy.cilium.egress | list | `[]` | Replaces the default CiliumNetworkPolicy egress rules when set. |
+| networkPolicy.cilium.ingress | list | `[]` | Replaces the default CiliumNetworkPolicy ingress rules when set. |
 | updateStrategy | object | `{"rollingUpdate":{"maxUnavailable":1},"type":"RollingUpdate"}` | Update strategy for the CoreDNS workloads. |
 | updateStrategy.type | string | `"RollingUpdate"` | Update strategy type. |
 | updateStrategy.rollingUpdate | object | `{"maxUnavailable":1}` | Rolling update parameters. |
