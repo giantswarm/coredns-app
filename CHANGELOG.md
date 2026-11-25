@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Prepare for generated CI, which publishes only to `default-catalog` and drops `giantswarm-catalog`: move the ATS kind config to `.ats/kind-config.yaml` and make the values schema strict.
 
+### Removed
+
+- **Breaking:** Remove the deprecated values interface. Old keys are rejected by the values schema, except the platform-injected `cluster.*`, which is ignored. See the [migration map](docs/REFACTOR.md#migration-map-old-path--new-path).
+
 ## [1.35.0] - 2026-10-26
 
 ### Added
