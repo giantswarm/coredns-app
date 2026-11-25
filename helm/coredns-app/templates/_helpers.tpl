@@ -30,17 +30,17 @@ k8s-app: {{ .Values.name | quote }}
 
 {{/*
 Render the CoreDNS cache directive. Call via include with a dict context:
-  (dict "zone" $zone "ctx" $)
+  (dict "zone" $zone)
 The zone's cache config is read from $zone.cache (may be absent — built-in defaults
-then apply). When the zone's success TTL is unset, the deprecated configmap.cache is
-consulted as a fallback, then the built-in default 30 applies.
+then apply). Renders nothing when cache.enabled is false.
 */}}
 {{- define "coredns.cacheBlock" -}}
 {{- $c := .zone.cache | default dict }}
+{{- if dig "enabled" true $c }}
 {{- $success := $c.success | default dict }}
 {{- $denial := $c.denial | default dict }}
 {{- $successCapacity := $success.capacity | default 9984 }}
-{{- $successTTL := coalesce $success.ttl .ctx.Values.configmap.cache | default 30 }}
+{{- $successTTL := $success.ttl | default 30 }}
 {{- $denialCapacity := $denial.capacity | default 9984 }}
 {{- $denialTTL := $denial.ttl | default 5 -}}
 cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }}{{- with $c.zones }} {{ join " " . }}{{- end }} {
@@ -65,22 +65,19 @@ cache{{- if $c.ttl }} {{ $c.ttl }}{{- end }}{{- with $c.zones }} {{ join " " . }
   keepttl
   {{- end }}
 }
+{{- end }}
 {{- end -}}
 
 {{/*
 Render a CoreDNS forward directive. Call via include with a dict context:
-  (dict "zone" $zone "compat" "true" "ctx" $)
+  (dict "zone" $zone)
 The zone's forward config is read from $zone.forward, a structured map that mirrors
 the CoreDNS forward block parameters (https://coredns.io/plugins/forward/). Only a
 representative subset of parameters is wired up today; extend it by appending one line
 to the option list below, plus a documented key in values.yaml and values.schema.json.
-
-Backward compatibility: only when the "compat" param is truthy (the public "." zone) are
-the deprecated configmap.forward / configmap.forwardOptions strings consulted as a fallback.
 */}}
 {{- define "coredns.forwardBlock" -}}
 {{- $f := .zone.forward | default dict }}
-{{- $compat := .compat }}
 {{- $upstreams := $f.to }}
 {{- if $upstreams }}
 {{- $lines := list }}
@@ -108,19 +105,7 @@ the deprecated configmap.forward / configmap.forwardOptions strings consulted as
 {{- if $f.failfastAllUnhealthyUpstreams }}{{ $lines = append $lines "failfast_all_unhealthy_upstreams" }}{{ end }}
 {{- with $f.failover }}{{ $lines = append $lines (printf "failover %s" (join " " .)) }}{{ end }}
 {{- with $f.resolver }}{{ $lines = append $lines (printf "resolver %s" (join " " .)) }}{{ end }}
-{{- if and $compat (not $lines) .ctx.Values.configmap.forwardOptions }}
-{{- range (.ctx.Values.configmap.forwardOptions | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}
-{{- end -}}
-forward . {{ join " " $upstreams }}{{ if $lines }} {
-{{- range $lines }}
-  {{ . }}
-{{- end }}
-}{{ end }}
-{{- else if and $compat .ctx.Values.configmap.forward }}
-{{- $lines := list }}
-{{- with .ctx.Values.configmap.forwardOptions }}{{ range (. | trimAll "\n " | splitList "\n") }}{{ $lines = append $lines . }}{{ end }}{{ end -}}
-forward
-{{- range (.ctx.Values.configmap.forward | trimAll "\n " | splitList "\n") }} {{ . }}{{- end }}{{ if $lines }} {
+{{- printf "forward . %s" (join " " $upstreams) }}{{ if $lines }} {
 {{- range $lines }}
   {{ . }}
 {{- end }}
@@ -132,7 +117,7 @@ forward . /etc/resolv.conf
 
 {{/*
 Render a CoreDNS kubernetes directive. Call via include with a dict context:
-  (dict "zone" $zone "ctx" $)
+  (dict "zone" $zone)
 The zone names come from $zone.names (joined) and the optional reverse (PTR) ranges
 from $zone.cidrs. Kubernetes-plugin parameters are read from $zone.kubernetes, a
 structured map that mirrors the CoreDNS kubernetes block parameters
@@ -200,31 +185,85 @@ kubernetes {{ join " " .zone.names }}{{ with $cidrs }} {{ . }}{{ end }} {
 
 {{/*
 Render the CoreDNS log directive. Call via include with a dict context:
-  (dict "zone" $zone "ctx" $)
-The zone's log classes are read from $zone.log (a list). When absent, the deprecated
-configmap.log string is consulted as a fallback, then the built-in default
-(denial, error) applies. The block is always emitted so every zone keeps logging.
+  (dict "zone" $zone)
+The zone's log classes are read from $zone.log (a list). When absent, the built-in
+default (denial, error) applies. An empty list disables logging for the zone.
 */}}
 {{- define "coredns.logBlock" -}}
 {{- $classes := .zone.log }}
-{{- if not $classes }}
-{{- $classes = splitList "\n" (.ctx.Values.configmap.log | trimAll "\n ") }}
-{{- end }}
-{{- if not $classes }}{{ $classes = list "denial" "error" }}{{ end -}}
+{{- if kindIs "invalid" $classes }}{{ $classes = list "denial" "error" }}{{ end }}
+{{- if $classes -}}
 log . {
 {{- range $classes }}
   class {{ . }}
 {{- end }}
 }
+{{- end }}
 {{- end -}}
 
 {{/*
 Render the CoreDNS loadbalance directive. Call via include with a dict context:
-  (dict "zone" $zone "ctx" $)
-The zone's policy is read from $zone.loadbalance. When absent, the deprecated
-loadbalancePolicy is consulted as a fallback, then the built-in default round_robin.
+  (dict "zone" $zone)
+The zone's policy is read from $zone.loadbalance. When absent, the built-in default
+round_robin applies.
 */}}
 {{- define "coredns.loadbalanceBlock" -}}
-{{- $policy := coalesce .zone.loadbalance .ctx.Values.loadbalancePolicy | default "round_robin" -}}
+{{- $policy := .zone.loadbalance | default "round_robin" -}}
 loadbalance {{ $policy }}
+{{- end -}}
+
+{{/*
+Render the CoreDNS rewrite directives. Call via include with a dict context:
+  (dict "zone" $zone)
+Each $zone.rewrite entry renders as "rewrite name MATCH FROM TO" (match defaults to exact).
+*/}}
+{{- define "coredns.rewriteBlock" -}}
+{{- range $i, $r := (.zone.rewrite | default list) }}
+{{- if $i }}{{ "\n" }}{{ end -}}
+{{- $match := $r.match | default "exact" -}}
+rewrite name {{ $match }} {{ $r.from }} {{ $r.to }}{{ if ne $match "exact" }} answer auto{{ end }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Quote a string as a Corefile token. The Corefile lexer only unescapes \" inside
+quotes and keeps every other backslash, so a backslash before a quote or at the
+end of the value cannot be represented and fails the render.
+*/}}
+{{- define "coredns.corefileQuote" -}}
+{{- if or (contains "\\\"" .) (hasSuffix "\\" .) }}
+{{- fail (printf "template value %q cannot be written in a Corefile: a backslash may not precede a quote or end the value" .) }}
+{{- end }}
+{{- printf "\"%s\"" (replace "\"" "\\\"" .) }}
+{{- end -}}
+
+{{/*
+Render the CoreDNS template directives. Call via include with a dict context:
+  (dict "zone" $zone)
+$zone.template is a map of named template plugin instances, rendered in key order.
+Null entries are skipped. match/answer/additional/authority values are quoted, with
+only double quotes escaped, since the Corefile lexer keeps every other backslash.
+*/}}
+{{- define "coredns.templateBlock" -}}
+{{- $blocks := list }}
+{{- range $name, $t := (.zone.template | default dict) }}
+{{- if $t }}
+{{- $lines := list }}
+{{- with $t.match }}{{ $q := list }}{{ range . }}{{ $q = append $q (include "coredns.corefileQuote" .) }}{{ end }}{{ $lines = append $lines (printf "match %s" (join " " $q)) }}{{ end }}
+{{- range $section := list "answer" "additional" "authority" }}
+{{- range (get $t $section | default list) }}{{ $lines = append $lines (printf "%s %s" $section (include "coredns.corefileQuote" .)) }}{{ end }}
+{{- end }}
+{{- with $t.rcode }}{{ $lines = append $lines (printf "rcode %s" .) }}{{ end }}
+{{- if kindIs "slice" $t.fallthrough }}{{ with $t.fallthrough }}{{ $lines = append $lines (printf "fallthrough %s" (join " " .)) }}{{ end }}
+{{- else if $t.fallthrough }}{{ $lines = append $lines "fallthrough" }}{{ end }}
+{{- $head := printf "template %s %s" ($t.class | default "IN") $t.type }}
+{{- with $t.zones }}{{ $head = printf "%s %s" $head (join " " .) }}{{ end }}
+{{- if $lines }}
+{{- $blocks = append $blocks (printf "%s {\n  %s\n}" $head (join "\n  " $lines)) }}
+{{- else }}
+{{- $blocks = append $blocks $head }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- join "\n" $blocks }}
 {{- end -}}

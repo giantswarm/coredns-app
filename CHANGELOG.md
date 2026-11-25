@@ -10,6 +10,19 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Prepare for generated CI, which publishes only to `default-catalog` and drops `giantswarm-catalog`: move the ATS kind config to `.ats/kind-config.yaml` and make the values schema strict.
+- **Breaking:** Additional zones are plain server blocks: no AAAA filter, and `ready` only when they serve kubernetes.
+- **Breaking:** `reload` is rendered only in the public zone, including no longer in the cluster zone.
+- **Breaking:** An empty log class list disables logging instead of falling back to the defaults.
+
+### Added
+
+- Per-zone option to disable the cache.
+- Per-zone name rewrite rules.
+- Per-zone named templates, with a removable default AAAA filter.
+
+### Removed
+
+- **Breaking:** Remove the deprecated values interface. Old keys are rejected by the values schema, except the platform-injected `cluster.*`, which is ignored. See the [migration map](docs/REFACTOR.md#migration-map-old-path--new-path).
 
 ## [1.35.0] - 2026-10-26
 

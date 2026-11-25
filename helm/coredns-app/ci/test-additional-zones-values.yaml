@@ -1,0 +1,27 @@
+coredns:
+  additionalZones:
+    - names: [a.example.com, b.example.com]
+      cache:
+        ttl: 30
+        denial:
+          ttl: 30
+      forward:
+        to: [10.0.0.1, 10.0.0.2]
+    - names: [crowd.example.com]
+      forward:
+        to: [/etc/resolv.conf]
+      rewrite:
+        - from: crowd.example.com
+          to: internal-lb.example.net
+        - match: suffix
+          from: .apps.example.com
+          to: .apps.example.net
+    - names: [quiet.example.com]
+      cache:
+        enabled: false
+      log: []
+      forward:
+        to: [10.0.0.3]
+    - names: [linkerd.local]
+      kubernetes:
+        pods: verified
