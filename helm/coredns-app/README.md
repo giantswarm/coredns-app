@@ -189,9 +189,9 @@ A Helm chart for CoreDNS
 | coredns.additionalZones | list | `[]` | Additional fully-templated local zones. Each entry is its own CoreDNS server block and renders whichever of forward/kubernetes it declares (or both, or neither). Per-entry keys: names (required), cidrs, cache, forward, kubernetes, log, loadbalance — same shapes as coredns.public/coredns.cluster. |
 | coredns.custom | string | `""` | Raw Corefile snippet appended verbatim at the end of the configuration. |
 | coredns.additionalLocalZones | string | `nil` | DEPRECATED: use coredns.additionalZones. Additional local zone names served by the kubernetes plugin with the coredns.cluster settings. |
-| adopter | object | `{"enabled":false,"image":"gsoci.azurecr.io/giantswarm/docker-kubectl:1.37.1","tolerations":[{"operator":"Exists"}]}` | Adopter job that takes ownership of pre-existing CoreDNS resources. |
+| adopter | object | `{"enabled":false,"image":"gsoci.azurecr.io/giantswarm/docker-kubectl:1.37.2","tolerations":[{"operator":"Exists"}]}` | Adopter job that takes ownership of pre-existing CoreDNS resources. |
 | adopter.enabled | bool | `false` | Enable the adopter job. |
-| adopter.image | string | `"gsoci.azurecr.io/giantswarm/docker-kubectl:1.37.1"` | Image used by the adopter job. |
+| adopter.image | string | `"gsoci.azurecr.io/giantswarm/docker-kubectl:1.37.2"` | Image used by the adopter job. |
 | adopter.tolerations | list | `[{"operator":"Exists"}]` | Tolerations for the adopter job. |
 | userID | int | `33` | DEPRECATED: use securityContext.runAsUser. UID the CoreDNS process runs as. |
 | groupID | int | `33` | DEPRECATED: use securityContext.runAsGroup. GID the CoreDNS process runs as. |
