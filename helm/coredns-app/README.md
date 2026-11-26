@@ -38,10 +38,10 @@ A Helm chart for CoreDNS
 | ciliumNetworkPolicy.enabled | bool | `true` | Render a CiliumNetworkPolicy. When false, a plain NetworkPolicy is rendered instead. |
 | ciliumNetworkPolicy.egress | list | `[]` | Replaces the default CiliumNetworkPolicy egress rules when set. |
 | ciliumNetworkPolicy.ingress | list | `[]` | Replaces the default CiliumNetworkPolicy ingress rules when set. |
-| updateStrategy | object | `{"rollingUpdate":{"maxUnavailable":1},"type":"RollingUpdate"}` | Update strategy for the CoreDNS workloads. |
+| updateStrategy | object | `{"rollingUpdate":{"maxUnavailable":0},"type":"RollingUpdate"}` | Update strategy for the CoreDNS workloads. |
 | updateStrategy.type | string | `"RollingUpdate"` | Update strategy type. |
-| updateStrategy.rollingUpdate | object | `{"maxUnavailable":1}` | Rolling update parameters. |
-| updateStrategy.rollingUpdate.maxUnavailable | int | `1` | Maximum number of pods that can be unavailable during the update. |
+| updateStrategy.rollingUpdate | object | `{"maxUnavailable":0}` | Rolling update parameters. |
+| updateStrategy.rollingUpdate.maxUnavailable | int | `0` | Maximum number of pods that can be unavailable during the update. |
 | podDisruptionBudget | object | `{"maxUnavailable":"25%"}` | Pod disruption budget for the CoreDNS workloads. |
 | podDisruptionBudget.maxUnavailable | string | `"25%"` | Maximum number of pods that can be unavailable to voluntary disruptions. |
 | hpa | object | `{"behavior":{"scaleDown":{"stabilizationWindowSeconds":1800}},"enabled":true,"maxReplicas":50,"metrics":[],"minReplicas":2,"targetCPUUtilizationPercentage":80,"targetMemoryUtilizationPercentage":0}` | Horizontal Pod Autoscaler configuration. |

@@ -81,7 +81,7 @@ updateStrategy:  # @schema additionalProperties: true
   rollingUpdate:  # @schema additionalProperties: true
     # @schema type: [integer, string]
     # -- Maximum number of pods that can be unavailable during the update.
-    maxUnavailable: 1
+    maxUnavailable: 0
 
 # -- Pod disruption budget for the CoreDNS workloads.
 podDisruptionBudget:  # @schema additionalProperties: true
