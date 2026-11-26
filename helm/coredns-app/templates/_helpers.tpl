@@ -230,19 +230,21 @@ loadbalance {{ $policy }}
 {{- end -}}
 
 {{/*
-coredns.updateStrategy renders a Deployment strategy: the shared updateStrategy
-with the per-Deployment override (controlPlane or workers) laid over it key by
-key, so an explicit 0 still wins. rollingUpdate is dropped for Recreate, and
-maxUnavailable falls back to 1 when both it and maxSurge are 0, which the API
-server rejects.
+coredns.updateStrategy renders a Deployment strategy: the per-Deployment
+defaults (controlPlane or workers) with the keys set in the shared
+updateStrategy laid over them one by one, so an explicit 0 still wins.
+rollingUpdate is dropped for Recreate, and maxUnavailable falls back to 1 when
+both it and maxSurge are 0, which the API server rejects.
 */}}
 {{- define "coredns.updateStrategy" -}}
-{{- $shared := .shared | default dict }}
+{{- $defaults := .defaults | default dict }}
 {{- $override := .override | default dict }}
-{{- $strategy := omit $shared "rollingUpdate" }}
-{{- with $override.type }}{{ $_ := set $strategy "type" . }}{{ end }}
+{{- $strategy := omit $defaults "rollingUpdate" }}
+{{- range $k, $v := omit $override "rollingUpdate" }}
+  {{- if not (kindIs "invalid" $v) }}{{ $_ := set $strategy $k $v }}{{ end }}
+{{- end }}
 {{- if ne (toString $strategy.type) "Recreate" }}
-  {{- $ru := deepCopy ($shared.rollingUpdate | default dict) }}
+  {{- $ru := deepCopy ($defaults.rollingUpdate | default dict) }}
   {{- range $k, $v := ($override.rollingUpdate | default dict) }}
     {{- if not (kindIs "invalid" $v) }}{{ $_ := set $ru $k $v }}{{ end }}
   {{- end }}

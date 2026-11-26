@@ -72,19 +72,19 @@ ciliumNetworkPolicy:
   # -- Replaces the default CiliumNetworkPolicy ingress rules when set.
   ingress: []
 
-# -- Update strategy shared by the CoreDNS Deployments. controlPlane.updateStrategy and workers.updateStrategy override it per Deployment.
+# -- Update strategy shared by the CoreDNS Deployments, kept for backward compatibility. Set keys take precedence over controlPlane.updateStrategy and workers.updateStrategy.
 updateStrategy:  # @schema additionalProperties: true
-  # @schema enum: [RollingUpdate, Recreate]
-  # -- Update strategy type. rollingUpdate is ignored with Recreate.
-  type: RollingUpdate
+  # @schema type: [null, string]; enum: [RollingUpdate, Recreate, null]
+  # -- Update strategy type.
+  type:
   # -- Rolling update parameters.
   rollingUpdate:  # @schema additionalProperties: true
-    # @schema type: [integer, string]
-    # -- Maximum number of pods that can be unavailable during the update. Falls back to 1 when maxSurge is 0.
-    maxUnavailable: 0
-    # @schema type: [integer, string]
+    # @schema type: [null, integer, string]
+    # -- Maximum number of pods that can be unavailable during the update.
+    maxUnavailable:
+    # @schema type: [null, integer, string]
     # -- Maximum number of pods created above the desired count during the update.
-    maxSurge: 25%
+    maxSurge:
 
 # -- Pod disruption budget for the CoreDNS workloads.
 podDisruptionBudget:  # @schema additionalProperties: true
@@ -133,35 +133,35 @@ controlPlane:
     operator: Exists
   - key: node.cloudprovider.kubernetes.io/uninitialized
     operator: Exists
-  # -- Update strategy for the control-plane Deployment. Set keys override updateStrategy.
+  # -- Update strategy for the control-plane Deployment. Overridden by the keys set in updateStrategy.
   updateStrategy:
-    # @schema type: [null, string]; enum: [RollingUpdate, Recreate, null]
-    # -- Update strategy type.
-    type:
+    # @schema enum: [RollingUpdate, Recreate]
+    # -- Update strategy type. rollingUpdate is ignored with Recreate.
+    type: RollingUpdate
     # -- Rolling update parameters.
     rollingUpdate:
-      # @schema type: [null, integer, string]
-      # -- Maximum number of pods that can be unavailable during the update.
-      maxUnavailable:
-      # @schema type: [null, integer, string]
+      # @schema type: [integer, string]
+      # -- Maximum number of pods that can be unavailable during the update. Falls back to 1 when maxSurge is 0.
+      maxUnavailable: 0
+      # @schema type: [integer, string]
       # -- Maximum number of pods created above the desired count during the update.
-      maxSurge:
+      maxSurge: 1
 
 # -- Workers CoreDNS instance configuration.
 workers:
-  # -- Update strategy for the workers Deployment. Set keys override updateStrategy.
+  # -- Update strategy for the workers Deployment. Overridden by the keys set in updateStrategy.
   updateStrategy:
-    # @schema type: [null, string]; enum: [RollingUpdate, Recreate, null]
-    # -- Update strategy type.
-    type:
+    # @schema enum: [RollingUpdate, Recreate]
+    # -- Update strategy type. rollingUpdate is ignored with Recreate.
+    type: RollingUpdate
     # -- Rolling update parameters.
     rollingUpdate:
-      # @schema type: [null, integer, string]
-      # -- Maximum number of pods that can be unavailable during the update.
-      maxUnavailable:
-      # @schema type: [null, integer, string]
+      # @schema type: [integer, string]
+      # -- Maximum number of pods that can be unavailable during the update. Falls back to 1 when maxSurge is 0.
+      maxUnavailable: 0
+      # @schema type: [integer, string]
       # -- Maximum number of pods created above the desired count during the update.
-      maxSurge:
+      maxSurge: 25%
 
 # -- CoreDNS Corefile configuration. Cache, log and loadbalance are configured per zone, so different zones can behave differently. A zone that omits cache falls back to the built-in defaults (success 9984 30 / denial 9984 5), with the success TTL falling back to the deprecated configmap.cache first; a zone that omits log/loadbalance falls back to the deprecated configmap.log / loadbalancePolicy, then to denial+error / round_robin.
 coredns:

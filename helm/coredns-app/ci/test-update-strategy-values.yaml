@@ -1,16 +1,15 @@
-# Per-Deployment update strategies layered over the shared updateStrategy.
+# Per-Deployment update strategies with the shared updateStrategy laid over them.
 # Expected: coredns-controlplane renders type Recreate with no rollingUpdate;
-# coredns-workers renders maxSurge 50% and maxUnavailable 0, keeping the
-# explicit 0 over the shared maxUnavailable 1.
+# coredns-workers renders maxUnavailable 10% and maxSurge 0, the shared
+# explicit 0 taking precedence over the workers default.
 # Layered on top of ci-values.yaml by the render-diff CI.
 updateStrategy:
   rollingUpdate:
-    maxUnavailable: 1
+    maxSurge: 0
 controlPlane:
   updateStrategy:
     type: Recreate
 workers:
   updateStrategy:
     rollingUpdate:
-      maxUnavailable: 0
-      maxSurge: 50%
+      maxUnavailable: 10%

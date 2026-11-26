@@ -9,14 +9,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add `controlPlane.updateStrategy` and `workers.updateStrategy` to override the shared `updateStrategy` per Deployment.
+- Add `controlPlane.updateStrategy` and `workers.updateStrategy`, which hold the update strategy defaults per Deployment. The shared `updateStrategy` is kept for backward compatibility and takes precedence where set.
 
 ### Changed
 
 - Prepare for generated CI, which publishes only to `default-catalog` and drops `giantswarm-catalog`: move the ATS kind config to `.ats/kind-config.yaml` and make the values schema strict.
 - Replace the allow-all egress NetworkPolicy with a least-privilege CiliumNetworkPolicy, with rules overridable through `ciliumNetworkPolicy.egress` and `ciliumNetworkPolicy.ingress`. A narrowed NetworkPolicy is rendered when `ciliumNetworkPolicy.enabled` is false.
-- Set the default `updateStrategy.rollingUpdate.maxUnavailable` to `0`, so a rollout starts a new CoreDNS pod and waits for it to be ready before it removes an old one. This keeps the single-replica `coredns-controlplane` Deployment available during upgrades. A rollout now needs room for extra CoreDNS pods (`maxSurge`, default `25%`).
-- Set `updateStrategy.rollingUpdate.maxSurge` explicitly and fall back to `maxUnavailable: 1` when both are `0`, which Kubernetes rejects.
+- Set the default `updateStrategy.rollingUpdate.maxUnavailable` to `0`, so a rollout starts a new CoreDNS pod and waits for it to be ready before it removes an old one. This keeps the single-replica `coredns-controlplane` Deployment available during upgrades. A rollout now needs room for extra CoreDNS pods (`maxSurge`, default `1` for the control plane and `25%` for the workers).
+- Set `maxSurge` explicitly and fall back to `maxUnavailable: 1` when both are `0`, which Kubernetes rejects.
 - Restrict `updateStrategy.type` to the Deployment types `RollingUpdate` and `Recreate`, and drop `rollingUpdate` with `Recreate`.
 
 ## [1.35.0] - 2026-10-26
