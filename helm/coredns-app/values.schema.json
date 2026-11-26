@@ -86,7 +86,30 @@
         },
         "ciliumNetworkPolicy": {
             "type": "object",
-            "additionalProperties": true
+            "description": "CiliumNetworkPolicy settings.",
+            "additionalProperties": true,
+            "properties": {
+                "egress": {
+                    "type": "array",
+                    "description": "Replaces the default CiliumNetworkPolicy egress rules when set.",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Render a CiliumNetworkPolicy. When false, a plain NetworkPolicy is rendered instead."
+                },
+                "ingress": {
+                    "type": "array",
+                    "description": "Replaces the default CiliumNetworkPolicy ingress rules when set.",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                }
+            }
         },
         "cluster": {
             "type": "object",
