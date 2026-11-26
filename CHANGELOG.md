@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.36.0] - 2026-11-26
+
 ### Added
 
 - Add `controlPlane.updateStrategy` and `workers.updateStrategy`, which hold the update strategy defaults per Deployment. The shared `updateStrategy` is kept for backward compatibility and takes precedence where set.
@@ -623,7 +625,8 @@ data:
 
 - Remove `proxy` configuration support as it is [deprecated by upstream](https://coredns.io/2019/03/03/coredns-1.4.0-release/). New server block with `forward` plugin has to be used, more info in our [docs](https://docs.giantswarm.io/guides/advanced-coredns-configuration/).
 
-[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.35.0...HEAD
+[Unreleased]: https://github.com/giantswarm/coredns-app/compare/v1.36.0...HEAD
+[1.36.0]: https://github.com/giantswarm/coredns-app/compare/v1.35.0...v1.36.0
 [1.35.0]: https://github.com/giantswarm/coredns-app/compare/v1.34.0...v1.35.0
 [1.34.0]: https://github.com/giantswarm/coredns-app/compare/v1.33.0...v1.34.0
 [1.33.0]: https://github.com/giantswarm/coredns-app/compare/v1.32.0...v1.33.0
