@@ -255,6 +255,42 @@
                         },
                         "unevaluatedProperties": false
                     }
+                },
+                "updateStrategy": {
+                    "type": "object",
+                    "description": "Update strategy for the control-plane Deployment. Overridden by the keys set in updateStrategy.",
+                    "additionalProperties": false,
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "description": "Update strategy type. rollingUpdate is ignored with Recreate.",
+                            "enum": [
+                                "RollingUpdate",
+                                "Recreate"
+                            ]
+                        },
+                        "rollingUpdate": {
+                            "type": "object",
+                            "description": "Rolling update parameters.",
+                            "additionalProperties": false,
+                            "properties": {
+                                "maxSurge": {
+                                    "type": [
+                                        "integer",
+                                        "string"
+                                    ],
+                                    "description": "Maximum number of pods created above the desired count during the update."
+                                },
+                                "maxUnavailable": {
+                                    "type": [
+                                        "integer",
+                                        "string"
+                                    ],
+                                    "description": "Maximum number of pods that can be unavailable during the update. Falls back to 1 when maxSurge is 0."
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -1413,15 +1449,19 @@
         },
         "updateStrategy": {
             "type": "object",
-            "description": "Update strategy for the CoreDNS workloads.",
+            "description": "Update strategy shared by the CoreDNS Deployments, kept for backward compatibility. Set keys take precedence over controlPlane.updateStrategy and workers.updateStrategy.",
             "additionalProperties": true,
             "properties": {
                 "type": {
-                    "type": "string",
+                    "type": [
+                        "null",
+                        "string"
+                    ],
                     "description": "Update strategy type.",
                     "enum": [
                         "RollingUpdate",
-                        "OnDelete"
+                        "Recreate",
+                        null
                     ]
                 },
                 "rollingUpdate": {
@@ -1429,8 +1469,17 @@
                     "description": "Rolling update parameters.",
                     "additionalProperties": true,
                     "properties": {
+                        "maxSurge": {
+                            "type": [
+                                "null",
+                                "integer",
+                                "string"
+                            ],
+                            "description": "Maximum number of pods created above the desired count during the update."
+                        },
                         "maxUnavailable": {
                             "type": [
+                                "null",
                                 "integer",
                                 "string"
                             ],
@@ -1443,6 +1492,49 @@
         "userID": {
             "type": "integer",
             "description": "DEPRECATED: use securityContext.runAsUser. UID the CoreDNS process runs as."
+        },
+        "workers": {
+            "type": "object",
+            "description": "Workers CoreDNS instance configuration.",
+            "additionalProperties": false,
+            "properties": {
+                "updateStrategy": {
+                    "type": "object",
+                    "description": "Update strategy for the workers Deployment. Overridden by the keys set in updateStrategy.",
+                    "additionalProperties": false,
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "description": "Update strategy type. rollingUpdate is ignored with Recreate.",
+                            "enum": [
+                                "RollingUpdate",
+                                "Recreate"
+                            ]
+                        },
+                        "rollingUpdate": {
+                            "type": "object",
+                            "description": "Rolling update parameters.",
+                            "additionalProperties": false,
+                            "properties": {
+                                "maxSurge": {
+                                    "type": [
+                                        "integer",
+                                        "string"
+                                    ],
+                                    "description": "Maximum number of pods created above the desired count during the update."
+                                },
+                                "maxUnavailable": {
+                                    "type": [
+                                        "integer",
+                                        "string"
+                                    ],
+                                    "description": "Maximum number of pods that can be unavailable during the update. Falls back to 1 when maxSurge is 0."
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

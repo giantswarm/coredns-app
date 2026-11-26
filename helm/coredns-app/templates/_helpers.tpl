@@ -228,3 +228,31 @@ loadbalancePolicy is consulted as a fallback, then the built-in default round_ro
 {{- $policy := coalesce .zone.loadbalance .ctx.Values.loadbalancePolicy | default "round_robin" -}}
 loadbalance {{ $policy }}
 {{- end -}}
+
+{{/*
+coredns.updateStrategy renders a Deployment strategy: the per-Deployment
+defaults (controlPlane or workers) with the keys set in the shared
+updateStrategy laid over them one by one, so an explicit 0 still wins.
+rollingUpdate is dropped for Recreate, and maxUnavailable falls back to 1 when
+both it and maxSurge are 0, which the API server rejects.
+*/}}
+{{- define "coredns.updateStrategy" -}}
+{{- $defaults := .defaults | default dict }}
+{{- $override := .override | default dict }}
+{{- $strategy := omit $defaults "rollingUpdate" }}
+{{- range $k, $v := omit $override "rollingUpdate" }}
+  {{- if not (kindIs "invalid" $v) }}{{ $_ := set $strategy $k $v }}{{ end }}
+{{- end }}
+{{- if ne (toString $strategy.type) "Recreate" }}
+  {{- $ru := deepCopy ($defaults.rollingUpdate | default dict) }}
+  {{- range $k, $v := ($override.rollingUpdate | default dict) }}
+    {{- if not (kindIs "invalid" $v) }}{{ $_ := set $ru $k $v }}{{ end }}
+  {{- end }}
+  {{- $zero := list "0" "0%" }}
+  {{- if and (has (toString $ru.maxSurge) $zero) (has (toString $ru.maxUnavailable) $zero) }}
+    {{- $_ := set $ru "maxUnavailable" 1 }}
+  {{- end }}
+  {{- if $ru }}{{ $_ := set $strategy "rollingUpdate" $ru }}{{ end }}
+{{- end }}
+{{- toYaml $strategy }}
+{{- end }}

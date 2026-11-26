@@ -14,7 +14,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-{{ toYaml .Values.updateStrategy | indent 4 }}
+{{ include "coredns.updateStrategy" (dict "defaults" .Values.controlPlane.updateStrategy "override" .Values.updateStrategy) | indent 4 }}
   selector:
     matchLabels:
       {{- include "labels.selector" . | nindent 6 }}

@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/component: workers
 spec:
   strategy:
-{{ toYaml .Values.updateStrategy | indent 4 }}
+{{ include "coredns.updateStrategy" (dict "defaults" .Values.workers.updateStrategy "override" .Values.updateStrategy) | indent 4 }}
   selector:
     matchLabels:
       {{- include "labels.selector" . | nindent 6 }}
